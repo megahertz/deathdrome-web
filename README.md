@@ -3,6 +3,8 @@
 Unofficial browser reimplementation of the 1996 PC game DeathDrome.
 The engine is written from scratch in JavaScript.
 
+![Gameplay on a phone with touch controls](other/screenshot.jpg)
+
 ## Game files
 
 Original game data is not included. On first start, select one of:
