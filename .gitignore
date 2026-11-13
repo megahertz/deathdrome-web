@@ -1,0 +1,11 @@
+# Supplied originals, extracted game data and restricted reference evidence.
+/private/
+# Generated publication output; rebuild from src + public.
+/dist/
+/node_modules/
+/utils/unshieldv3-master/build/
+__pycache__/
+*.pyc
+# Local assistant and IDE state.
+/.claude/
+/.idea/

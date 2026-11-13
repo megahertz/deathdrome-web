@@ -1,0 +1,10 @@
+Domain Pixel
+
+The hand-authored bitmap glyph design in tools/build_installer_font.py and the
+resulting domain-pixel.ttf are original project artwork, dedicated to the public
+domain under CC0 1.0 Universal:
+https://creativecommons.org/publicdomain/zero/1.0/
+
+This font was drawn independently. It is not extracted from DeathDrome or
+converted from the game's ZFO fonts. No original game resources are required
+to display the installer. FontTools is used solely to generate the TTF file.

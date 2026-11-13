@@ -1,0 +1,12 @@
+<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DeathDrome — проверка перехода и статистики</title>
+<style>body{margin:24px;background:#11161b;color:#d5e0e8;font:14px monospace}a{color:#9bd7ff}canvas{display:block;width:640px;max-width:100%;image-rendering:pixelated;background:#000}button,select{padding:9px;margin:5px;background:#202c35;color:inherit;border:1px solid #526471;font:inherit}output{display:block;white-space:pre-wrap;line-height:1.6;margin:12px 0}fieldset{max-width:620px;margin:14px 0;border:1px solid #43515c}</style>
+<p><a href="/">Играть</a> · <a href="verification.html">Проверка физики</a></p>
+<p>Проверка использует те же отрисовку и последовательности, что и игра. Статические кадры не подтверждают полного совпадения с оригиналом.</p>
+<canvas id="screen" width="640" height="400" aria-label="Переход к раунду и статистика"></canvas>
+<fieldset><legend>Переход к раунду</legend><label>Домен <select id="domain"></select></label><label>Раунд <select id="round"><option>1</option><option>2</option><option>3</option></select></label><br>
+<label>Начало перехода <select id="start-origin"><option value="go">Кнопка GO!</option><option value="round">Между раундами</option></select></label>
+<button id="intro">Воспроизвести переход</button><button data-time="0.3">Раздвоение</button><button data-time="0.8">Подготовка</button><button data-time="1.4">Раскрытие карты</button><button data-time="1.85">Первое открытие</button><button data-time="2.85">Второе открытие</button><button data-time="5">Clearing domain</button><button data-time="7.4">Затемнение</button><button id="menu-frame">Рамка меню — 75%</button></fieldset>
+<fieldset><legend>Статистика</legend><label>Бонус жизней — пример <select id="result-credit"><option value="0">0 — без новой жизни</option><option value="1">1 — порог 20 000</option><option value="2">2 — обе награды</option></select></label>
+<button id="results">Воспроизвести статистику</button><button data-rows="0">Заголовок</button><button data-rows="1">Убийства</button><button data-rows="2">Время</button><button data-rows="3">Жизни</button><button data-rows="3">Итог</button></fieldset>
+<output id="state" aria-live="polite">Загрузка…</output><output id="cues" aria-live="polite"></output>
+<script type="module" src="presentation-check.js"></script></html>

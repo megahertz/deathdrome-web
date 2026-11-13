@@ -1,0 +1,34 @@
+/* Fixed to the viewport, including letterbox bars; the original HUD stays put. */
+html,body,#stage,#menu,#touch-controls{touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#menu input{user-select:text;-webkit-user-select:text}
+#touch-controls{--button-size:clamp(52px,17dvh,80px);--stick-size:clamp(112px,40dvh,184px);position:fixed;inset:0;z-index:20;pointer-events:none;display:none;opacity:.74}
+#touch-controls[hidden],#touch-controls [hidden]{display:none!important}
+.touch-safe-area-probe{position:fixed;left:env(safe-area-inset-left,0px);top:env(safe-area-inset-top,0px);width:0;height:0;visibility:hidden;pointer-events:none}
+@media(pointer:coarse){#touch-controls:not([hidden]){display:block}}
+.touch-drive-zone,.touch-action-zone{position:absolute;inset:0;pointer-events:auto;touch-action:none}
+.touch-drive-zone{left:env(safe-area-inset-left,0px);right:50%}.touch-action-zone{left:50%}
+.touch-diamond{position:absolute;width:calc(var(--button-size)*2.5);height:calc(var(--button-size)*2.5);right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));pointer-events:none}
+.touch-action{position:absolute;width:var(--button-size);height:var(--button-size);image-rendering:pixelated;filter:drop-shadow(2px 3px 0 #000a);border-radius:50%}
+.touch-action.pressed{filter:brightness(1.6) drop-shadow(0 0 5px #69ff5970)}
+.touch-jump{left:30%;top:0}.touch-weapon{left:0;top:30%}.touch-barrier{right:0;top:30%}.touch-fire{left:30%;bottom:0}
+#touch-controls canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+#touch-controls canvas.touch-label{inset:auto;left:50%;bottom:19%;transform:translateX(-50%);height:12%;width:auto;max-width:72%;object-fit:contain}
+#touch-controls canvas.touch-action-glyph{position:absolute;inset:auto;left:20%;top:20%;width:60%;height:47%;object-fit:contain;image-rendering:pixelated;pointer-events:none}
+.touch-weapon-icon{position:absolute;left:34%;top:37%;width:32%;height:18%;object-fit:contain;image-rendering:pixelated;pointer-events:none}
+.touch-weapon .touch-disc{opacity:1}.touch-weapon.no-weapon{opacity:.4}
+.touch-stick{position:absolute;width:var(--stick-size);height:var(--stick-size);transform:translate(-50%,-50%);pointer-events:none}
+#touch-controls .stick-knob{inset:25%;width:50%;height:50%}
+#menu .key-hint-button{position:absolute;left:.3125%;top:96%;width:20%;height:4%;padding:0;touch-action:none;z-index:3}
+#menu .key-hint-button img{position:static!important;inset:auto!important;width:100%!important;height:100%!important;object-fit:contain;object-position:left center;image-rendering:pixelated}
+#menu.mobile-pause{background:#0009}
+#menu .mobile-pause-choice{display:flex;justify-content:center;align-items:center;height:15%!important;left:25%!important;width:50%!important;border:3px solid transparent;background:none;box-shadow:none}
+#menu .mobile-pause-choice canvas.bitmap-label{height:30%;width:auto;max-width:88%}
+@media(pointer:coarse){
+ /* The entire original GO plaque is tappable; its text keeps native geometry. */
+ #menu .go-button::before{content:'';position:absolute;left:-42.222%;top:-20%;width:153.333%;height:190%}
+ #menu .key-hint-button::before{content:'';position:absolute;inset:-30px 0 -6px}
+ #menu .training-arrow{position:fixed!important;top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;width:58px!important;height:44px!important;border:2px solid #626d70;background:#142020;box-shadow:inset 2px 2px #99a1a0,inset -3px -3px #030606;z-index:12;justify-content:center}
+ #menu .training-arrow[data-direction=left]{left:calc(50% - 70px)!important}
+ #menu .training-arrow[data-direction=right]{left:calc(50% + 12px)!important}
+ #menu .training-arrow img{width:20px!important;height:12px!important;object-fit:contain}
+}

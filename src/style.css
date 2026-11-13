@@ -1,0 +1,50 @@
+*{box-sizing:border-box}body{margin:0;background:#080b0d;color:#b6c0c7;font-family:monospace}header{height:64px;border-bottom:1px solid #202a30;display:flex;align-items:center;justify-content:space-between;padding:0 28px}.wordmark{letter-spacing:4px;color:#d7dde0;font-weight:bold;font-size:17px;text-decoration:none}nav{display:flex;gap:20px;align-items:center}nav a,nav button{font:12px monospace;color:#9aaab4;background:none;border:0;text-decoration:none;cursor:pointer}nav button:hover,nav a:hover{color:#fff}main{max-width:1280px;margin:30px auto;padding:0 20px}#stage{position:relative;background:#000;aspect-ratio:8/5;width:100%;border:1px solid #34414a;overflow:hidden;box-shadow:0 20px 100px #000}canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;outline:none}#overlay{pointer-events:none}#menu{position:absolute;inset:0;font-family:monospace}#menu .background{position:absolute;width:100%;height:100%;image-rendering:pixelated;inset:0;pointer-events:none}#menu button{position:absolute;border:0;background:none;color:#c1c8cb;text-transform:uppercase;font-family:monospace;letter-spacing:.05em;font-size:clamp(10px,1.6vw,20px);cursor:pointer;text-shadow:2px 2px #000;padding:0}#menu button:hover,#menu button:focus{color:#f3cd3e;outline:none}#menu .heading{position:absolute;top:3%;left:15%;width:70%;text-align:center;font-size:clamp(12px,2vw,28px);color:#d8e2e8;text-transform:uppercase;letter-spacing:4px}#menu .body{position:absolute;top:24%;left:14%;width:72%;font-size:clamp(10px,1.3vw,18px);line-height:1.6;color:#a8b4bd;text-align:center}#menu input{font:inherit;background:#101821;border:1px solid #455866;color:#e3eaee;padding:8px;width:80%;text-align:center}#menu select{font:inherit;background:#111b22;color:#cbd6dd;border:1px solid #455866;padding:4px;max-width:100%}#notice{position:absolute;left:10%;right:10%;bottom:12%;color:#f4cf47;text-align:center;font-size:clamp(12px,1.5vw,21px);text-shadow:2px 2px black;pointer-events:none}#help{text-align:center;margin:20px 0;color:#657884;font-size:11px;line-height:1.8}#stage:fullscreen{max-height:100vh;width:auto;margin:auto}#stage:fullscreen #menu button{font-size:2.5vh}@media(max-width:600px){header{padding:0 12px;height:54px}.wordmark{font-size:12px;letter-spacing:1px}nav{gap:10px}nav a,nav button{font-size:10px}main{padding:0;margin:24px 0}#help{padding:0 12px}}
+main{box-sizing:border-box;width:min(100%,1280px,calc((100vh - 155px)*1.6 + 40px));margin:24px auto}#stage{margin:auto}#menu .body{font-size:clamp(10px,1.3vw,16px)}@media(max-width:600px){main{width:100%;margin:18px auto}}
+
+#menu .title-art{position:absolute;left:16.5625%;top:2%;width:66.875%;height:16.5%;image-rendering:pixelated;pointer-events:none}#menu .key-hint{position:absolute;bottom:0;height:5%;width:auto;image-rendering:pixelated;pointer-events:none}#menu button.native-button{text-align:left;letter-spacing:0;text-shadow:none}#menu canvas.bitmap-label{position:static;display:inline-block;width:auto;height:100%;image-rendering:pixelated;vertical-align:top;pointer-events:none}
+
+.native-raster header,.native-raster #help{display:none}.native-raster main{width:320px;max-width:none;margin:0;padding:0}.native-raster #stage{width:320px;height:200px;border:0;aspect-ratio:auto}
+
+#menu .title-art{left:16.875%;top:3%}#menu .key-hint{top:96%;bottom:auto}
+
+/* Status remains accessible; in-game notices are painted with the disc font. */
+#notice{width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;left:0;right:auto;bottom:auto}
+
+/* Bitmap canvases inside a button must not inherit the full-stage inset. */
+#menu button.native-button{display:flex;align-items:flex-start;line-height:0}
+#menu button.native-button canvas.bitmap-label{inset:auto;flex:none;max-width:100%;object-fit:contain;object-position:left top}
+#transition{z-index:5;pointer-events:none}
+#transition[hidden]{display:none}
+#menu input.native-slider{position:absolute;padding:0;margin:0;border:0;border-radius:0;appearance:none;background:transparent;cursor:pointer;outline:none}
+#menu input.native-slider::-webkit-slider-runnable-track{height:35%;background:linear-gradient(to right,#d0c625 var(--level),#373b39 var(--level));border:1px solid #797b68;box-shadow:0 2px #050708}
+#menu input.native-slider::-webkit-slider-thumb{appearance:none;width:8%;height:160%;margin-top:-2%;background:#9f9690;border:1px solid #222;box-shadow:1px 1px #000}
+#menu input.native-slider::-moz-range-track{height:35%;background:#373b39;border:1px solid #797b68}
+#menu input.native-slider::-moz-range-progress{height:35%;background:#d0c625}
+#menu input.native-slider::-moz-range-thumb{width:6%;height:70%;border-radius:0;background:#9f9690;border:1px solid #222}
+#menu input.native-slider:focus{filter:brightness(1.5)}
+
+#menu input.native-slider{background:url('assets/images/slidebl.png') center/100% 100% no-repeat}
+#menu input.native-slider:focus{background-image:url('assets/images/slidebh.png');filter:none}
+#menu input.native-slider::-webkit-slider-runnable-track{height:100%;background:transparent;border:0;box-shadow:none}
+#menu input.native-slider::-webkit-slider-thumb{width:8.92857%;height:50%;margin-top:7.142857%;background:url('assets/images/knobl.png') center/100% 100% no-repeat;border:0;box-shadow:none}
+#menu input.native-slider:focus::-webkit-slider-thumb{background-image:url('assets/images/knobh.png')}
+#menu input.native-slider::-moz-range-track{height:100%;background:transparent;border:0}
+#menu input.native-slider::-moz-range-progress{background:transparent}
+#menu input.native-slider::-moz-range-thumb{width:8.92857%;height:50%;background:url('assets/images/knobl.png') center/100% 100% no-repeat;border:0}
+#menu .go-button:active,#menu .go-button.pressed{transform:translate(6.66667%,40%)}
+
+.menu-entry-frame{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none}
+#menu.menu-entering>button,#menu.menu-entering>canvas,#menu.menu-entering>input,#menu.menu-entering>.body,#menu.menu-entering>img:not(.background):not(.title-art):not(.key-hint){opacity:0}
+
+#menu .native-button:focus+input.native-slider{background-image:url('assets/images/slidebh.png')}
+#menu .native-button:focus+input.native-slider::-webkit-slider-thumb{background-image:url('assets/images/knobh.png')}
+#menu .native-button:focus+input.native-slider::-moz-range-thumb{background-image:url('assets/images/knobh.png')}
+
+/* Fit the original 8:5 picture to the entire browser viewport. */
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+header,#help{display:none}
+main{position:fixed;inset:0;width:100%;height:100%;max-width:none;margin:0;padding:0;display:flex;align-items:center;justify-content:center}
+#stage{flex:none;width:min(100vw,160vh);height:min(100vh,62.5vw);width:min(100vw,160dvh);height:min(100dvh,62.5vw);border:0;box-shadow:none;aspect-ratio:8/5;margin:0}
+#stage:fullscreen{width:100vw;height:100vh;max-height:none;display:block;aspect-ratio:auto}
+.native-raster main{position:static;width:320px;height:200px;margin:0;padding:0;display:block}
+.native-raster #stage{width:320px;height:200px}

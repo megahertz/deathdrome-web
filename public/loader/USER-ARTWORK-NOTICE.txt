@@ -1,0 +1,11 @@
+User-supplied installer artwork and touch icons
+
+loader-background.jpg: supplied Death Drome_ Crimson Core.png loading background.
+touch-icons/*.png: unscaled icon crops of the supplied control mockup.
+touch-icons/source.json records crop coordinates and source hashes.
+
+On 2026-11-13 the project owner confirmed that both the loading background
+and the control mockup/buttons are their own artwork and may be published
+with this game. Included by that permission. No ownership or CC0 license is
+claimed by the reconstruction project for these supplied images.
+Original DeathDrome screenshots and extracted game artwork remain private.

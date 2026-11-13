@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DeathDrome verification</title>
+<style>
+*{box-sizing:border-box}body{margin:24px;background:#11161b;color:#d5e0e8;font:14px monospace}a{color:#9bd7ff}main{display:flex;gap:28px;flex-wrap:wrap}canvas{width:640px;height:400px;image-rendering:pixelated;max-width:100%;object-fit:contain;background:black}section{max-width:650px;min-width:0;flex:1 1 400px}section:first-child{flex-basis:650px}fieldset{border:1px solid #43515c;margin:14px 0;padding:12px}label{display:inline-block;margin:4px 10px 4px 0}button,select,input{padding:8px;font:inherit;background:#202c35;color:inherit;border:1px solid #526471}button{cursor:pointer;margin:3px}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:430px;overflow:auto}h1{font-size:20px}p{color:#a6b7c4;line-height:1.6}output{display:block;min-height:24px;color:#a7edbb}
+</style>
+<h1>DeathDrome — deterministic verification</h1>
+<p><a href="/">Play rebuild</a> · <a href="reference/">Original Windows runtime</a><br>
+This page advances the native rebuild in exact 1/60-second steps. It is a diagnostic harness; it does not establish equivalence to the original.</p>
+<main><section>
+<canvas id="world" width="320" height="200" aria-label="Verification game view"></canvas>
+<p id="ai-combat-summary" role="status"></p>
+<fieldset><legend>Original domain and runner</legend>
+<label>Domain <select id="arena"></select></label><label>Round <select id="round"><option>1</option><option>2</option><option>3</option></select></label>
+<label>Runner <select id="runner"></select></label><label>Seed <input id="seed" type="number" value="1996" size="8"></label>
+<button id="load">Load / reset</button>
+<label>Player light <select id="light-radius"><option value="0">Original 24-sided contour</option><option value="5.31426">Previous circle (5.31)</option><option value="9">Previous size (9)</option></select></label></fieldset>
+<fieldset><legend>Timed controls</legend>
+<button data-drive="idle">Idle 1 s</button><button data-drive="forward">Forward 2 s</button><button data-drive="reverse">Reverse 2 s</button>
+<button data-drive="left">Forward + left 1 s</button><button data-drive="right">Forward + right 1 s</button>
+<button data-drive="fire">Fire 2 s</button><button data-drive="jump">Jump</button><button data-drive="frame">Advance 1 frame</button><button data-drive="idle5">Idle 5 s</button>
+<button id="fire-once">Fire once</button>
+<button data-drive="barrier">Drive + barrier 2 s</button>
+<button id="rear">View back</button>
+<button data-drive="lookLeft">Look left 1 s</button><button data-drive="lookRight">Look right 1 s</button>
+<label>Frames <input id="frame-count" type="number" min="1" max="600" value="15" size="4"></label><button id="advance-frames">Advance frames</button>
+</fieldset>
+<fieldset><legend>Original recorded poses — renderer comparison</legend>
+<label>Demo <select id="demo"></select></label><label>Seconds <input id="demo-time" type="number" min="0" max="16" step="0.1" value="0" size="6"></label>
+<button id="show-poses">Show original poses</button>
+<p>Loads recorded runner positions into the current domain view. These poses come from the original; they are not a result of the rebuilt simulation.</p>
+</fieldset>
+<fieldset><legend>Rule scenarios</legend>
+<button id="entrance">Restart entrance</button>
+<button id="recharge">Capture recharge orb</button><button id="inventory">Collect three missiles</button><button id="cycle">Cycle weapon</button>
+<button id="escape">Escape after quota</button><button id="death">Destroy player</button><button id="download">Download trace</button> <a id="render-export" download="deathdrome-render.png">Export view PNG</a>
+<label>AI pickup <select id="ai-weapon"><option>Missile</option><option>ShockWave</option><option>Disruptor</option><option>Ion Sword</option><option>NanoShield</option><option>Nitro Ram</option></select></label><button id="ai-weapon-attack">Set up AI weapon attack</button>
+<button id="opponent-death">Destroy opponent</button><button id="opponent-exit">Set up opponent exit</button>
+<button id="wreck">Set up wreck</button><button id="scrub">Start scrub</button>
+<button id="projectile-flight">Set up projectile flight</button>
+<button id="missile-guidance">Set up missile guidance</button><button id="missile-retarget">Move lock target behind</button>
+<button id="slot-reuse">Set up slot reuse</button>
+<button id="runner-order">Set up runner update order</button>
+<button id="damage-timing">Set up lethal hit timing</button>
+<button id="lethal-hit">Apply lethal hit</button>
+<button id="exit-handoff">Set up zero-health exit handoff</button>
+<button id="opponent-handoff">Set up zero-health opponent handoff</button>
+<button id="exit-world">Set up exit world continuation</button>
+<button id="suspension">Set up suspension slope</button>
+<button id="control-disable">Set up control disable boundary</button>
+<button id="nitro-coast">Set up Nitro coast and expiry</button>
+<button id="wall-sweep">Set up native wall sweep</button>
+<button id="inventory-memory">Set up inventory memory</button>
+<button id="runner-collision">Set up runner collision</button>
+<button id="hot-spot">Set up hot spot</button><button id="hit-hot-spot">Hit hot spot</button>
+<label>Portal <select id="portal"></select></label><button id="approach-portal">Approach portal</button>
+<label>Secret door <select id="secret-door"></select></label><button id="approach-secret-door">Approach secret door without key</button><button id="collect-door-key">Collect matching key</button>
+</fieldset><fieldset><legend>Isolated secondary weapon scenarios</legend>
+<button data-secondary="NanoShield">Set up NanoShield</button>
+<button data-secondary="Nitro Ram">Set up Nitro Ram</button>
+<button data-secondary="ShockWave">Set up ShockWave</button><button data-secondary="Disruptor">Set up Disruptor</button><button data-secondary="Ion Sword">Set up Ion Sword</button>
+<p>Places one stationary target 40 units ahead on a flat diagnostic ground plane, disables the other runners and AI, and activates the selected weapon. Use the timed controls to advance it. Load / reset restores the domain simulation.</p>
+</fieldset><output id="status" aria-live="polite">Loading…</output>
+</section><section><h2>Visible simulation state</h2><pre id="state" aria-live="polite"></pre><h2>Events from the last action</h2><pre id="events"></pre></section></main>
+<script type="module" src="verification.js"></script></html>

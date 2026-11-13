@@ -1,0 +1,37 @@
+@font-face{font-family:DomainPixel;src:url('loader/domain-pixel.ttf') format('truetype');font-weight:400;font-display:block}
+.resource-loading header,.resource-loading main{visibility:hidden}
+#resource-setup{position:fixed;inset:0;z-index:1000;isolation:isolate;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;background:#080304;color:#d9d9cd;font:400 20px/1.4 DomainPixel,monospace;text-align:center;padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));color-scheme:dark;text-transform:uppercase;text-shadow:0 2px #55594b,2px 2px #000}
+/* Keep the art tied to the viewport. Cover
+   preserves the artwork's proportions and crops the excess at either edge. */
+#resource-setup::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:#080304 url('loader/loader-background.jpg') center/cover no-repeat}
+.resource-brand{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.resource-card{position:relative;width:min(100%,500px);margin:0 auto;padding:16px 24px;max-height:100%;background:linear-gradient(90deg,#09030400,#090304e8 15%,#090304ef 85%,#09030400)}
+.resource-card p{margin:8px 0 16px}.resource-card .resource-small{font-size:20px;color:#aaa58b;margin:10px 0}
+#resource-status{font-size:20px;min-height:20px;color:#b5c2a2;white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0 0}.resource-card #resource-status.resource-error{color:#ffb9a8}#resource-status:empty{min-height:0;margin:0}
+.resource-loading-indicator{display:none}.resource-loading-title{font-size:20px;margin-bottom:20px;color:#d7eb9b;text-shadow:0 2px #58713f,2px 2px #000,0 0 10px #a2ff5a55}
+/* Coarse phosphor-like cells, uneven intensity and softened edges rather than
+   a smooth, sharply outlined modern progress meter. */
+#resource-progress{appearance:none;display:block;width:100%;height:16px;border:0;border-radius:0;background:transparent;overflow:visible;color:#c2ff39;filter:blur(.85px) drop-shadow(0 0 4px #b6ff64bb) drop-shadow(0 0 12px #96ff3955)}
+#resource-progress::-webkit-progress-bar{background:repeating-linear-gradient(90deg,#35551a66 0 8px,transparent 8px 12px);box-shadow:0 0 5px #8ad44433}
+#resource-progress::-webkit-progress-value{background:linear-gradient(0deg,#36631799,transparent 28%,#efff9699 48%,transparent 70%,#609d2999),repeating-linear-gradient(90deg,#b4fc48 0 4px,#d4ff7e 4px 8px,#79c72c 8px 10px,transparent 10px 12px);box-shadow:0 0 8px #b2ff5077}
+#resource-progress::-moz-progress-bar{background:linear-gradient(0deg,#36631799,transparent 28%,#efff9699 48%,transparent 70%,#609d2999),repeating-linear-gradient(90deg,#b4fc48 0 4px,#d4ff7e 4px 8px,#79c72c 8px 10px,transparent 10px 12px);box-shadow:0 0 8px #b2ff5077}
+#resource-progress:indeterminate{background:linear-gradient(0deg,#36631799,transparent 28%,#efff9699 48%,transparent 70%,#609d2999),repeating-linear-gradient(90deg,#b4fc48 0 4px,#d4ff7e 4px 8px,#79c72c 8px 10px,transparent 10px 12px);background-size:120px 100%;mask-image:linear-gradient(90deg,transparent,#000 25%,#000 75%,transparent);animation:resource-loading .9s steps(10) infinite}#resource-progress:indeterminate::-webkit-progress-bar{background:transparent;box-shadow:none}
+#resource-transfer{display:block;min-height:20px;font-size:20px;margin-top:10px;color:#b5db81}
+#resource-setup [hidden]{display:none}#resource-setup[data-state="loading"] .resource-chooser{display:none}#resource-setup[data-state="loading"] .resource-loading-indicator{display:block}
+/* Menu-like pixel lettering; the transparent file input keeps the full touch target. */
+.resource-file-button{display:inline-flex;position:relative;align-items:center;justify-content:center;width:min(100%,320px);min-height:52px;padding:12px 8px;border:0;background:none;color:#c2e58b;font:inherit;text-transform:uppercase;cursor:pointer;text-shadow:0 2px #3d5927,2px 2px #000,0 0 8px #a2ff5a44}
+.resource-file-button span::before{content:'[ ';color:#82a94c}.resource-file-button span::after{content:' ]';color:#82a94c}
+.resource-file-button input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;padding:0}
+.resource-file-button:hover,.resource-file-button:focus-within{color:#efffb0;text-shadow:0 2px #536d2e,2px 2px #000,0 0 10px #b6ff6477}
+.resource-file-button:hover span::before,.resource-file-button:hover span::after,.resource-file-button:focus-within span::before,.resource-file-button:focus-within span::after{color:#c2ff39}
+.resource-file-button:focus-within span{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}
+.resource-file-button:active span{transform:translateY(2px)}
+.resource-drop-hint{display:none;position:absolute;inset:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));z-index:2;pointer-events:none;place-items:center;padding:20px;border:2px solid #b4fc48;background:#080d06dd;box-shadow:inset 0 0 0 4px #142008,inset 0 0 32px #a2ff5a22,0 0 12px #96ff3955;color:#d4ff7e;font-size:clamp(20px,4vw,36px);text-shadow:0 2px #58713f,2px 2px #000,0 0 10px #a2ff5a77}
+.resource-drop-hint small{display:block;margin-top:16px;color:#b5c2a2;font-size:16px}
+#resource-setup[data-state="choose"][data-dragging="true"] .resource-drop-hint{display:grid}
+@keyframes resource-loading{to{background-position:120px 0}}
+@media(prefers-reduced-motion:reduce){#resource-progress:indeterminate{animation:none}}
+#resource-setup,#resource-setup *{box-sizing:border-box}
+#resource-instruction{margin:0 0 16px;line-height:1.4;text-transform:none}
+#resource-status{max-width:100%;font-size:16px;line-height:1.3}
+@media(max-height:440px){#resource-setup{font-size:16px;padding-top:8px;padding-bottom:max(8px,env(safe-area-inset-bottom))}.resource-card{padding:8px 16px}#resource-instruction{margin-bottom:10px;line-height:1.25}.resource-file-button{min-height:44px;padding:10px 8px;font-size:16px}.resource-loading-title{font-size:16px;margin-bottom:12px}#resource-transfer{font-size:16px;margin-top:6px}#resource-status{font-size:14px;margin-top:6px}}
