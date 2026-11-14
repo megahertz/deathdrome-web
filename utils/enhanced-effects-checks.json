@@ -1,0 +1,80 @@
+{
+  "date": "2026-11-14",
+  "control": {
+    "label": "GRAPHIC MODE",
+    "type": "cycling button",
+    "options": [
+      "ORIGINAL",
+      "ENHANCED"
+    ],
+    "default": "ORIGINAL",
+    "optionsPosition": 2,
+    "mouseSwitching": true,
+    "enterSpaceAndArrowSwitching": true,
+    "savedOriginalRestoredAfterReload": true
+  },
+  "features": [
+    "Up to 4x hardware MSAA",
+    "Selective bloom restricted to the 3D viewport",
+    "Colored shot/hit/explosion flashes",
+    "Sloped-floor contact shadows that expand and fade when airborne",
+    "Bounded sparks, smoke and projectile trails with an independent visual RNG",
+    "Adaptive resolution with slow reduction/gradual recovery and paused-frame reuse",
+    "Eight subtle arena-specific fog profiles"
+  ],
+  "verification": {
+    "javascriptTests": 389,
+    "pythonPublicationChecks": 6,
+    "syntheticMediaChecks": true,
+    "buildPassed": true,
+    "releaseCheckPassed": true,
+    "buildId": "1177f34a639693be",
+    "liveGame": {
+      "source": "local demo ZIP",
+      "previewAndGameplay": true,
+      "hardwareMSAASamples": 4,
+      "shadowCountObserved": 3,
+      "shotFlashEventsObserved": 1,
+      "fogEnabled": true,
+      "hudSampling": "pixelated",
+      "nativeCanvasRestored": [
+        320,
+        200
+      ],
+      "enhancedCanvas": [
+        1920,
+        1200
+      ],
+      "webGLErrors": 0
+    },
+    "authoredBrowserFixture": {
+      "bloomAndColoredFlashObserved": true,
+      "explosionParticlesObserved": 42,
+      "jumpShadowObserved": true,
+      "controlled30FPSResolution": [
+        800,
+        500
+      ],
+      "recovered60FPSResolution": [
+        1920,
+        1200
+      ],
+      "mobileViewportChecked": [
+        844,
+        390
+      ],
+      "nativeToggleClearedEffects": true
+    }
+  },
+  "evidence": {
+    "gameCaptures": "private/verification/enhanced-graphics/",
+    "syntheticCapture": "utils/screenshots/enhanced-effects-synthetic.jpg",
+    "interactiveFixture": "utils/browser/enhanced-effects-check.html"
+  },
+  "limits": [
+    "Physical-phone performance has not been measured.",
+    "Contact shadows and short-range light flashes are inexpensive approximations; flashes do not perform per-light wall occlusion.",
+    "Only demo-arena gameplay was checked visually; all eight fog profiles are configured but not visually compared arena by arena.",
+    "Enhanced mode deliberately changes the original appearance."
+  ]
+}

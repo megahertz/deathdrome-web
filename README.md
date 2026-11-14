@@ -34,12 +34,31 @@ It loads automatically. Other files open by URL, for example
 
 ## Graphics
 
-Options includes an **ENHANCED GRAPHICS** checkbox, off by default. It enables
-linear texture filtering with mipmaps, up to 8× anisotropic filtering, and a
-higher-resolution 3D view scaled to the display (capped at 1920×1200). Runner
-previews use the same enhanced rendering. Bitmap menus and the HUD remain
+The second entry in Options is **GRAPHIC MODE**. Clicking it switches between
+**ORIGINAL** (the default) and **ENHANCED**; Enter, Space and the left/right
+arrow keys also switch the focused mode. The choice is saved in this browser.
+ENHANCED enables:
+
+- Linear/mipmap texture filtering and up to 8× anisotropic filtering.
+- Display-adapted 3D resolution, capped at 1920×1200, with up to 4× MSAA
+  according to GPU support.
+- Restrained selective bloom on weapons, shields, barriers and explosions.
+- Short colored lighting flashes from shots, hits and explosions.
+- Procedural contact shadows that follow floor slopes and fade during jumps.
+- Bounded sparks, destruction smoke and short projectile trails.
+- Subtle distance fog with a separate color/density profile for each arena.
+- Adaptive resolution: sustained slow frames reduce 3D resolution; sustained
+  fast frames restore it gradually. Paused scenes reuse their last frame.
+
+Runner previews use enhanced rendering too. Bitmap menus and the HUD remain
 pixel-sharp. The setting is saved in this browser and applies immediately;
 turning it off restores the original 320×200 view and nearest-neighbor textures.
+These additions are visual only: they use an independent particle RNG and do
+not alter simulation state. No replacement models or textures are bundled.
+
+The development-only `enhanced-effects-check.html` page provides an authored
+synthetic scene for checking bloom, flashes, jump shadows and resolution
+adaptation. Physical-phone performance still needs device testing.
 
 ## Build
 

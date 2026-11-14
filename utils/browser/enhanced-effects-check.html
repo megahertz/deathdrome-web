@@ -1,0 +1,25 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Enhanced graphics check</title>
+<script type="importmap">{"imports":{"#three":"./vendor/three.module.js"}}</script>
+<style>body{margin:0;background:#10151a;color:#ddd;font:14px monospace}header{padding:12px;display:flex;gap:10px;flex-wrap:wrap}button{font:inherit;padding:9px}#stage{position:relative;width:min(100vw,1200px);aspect-ratio:8/5;margin:auto}canvas{width:100%;height:100%;image-rendering:pixelated}canvas.enhanced-graphics{image-rendering:auto}#state{display:block;padding:10px;text-align:center}</style>
+<header><button id="enhanced">Enhanced</button><button id="native">Native</button><button id="fire">Fire</button><button id="explode">Explosion</button><button id="jump">Jump</button><button id="slow">30 FPS</button><button id="fast">60 FPS</button></header>
+<div id="stage"><canvas id="world" width="320" height="200"></canvas></div><output id="state"></output>
+<script type="module">
+import {View,THREE} from './renderer.js';
+const canvas=document.querySelector('canvas'),view=new View(canvas);view.hud=true;view.enhancedArena=1;
+view.camera.position.set(0,7,17);view.camera.lookAt(0,1,-1);view.ground=()=>[{height:0,normal:{x:0,y:1,z:0}}];
+function box(x,y,z,w,h,d,color,glow=false){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({color}));mesh.position.set(x,y,z);mesh.userData.enhancedGlow=glow;view.objects.add(mesh);return mesh}
+box(0,-.25,0,60,.5,60,0x34414a);box(0,4,-10,30,8,.5,0x3d4550);box(-10,4,0,.5,8,20,0x354353);
+const car=box(0,.8,0,3,1.6,5,0x9e2830);box(-5,1,-4,.4,2,.4,0x00ddff,true);box(5,1,-4,.4,2,.4,0xff6418,true);
+const runner={id:0,x:0,y:0,z:0,yaw:0,dead:0},sim={runners:[runner],projectiles:[],player:0};let fps=60,last=0,jump=0,frame=0;
+view.setEnhancedGraphics(true);
+document.querySelector('#enhanced').onclick=()=>view.setEnhancedGraphics(true);document.querySelector('#native').onclick=()=>view.setEnhancedGraphics(false);
+document.querySelector('#fire').onclick=()=>view.enhancements?.event({type:'shot',runner:0},sim);
+document.querySelector('#explode').onclick=()=>view.enhancements?.event({type:'destroyed',runner:0},sim);
+document.querySelector('#jump').onclick=()=>jump=1;
+document.querySelector('#slow').onclick=()=>fps=30;document.querySelector('#fast').onclick=()=>fps=60;
+function animate(now){requestAnimationFrame(animate);if(last&&now-last<1000/fps-2)return;const dt=Math.min(.1,(now-last)/1000||1/60);last=now;frame++;
+ if(jump){jump+=dt;runner.y=Math.max(0,Math.sin(Math.min(1,(jump-1)/2)*Math.PI)*8);if(jump>=3)jump=0}car.position.y=runner.y+.8;
+ view.enhancements?.sync(sim,dt);view.enhancements?.sampleFrame(dt,true);view.draw(now/1000);
+ document.querySelector('#state').textContent=`${view.enhancedGraphics?'Enhanced':'Native'} · ${canvas.width}×${canvas.height} · MSAA ${canvas.dataset.msaaSamples||0} · particles ${canvas.dataset.enhancedParticles||0} · shadows ${canvas.dataset.enhancedShadows||0} · flashes ${canvas.dataset.enhancedFlashTotal||0} · requested ${fps} FPS`;
+}requestAnimationFrame(animate);
+</script></html>

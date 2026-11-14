@@ -23,7 +23,7 @@ export function bitmapLabel(label,{size=10,color='grey'}={}){
  let canvas=document.createElement('canvas'),value='',currentColor=color;
  canvas.className='bitmap-label';canvas.setAttribute('aria-hidden','true');
  function draw(shade){currentColor=shade;let image=atlas(`${size===10?'10':'5'}x_${shade}`),ctx=canvas.getContext('2d');
-  const paint=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);value.split('\n').forEach((line,row)=>{let x=0;for(let c of line){let glyph=GLYPHS.indexOf(c);if(glyph>=0)ctx.drawImage(image,0,glyph*size,size,size,x,row*size,size,size);x+=glyphAdvance(c,size)}})};
+  const paint=()=>{if(currentColor!==shade)return;ctx.clearRect(0,0,canvas.width,canvas.height);value.split('\n').forEach((line,row)=>{let x=0;for(let c of line){let glyph=GLYPHS.indexOf(c);if(glyph>=0)ctx.drawImage(image,0,glyph*size,size,size,x,row*size,size,size);x+=glyphAdvance(c,size)}})};
   if(image.complete&&image.naturalWidth)paint();else image.addEventListener('load',paint,{once:true});
  }
  canvas.setColor=draw;canvas.setText=label=>{value=label.toUpperCase().replaceAll(':','*');let lines=value.split('\n');canvas.width=Math.max(1,...lines.map(line=>bitmapWidth(line,size)));canvas.height=lines.length*size;draw(currentColor)};canvas.setText(label);return canvas;

@@ -25,13 +25,13 @@ export class Effects {
   let list=this.pools[pool],entry=list[index];
   if(entry?.name!==name){
    if(entry){this.view.objects.remove(entry.mesh);entry.mesh.traverse(o=>{o.geometry?.dispose();o.material?.dispose()})}
-   let mesh=this.instance(name);entry=list[index]={name,mesh};this.view.objects.add(mesh);
+   let mesh=this.instance(name);mesh.userData.enhancedGlow=['barriers','ions','flares','shields'].includes(pool)||(pool==='shots'&&name!=='missile');entry=list[index]={name,mesh};this.view.objects.add(mesh);
    if(pool==='barriers'){mesh.scale.y=.65;mesh.traverse(o=>{if(o.material)o.material.side=THREE.DoubleSide})}
   }
   return entry.mesh;
  }
  burst(position,large,seconds){
-  let mesh=this.instance(large?'fx_lgexp':'fx_smexp');mesh.position.set(position.x,position.y+1,position.z);
+  let mesh=this.instance(large?'fx_lgexp':'fx_smexp');mesh.userData.enhancedGlow=true;mesh.position.set(position.x,position.y+1,position.z);
   // Original sprite sequences run at 7.8fps. Scale is still provisional.
   mesh.scale.setScalar(large?16:5);mesh.userData.born=seconds;
   mesh.traverse(o=>{if(o.material)o.material.side=THREE.DoubleSide});
