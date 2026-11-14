@@ -1,4 +1,5 @@
 import {THREE,makeModel} from './renderer.js';
+import {enhancedTextureSampling} from './graphics-quality.js';
 import {runnerLightContour,LIGHT_MASK_GLSL} from './runner-light.js';
 import {registeredTextureCoordinates,NATIVE_TEXTURE_GLSL} from './native-texture.js';
 const isFloor=face=>/\/lcl_lt\//i.test(face.name);
@@ -39,7 +40,7 @@ export function makeRunnerPreview(data){
 vec3 floorWorld=(modelMatrix*vec4(position,1.0)).xyz;
 vMapUv=floorWorld.xz*0.0625-nativeWorldBase;
 #endif`);
-    if(!node.userData.nativeTextureUV){shader.fragmentShader=NATIVE_TEXTURE_GLSL+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',THREE.ShaderChunk.map_fragment.replace('texture2D( map, vMapUv )','texture2D( map, nativeTextureUv(vMapUv) )'));}
+    if(!node.userData.nativeTextureUV){shader.uniforms.enhancedGraphics=enhancedTextureSampling;shader.fragmentShader=NATIVE_TEXTURE_GLSL+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',THREE.ShaderChunk.map_fragment.replace('texture2D( map, vMapUv )','texture2D( map, nativeTextureUv(vMapUv) )'));}
    }
    shader.fragmentShader='varying vec3 previewWorld;\nuniform vec3 previewOrigin;\nuniform vec2 previewCentre;\nuniform float previewAngle;\n'+LIGHT_MASK_GLSL+shader.fragmentShader;
    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>

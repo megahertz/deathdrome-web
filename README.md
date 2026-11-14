@@ -32,6 +32,15 @@ To skip the file picker, put the full CD at `private/disc/Death-Drome_Win_EN.zip
 It loads automatically. Other files open by URL, for example
 `http://localhost:8080/?image=/private/disc/DDROME.zip`.
 
+## Graphics
+
+Options includes an **ENHANCED GRAPHICS** checkbox, off by default. It enables
+linear texture filtering with mipmaps, up to 8× anisotropic filtering, and a
+higher-resolution 3D view scaled to the display (capped at 1920×1200). Runner
+previews use the same enhanced rendering. Bitmap menus and the HUD remain
+pixel-sharp. The setting is saved in this browser and applies immediately;
+turning it off restores the original 320×200 view and nearest-neighbor textures.
+
 ## Build
 
 ```

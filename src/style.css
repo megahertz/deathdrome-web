@@ -48,3 +48,7 @@ main{position:fixed;inset:0;width:100%;height:100%;max-width:none;margin:0;paddi
 #stage:fullscreen{width:100vw;height:100vh;max-height:none;display:block;aspect-ratio:auto}
 .native-raster main{position:static;width:320px;height:200px;margin:0;padding:0;display:block}
 .native-raster #stage{width:320px;height:200px}
+
+/* Enhanced 3D output is filtered independently of the pixel HUD and bitmap menus. */
+#world.enhanced-graphics{image-rendering:auto}
+#menu .graphics-checkbox-mark{position:absolute;inset:0 0 auto auto;width:3.57143%;height:100%;image-rendering:pixelated;pointer-events:none}

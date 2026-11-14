@@ -8,7 +8,12 @@ export function registeredTextureCoordinates(vertices,{base=[0,0],repeats=[.0625
 export function nativeTextureTexel(uv,size){return uv.map((v,i)=>{const p=Math.floor(f(f(v)*(size[i]-1)));return ((p%size[i])+size[i])%size[i]})}
 export const NATIVE_TEXTURE_GLSL=`
 uniform vec2 nativeTextureSize;
+uniform bool enhancedGraphics;
 vec2 nativeTextureUv(vec2 uv){
+ if(enhancedGraphics){
+  vec2 pixel=uv*(nativeTextureSize-1.0)+0.5;
+  return vec2(pixel.x/nativeTextureSize.x,1.0-pixel.y/nativeTextureSize.y);
+ }
  vec2 pixel=mod(floor(uv*(nativeTextureSize-1.0)),nativeTextureSize);
  // PNG rows are in native top-to-bottom order; TextureLoader flips the upload.
  return vec2((pixel.x+0.5)/nativeTextureSize.x,1.0-(pixel.y+0.5)/nativeTextureSize.y);

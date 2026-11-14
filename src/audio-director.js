@@ -2,14 +2,14 @@ import {resourceURL} from './resource-urls.js';
 import {DEFAULT_BRIGHTNESS} from './palette-brightness.js';
 // CD tracks and WAVs are the original disc recordings. Music has its own
 // switch: M never disables speech, weapons, or menu feedback.
-export const DEFAULT_OPTIONS={detail:9,brightness:DEFAULT_BRIGHTNESS,musicVolume:4,sfxVolume:7,musicEnabled:true};
+export const DEFAULT_OPTIONS={detail:9,brightness:DEFAULT_BRIGHTNESS,musicVolume:4,sfxVolume:7,musicEnabled:true,enhancedGraphics:false};
 export function readOptions(value={}){
  value=value&&typeof value==='object'?value:{};
  const result={...DEFAULT_OPTIONS};
  for(const key of ['detail','brightness','musicVolume','sfxVolume']){
   if(Number.isFinite(value[key]))result[key]=Math.max(0,Math.min(9,Math.round(value[key])));
  }
- if(typeof value.musicEnabled==='boolean')result.musicEnabled=value.musicEnabled;
+ for(const key of ['musicEnabled','enhancedGraphics'])if(typeof value[key]==='boolean')result[key]=value[key];
  return result;
 }
 export class AudioDirector{

@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-14",
+  "option": "ENHANCED GRAPHICS",
+  "control": "checkbox",
+  "default": false,
+  "features": [
+    "Linear texture filtering",
+    "Trilinear mipmap filtering",
+    "Hardware anisotropy, capped at 8x",
+    "Display-adapted 3D resolution, capped at 1920x1200",
+    "Enhanced runner preview; HUD and bitmap menus stay pixelated"
+  ],
+  "checks": {
+    "javaScriptTests": 383,
+    "pythonPublicationTests": 6,
+    "syntheticMediaPassed": true,
+    "buildPassed": true,
+    "distCheckPassed": true,
+    "browser": {
+      "source": "local demo ZIP",
+      "checkboxMouse": true,
+      "checkboxSpace": true,
+      "checkboxEnter": true,
+      "restoredAfterReload": true,
+      "nativeCanvas": [
+        320,
+        200
+      ],
+      "enhancedCanvas": [
+        1920,
+        1200
+      ],
+      "hudImageRendering": "pixelated",
+      "runnerPreviewRendered": true,
+      "gameplayRendered": true,
+      "webGLErrors": 0,
+      "returnedToNativeMode": true
+    }
+  },
+  "screenshots": "private/verification/enhanced-graphics/",
+  "limits": [
+    "Physical-phone performance has not been measured.",
+    "Enhanced mode is an optional visual change, not an original-renderer equivalence claim."
+  ]
+}
