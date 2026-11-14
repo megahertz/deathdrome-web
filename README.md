@@ -3,7 +3,7 @@
 Unofficial browser reimplementation of the 1996 PC game DeathDrome.
 The engine is written from scratch in JavaScript.
 
-**Play: https://megahertz.github.io/deathdrome-web/**
+**[Play in the browser](https://megahertz.github.io/deathdrome-web/)**
 
 ![Gameplay on a phone with touch controls](other/screenshot.jpg)
 
