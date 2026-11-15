@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-15",
+  "changes": [
+    "START GAME opens GO directly and resets the round to 1.",
+    "Back from GO returns directly to the main menu.",
+    "Renderer initialization and scene reset use black, matching the fading edges of original ceiling-light textures."
+  ],
+  "validation": {
+    "testsPassed": 397,
+    "browserDirectStart": true,
+    "browserBackToMain": true,
+    "fixedCameraComparison": [
+      "Previous tinted background shows black polygon boundaries.",
+      "Original black background merges with the existing texture falloff."
+    ],
+    "graphicsModes": [
+      "ORIGINAL",
+      "ENHANCED"
+    ],
+    "browserErrors": 0,
+    "rejectedRedesignFilesInDistribution": 0
+  },
+  "evidence": "private/verification/direct-start-sky/",
+  "diagnosticPage": "utils/browser/sky-check.html",
+  "discardedTest": "Rejected menu resources, unused modules and their tests were archived under private/verification/rejected-menu-redesign/ and excluded from the build."
+}
