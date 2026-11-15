@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-15",
+  "scope": "Full-window ENHANCED gameplay with proportional original HUD artwork; ORIGINAL and menus preserve 8:5.",
+  "validation": {
+    "javascriptTests": 395,
+    "publicationPythonTests": 6,
+    "syntheticMediaPassed": true,
+    "buildPassed": true,
+    "releaseCheckPassed": true,
+    "buildId": "d280d71e944be319",
+    "liveBrowser": {
+      "source": "local demo ZIP",
+      "enhancedViewports": [
+        [
+          1280,
+          720
+        ],
+        [
+          1720,
+          720
+        ],
+        [
+          844,
+          390
+        ]
+      ],
+      "stageFilledEachViewport": true,
+      "geometryAspectUnitChecks": true,
+      "pauseResizeAdaptation": true,
+      "hudAndNoticesRetainPixelArt": true,
+      "webGLErrors": 0,
+      "originalRestored": {
+        "viewport": [
+          844,
+          390
+        ],
+        "stage": [
+          624,
+          390
+        ],
+        "stageLeft": 110,
+        "worldCanvas": [
+          320,
+          200
+        ],
+        "hudCanvas": [
+          640,
+          400
+        ]
+      }
+    },
+    "touchFixture": {
+      "landscape": [
+        844,
+        390
+      ],
+      "topScale": 1.625,
+      "bottomScale": 1.5015625,
+      "controlClearancePixels": 4,
+      "portrait": [
+        390,
+        844
+      ],
+      "portraitDashboardRaisedAbovePads": true
+    },
+    "unitCoverage": [
+      "HUD aspect ratios and safe-area bounds",
+      "Touch control clearance and narrow-layout fallback",
+      "Rendering aspect and pixel budget",
+      "Uniform camera scale and playable-area framing",
+      "Reticle projection and clamping",
+      "Original message positions and timing"
+    ]
+  },
+  "evidence": "private/verification/responsive-viewport/",
+  "fixture": "utils/browser/responsive-hud-check.html",
+  "limits": [
+    "Physical-phone behavior and pointer-coarse emulation were not tested; touch clearance used an explicit development fixture.",
+    "Only the demo arena was visually checked; the shared projection and HUD code applies across arenas."
+  ]
+}

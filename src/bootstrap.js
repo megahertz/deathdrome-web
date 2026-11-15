@@ -23,7 +23,11 @@ async function launch(profile){
  const regions=await fetch(resourceURL('assets/region-data.json'));
  if(!regions.ok)throw Error('Could not load installed game regions');configureRegionData(await regions.json());
  window.deathdromeInstallation=profile;
- try{const game=await import('./game.js');await game.ready;loading.ready();renderProgress();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));panel.remove();document.documentElement.classList.remove('resource-loading')}catch(error){document.documentElement.classList.add('resource-loading');showError(Error('Could not start the game: '+error.message));throw error}
+ try{const game=await import('./game.js');await game.ready;loading.ready();renderProgress();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));panel.remove();document.documentElement.classList.remove('resource-loading');
+ // Hidden menu controls cannot receive focus while the loader is visible.
+ // Select START GAME after revealing the menu so the first Enter activates it.
+ document.querySelector('#menu button:not(:disabled)')?.focus({preventScroll:true});
+ }catch(error){document.documentElement.classList.add('resource-loading');showError(Error('Could not start the game: '+error.message));throw error}
 }
 async function install(bytes,source){
  phase('Checking the game image',{value:70});

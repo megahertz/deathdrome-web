@@ -1,5 +1,6 @@
 import {drawBitmapText,bitmapWidth} from './bitmap-ui.js';
 import {projectRadar} from './hud-radar.js';
+const HUD_FRAME_IMAGES=new Set(['hud_bot','hud_top','hud_t_l','hud_b_l','hud_t_r','hud_b_r','hud_rdr']);
 const icons={'Missile':'sm','Nitro Ram':'nr','ShockWave':'sw','Disruptor':'ds','Ion Sword':'is','NanoShield':'ns'};
 export const RUNNER_SHADES=['red','blue','yelo','whit','purp','gren','pink','orng'];
 // 417534 palette entries from RUN/domain.act.
@@ -26,7 +27,8 @@ export function hudCommands(sim,player){
  for(let i=0;i<6;i++)image('hudlcr_'+(i<sim.lives-1?'h':'l'),140+i*7,192);
  const time=Math.fround(Math.max(0,sim.time)),seconds=Math.trunc(time%60),remaining=Math.max(0,sim.requiredKills-r.kills);
  text(`${String(Math.trunc(time/60)).padStart(2,' ')}:${String(seconds).padStart(2,' ')}:${Math.trunc((time%1)*10)}`,97,5);
- text(remaining?(sim.scrubbing?'SCRUB':remaining===1?'1 KILL LEFT':`${remaining} KILLS LEFT`):'ADVANCE',159,5);text(sim.score,259,5);text(r.kills===1?'1 KILL':`${r.kills} KILLS`,266,19);text(Math.max(0,Math.trunc(r.health)),148,169);
+ text(remaining?(sim.scrubbing?'SCRUB':remaining===1?'1 KILL LEFT':`${remaining} KILLS LEFT`):'ADVANCE',159,5);text(sim.score,259,5);text(r.kills===1?'1 KILL':`${r.kills} KILLS`,266,19);
+ const health=String(Math.max(0,Math.trunc(r.health)));text(health,148,169);text('%',150+bitmapWidth(health,10)*.5,169);
  image('hud_pl_'+(r.selectedWeapon===0?'h':'l'),46,157);
  for(let i=0;i<3;i++){const weapon=r.weapons[i+1];image(weapon?'hud_'+icons[weapon]+'_'+(r.selectedWeapon===i+1?'h':'l'):'hud_wec',61+i*23,157)}
  image('hud_rdr',220,157);
@@ -36,13 +38,15 @@ export function hudCommands(sim,player){
  return commands;
 }
 export function inAreaCount(sim,player){const r=sim.runners[player];return sim.runners.filter(q=>q.id!==player&&!q.dead&&!q.inactive&&!q.respawn&&!q.escaped&&!q.opponentExit&&((q.zoneMask??-1)&(r.zoneMask??-1))).length}
-export function drawHud(ctx,sim,player,{picture,messages=[],now=0,warning=null,reticle=null}={}){
+export function drawHud(ctx,sim,player,{picture,messages=[],now=0,warning=null,reticle=null,frameOnly=false,layer='all'}={}){
  ctx.clearRect(0,0,320,200);ctx.imageSmoothingEnabled=false;
  for(const c of hudCommands(sim,player)){
-  if(c.kind==='image'){const im=picture('hud/big/'+c.name);if(im.complete&&im.naturalWidth)ctx.drawImage(im,c.x,c.y,im.naturalWidth/2,im.naturalHeight/2)}
+  const frame=c.kind==='image'&&HUD_FRAME_IMAGES.has(c.name);if(layer==='art'&&!frame||layer==='widgets'&&frame)continue;
+  if(c.kind==='image'){const im=picture('hud/big/'+c.name);if(im.complete&&im.naturalWidth){ctx.drawImage(im,c.x,c.y,im.naturalWidth/2,im.naturalHeight/2);if(c.name==='hud_bot'){ctx.fillStyle='#000';ctx.fillRect(164,168,8,8)}}}
   else if(c.kind==='rect'){ctx.fillStyle=c.color;ctx.fillRect(c.x,c.y,c.width,c.height)}
   else drawBitmapText(ctx,c.value,c.x,c.y,{color:c.color,scale:.5});
  }
+ if(layer==='art')return;
  const r=sim.runners[player];
  if(reticle){const im=picture('hud/big/reticle');if(im.complete&&im.naturalWidth)ctx.drawImage(im,reticle.x,reticle.y,reticle.width,reticle.height)}
  ctx.fillStyle='#000';ctx.fillRect(51,188,74,2);ctx.fillStyle=radarColors[player];ctx.fillRect(51,188,barrierGauge(sim.barrierTrails?.states[player]),2);
@@ -55,9 +59,13 @@ export function drawHud(ctx,sim,player,{picture,messages=[],now=0,warning=null,r
   if(edge<0)ctx.fillRect(x,y,.5,.5);
   else for(const [dx,dy] of edge===0?[[-1,-1],[-1,1]]:edge===1?[[1,-1],[1,1]]:edge===2?[[-1,-1],[1,-1]]:[[-1,1],[1,1]])radarLine(ctx,x,y,x+dx,y+dy);
  }
- notificationLayout(messages,now).forEach(m=>drawBitmapText(ctx,m.text,m.x,m.y,{color:m.color||'whit',scale:.5}));
- const centered=(s,y,color='whit',size=10,scale=.5)=>drawBitmapText(ctx,s,160-bitmapWidth(s,size)*scale/2,y,{size,color,scale});
+ if(!frameOnly)for(const c of hudScreenCommands(sim,player,{messages,now}))drawBitmapText(ctx,c.value,c.x,c.y,{size:c.size,color:c.color,scale:c.scale});
+}
+export function hudScreenCommands(sim,player,{messages=[],now=0}={}){
+ const r=sim.runners[player],commands=notificationLayout(messages,now).map(m=>({value:m.text,x:m.x,y:m.y,color:m.color||'whit',size:10,scale:.5}));
+ const centered=(value,y,color='whit',size=10,scale=.5)=>commands.push({value,x:160-bitmapWidth(value,size)*scale/2,y,color,size,scale});
  if(sim.entrance?.active&&sim.entrance.elapsed<4){centered(`ROUND ${sim.round}`,60);centered(`${sim.requiredKills} KILLS REQUIRED TO ESCAPE`,84)}
  if(sim.countdown>0&&sim.countdown<=3)centered(String(Math.ceil(sim.countdown)),90,'yelo',10,1);
  if(r.disrupted>0)centered('SYSTEM DISRUPTED',80,'red');
+ return commands;
 }

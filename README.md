@@ -1,7 +1,6 @@
 # deathdrome-web
 
-Unofficial browser reimplementation of the 1996 PC game DeathDrome.
-The engine is written from scratch in JavaScript.
+Unofficial JavaScript remake of the 1996 PC game DeathDrome, written from scratch.
 
 **[Play in the browser](https://megahertz.github.io/deathdrome-web/)**
 
@@ -9,81 +8,56 @@ The engine is written from scratch in JavaScript.
 
 ## Game files
 
-Original game data is not included. On first start, select one of:
-
-- the free demo ZIP (about 5 MB, one arena, no music);
-- a data-only ISO of the CD (about 26 MB, no music);
-- a ZIP with the full CD as BIN/CUE (with music).
-
-The file is unpacked in your browser and cached there. Nothing is uploaded.
-The demo is available on the Internet Archive.
+Original game data is not included. Choose or drop a demo ZIP, CD ISO, or ZIP
+containing a BIN/CUE disc. Files are unpacked and cached locally in your browser.
+The demo and data-only ISO have no music; use the full CD for music.
 
 ## Run
 
 Requires Python 3 and Node.js.
 
-```
+```sh
 npm start
 ```
 
-Open http://localhost:8080/. The server also prints a LAN address for phones.
+Open http://localhost:8080/. The server prints a LAN address for phone testing.
+It automatically loads `private/disc/Death-Drome_Win_EN.zip` if present.
+Use `?image=URL` for another source, or add `&nocache` to bypass cached disc data.
 
-To skip the file picker, put the full CD at `private/disc/Death-Drome_Win_EN.zip`.
-It loads automatically. Other files open by URL, for example
-`http://localhost:8080/?image=/private/disc/DDROME.zip`.
+## Controls
+
+Arrows / WASD: drive · Alt: fire · Shift: weapon · Space: jump · Ctrl: barrier ·
+Q: rear view · M: music · Esc: pause / back.
+
+Phones: left joystick and right action buttons; tap the top of the screen to pause.
 
 ## Graphics
 
-The second entry in Options is **GRAPHIC MODE**. Clicking it switches between
-**ORIGINAL** (the default) and **ENHANCED**; Enter, Space and the left/right
-arrow keys also switch the focused mode. The choice is saved in this browser.
-ENHANCED enables:
-
-- Linear/mipmap texture filtering and up to 8× anisotropic filtering.
-- Display-adapted 3D resolution, capped at 1920×1200, with up to 4× MSAA
-  according to GPU support.
-- Restrained selective bloom on weapons, shields, barriers and explosions.
-- Short colored lighting flashes from shots, hits and explosions.
-- Procedural contact shadows that follow floor slopes and fade during jumps.
-- Bounded sparks, destruction smoke and short projectile trails.
-- Subtle distance fog with a separate color/density profile for each arena.
-- Adaptive resolution: sustained slow frames reduce 3D resolution; sustained
-  fast frames restore it gradually. Paused scenes reuse their last frame.
-
-Runner previews use enhanced rendering too. Bitmap menus and the HUD remain
-pixel-sharp. The setting is saved in this browser and applies immediately;
-turning it off restores the original 320×200 view and nearest-neighbor textures.
-These additions are visual only: they use an independent particle RNG and do
-not alter simulation state. No replacement models or textures are bundled.
-
-The development-only `enhanced-effects-check.html` page provides an authored
-synthetic scene for checking bloom, flashes, jump shadows and resolution
-adaptation. Physical-phone performance still needs device testing.
+**Options → GRAPHIC MODE**: **ORIGINAL** (default) or **ENHANCED**.
+Enhanced adds full-window gameplay, an adaptive HUD, texture filtering,
+antialiasing, bloom, lighting, shadows, particles and fog.
 
 ## Build
 
-```
+```sh
 npm run build
 npm run check:dist
 ```
 
+Publish `dist/`.
+
 ## Layout
 
-- `src/` — engine and loader code.
-- `public/` — static files published as is.
-- `utils/` — dev server, build, importer and tests.
-- `private/` — local original media, never committed.
-- `dist/` — build output, never committed.
+- `src/` — engine and loader.
+- `public/` — publishable static files.
+- `utils/` — development tools and tests (`npm test`).
+- `private/` — original media and reference files; ignored by Git.
+- `dist/` — generated build; ignored by Git.
 
 ## License
 
-Code is MIT, see [LICENSE](LICENSE). Third-party code keeps its own license:
+Code: [MIT](LICENSE). Dependencies: three.js (MIT), Pyodide (MPL-2.0),
+Python (PSF), unshieldv3 (Apache-2.0).
 
-- three.js — MIT
-- Pyodide — MPL-2.0, with Python under the PSF license
-- unshieldv3 — Apache-2.0
-
-## Legal
-
-This is a fan project. It is not affiliated with or endorsed by the owners of DeathDrome.
-DeathDrome is © 1996 Viacom International Inc. The repository contains no original game data.
+Fan project, not affiliated with the owners of DeathDrome.
+DeathDrome © 1996 Viacom International Inc.

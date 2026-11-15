@@ -104,7 +104,7 @@ if(enhancedEffects){for(int i=0;i<4;i++){float falloff=max(0.0,1.0-distance(enha
  render(scene,camera){
   if(this.view.hud){const [color,density]=FOG_PROFILES[(this.view.enhancedArena||1)-1]||FOG_PROFILES[0];if(this.fogArena!==this.view.enhancedArena){this.fog=new THREE.FogExp2(color,density);this.fogArena=this.view.enhancedArena}scene.fog=this.fog}else scene.fog=null;
   scene.traverse(node=>{for(const material of Array.isArray(node.material)?node.material:node.material?[node.material]:[])this.decorate(material)});
-  this.particleMaterial.uniforms.viewportHeight.value=(this.view.hud?138:200)*this.view.renderScale;
+  this.particleMaterial.uniforms.viewportHeight.value=this.view.responsiveViewport?this.view.renderHeight:(this.view.hud?138:200)*this.view.renderScale;
   this.pipeline??=new EnhancedPipeline(this.view.renderer);this.pipeline.render(scene,camera);this.frameScale=this.view.renderScale;
   const canvas=this.view.renderer.domElement;canvas.dataset.enhancedParticles=String(this.particles.items.length);canvas.dataset.enhancedShadows=String([...this.shadows.values()].filter(s=>s.visible).length);canvas.dataset.enhancedFlashes=String(this.flashes.length);canvas.dataset.enhancedFlashTotal=String(this.flashTotal);canvas.dataset.enhancedFog=String(!!scene.fog);canvas.dataset.adaptiveScale=String(this.view.renderScale);
  }

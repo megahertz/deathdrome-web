@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-15",
+  "scope": "Segmented, edge-to-edge ENHANCED HUD matching the supplied wide-screen reference.",
+  "reference": "/home/megahertz/Desktop/deathdrome.png",
+  "implementation": {
+    "stretch": "Only empty horizontal chrome and glass strips expand.",
+    "fixedInstruments": [
+      "weapons",
+      "clock",
+      "health digits and percent sign",
+      "life credits",
+      "score and kills",
+      "opponent health and radar"
+    ],
+    "warning": "Centered in the expanded lower trough.",
+    "originalMode": "Original 320x200 logical HUD layout preserved."
+  },
+  "validation": {
+    "javascriptTests": 397,
+    "publicationPythonTests": 6,
+    "syntheticMediaPassed": true,
+    "buildPassed": true,
+    "releaseCheckPassed": true,
+    "buildId": "e7e08193b525ccee",
+    "liveBrowser": {
+      "source": "local demo ZIP",
+      "viewport": [
+        1846,
+        918
+      ],
+      "stage": [
+        1846,
+        918
+      ],
+      "hudLayout": "responsive",
+      "hudStretch": "segmented",
+      "instrumentScale": 3.5,
+      "consoleErrors": 0,
+      "defaultOriginalPreferenceRestored": true
+    },
+    "fixture": "utils/browser/responsive-hud-check.html",
+    "unitCoverage": [
+      "Continuous full-width background slices",
+      "Uniform instrument scale and left/right anchors",
+      "Centered warning anchor",
+      "Safe-area bounds and touch-control clearance"
+    ]
+  },
+  "evidence": "private/verification/hud-stretch/",
+  "limits": [
+    "Physical phone not tested; touch clearance is covered by layout tests and the development fixture.",
+    "Visual gameplay check used the demo arena."
+  ]
+}

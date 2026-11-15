@@ -42,7 +42,7 @@ export class EnhancedPipeline{
    let glow=false;for(let parent=node;parent;parent=parent.parent)if(parent.userData.enhancedGlow){glow=true;break}
    if(!glow){const original=node.material;node.material=Array.isArray(original)?original.map(m=>this.blackMaterial(m)):this.blackMaterial(original);restore.push(()=>node.material=original)}
   });
-  this.glowTarget.viewport.copy(viewport).multiplyScalar(.25);this.renderer.setRenderTarget(this.glowTarget);
+  this.glowTarget.viewport.set(viewport.x*this.glowWidth/this.width,viewport.y*this.glowHeight/this.height,viewport.z*this.glowWidth/this.width,viewport.w*this.glowHeight/this.height);this.renderer.setRenderTarget(this.glowTarget);
   try{this.renderer.clear();this.renderer.render(scene,camera)}finally{for(const undo of restore)undo();scene.background=background;scene.fog=fog}
  }
  post(target,material){this.quad.material=material;this.renderer.setRenderTarget(target);this.renderer.render(this.postScene,this.postCamera)}

@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-15",
+  "scope": "Remove neighboring glyph-row bleed from bitmap text at fractional destination positions and scales.",
+  "reference": "/home/megahertz/Desktop/Screenshot_20261115_181336.png",
+  "fixture": "utils/browser/bitmap-glyph-check.html",
+  "comparison": "Production 10x white font against independently cropped glyph canvases, same text placement and nearest-neighbor scaling.",
+  "beforeDifferingPixels": [
+    0,
+    205,
+    225,
+    372,
+    0,
+    0
+  ],
+  "afterDifferingPixels": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "javascriptTests": 397,
+  "buildId": "c2375ef8860046cd",
+  "releaseCheckPassed": true,
+  "liveBrowser": {
+    "viewport": [
+      1280,
+      720
+    ],
+    "mode": "ENHANCED",
+    "round1TextVisuallyChecked": true,
+    "consoleErrors": 0,
+    "originalPreferenceRestored": true
+  },
+  "evidence": "private/verification/bitmap-glyphs/"
+}
