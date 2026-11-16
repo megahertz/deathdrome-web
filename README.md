@@ -1,11 +1,10 @@
 # deathdrome-web
 
-Unofficial TypeScript remake of the 1996 PC game DeathDrome, written from
-scratch.
+Fan-made TypeScript remake of the 1996 PC game DeathDrome, written from scratch.
 
 **[Play in the browser](https://megahertz.github.io/deathdrome-web/)**
 
-![Gameplay on a phone with touch controls](other/screenshot.jpg)
+[![Watch DeathDrome gameplay on YouTube](other/screenshot.jpg)](https://www.youtube.com/watch?v=PAXnWppFAmY)
 
 ## Game files
 
