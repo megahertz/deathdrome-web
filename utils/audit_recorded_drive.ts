@@ -10,9 +10,10 @@ import { RecordedDemo } from '../src/recorded-demo.ts';
 import { DYNAMICS } from '../src/simulation.ts';
 const root = new URL('../', import.meta.url),
   manifest = JSON.parse(
-    (
-      await readFile(new URL('private/assets/recordings/manifest.json', root))
-    ).toString(),
+    await readFile(
+      new URL('private/assets/recordings/manifest.json', root),
+      'utf8',
+    ),
   );
 const reports = [];
 for (const entry of manifest) {
@@ -106,7 +107,7 @@ for (const entry of manifest) {
   const summary = (key: string) => {
     const xs = samples
       .map((s) => s[key as keyof typeof s])
-      .sort((a, b) => a - b);
+      .toSorted((a, b) => a - b);
     return {
       mean: xs.reduce((s, x) => s + x, 0) / xs.length,
       median: xs[Math.floor(xs.length * 0.5)],
@@ -121,7 +122,7 @@ for (const entry of manifest) {
     speedUnitsPerSecond: summary('speedError'),
     horizontalPositionUnits: summary('horizontalPositionError'),
     largestTurnDifferences: [...samples]
-      .sort((a, b) => b.turnError - a.turnError)
+      .toSorted((a, b) => b.turnError - a.turnError)
       .slice(0, 5),
   });
 }

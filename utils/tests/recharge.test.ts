@@ -6,11 +6,10 @@ import { RechargeOrbs } from '../../src/recharge.ts';
 import { Simulation } from '../../src/simulation.ts';
 
 const paths = JSON.parse(
-  (
-    await readFile(
-      new URL('../../private/assets/recharge-paths.json', import.meta.url),
-    )
-  ).toString(),
+  await readFile(
+    new URL('../../private/assets/recharge-paths.json', import.meta.url),
+    'utf8',
+  ),
 );
 test('all 32 original recharge routes decode and their round tables match the executable', async () => {
   const exe = await readFile(
@@ -22,11 +21,11 @@ test('all 32 original recharge routes decode and their round tables match the ex
     for (const path of paths[a]) {
       assert.ok(path.length >= 4);
       for (const v of path) {
-        assert.ok(v.every(Number.isFinite));
+        assert.ok(v.every((itemValue: unknown) => Number.isFinite(itemValue)));
       }
     }
     for (let r = 0; r < 3; r++) {
-      const offset = 0x48f62c - 0x480000 + 0x68e00 + (a * 3 + r) * 8;
+      const offset = 0x48_f6_2c - 0x48_00_00 + 0x6_8e_00 + (a * 3 + r) * 8;
       assert.deepEqual(GAME_TABLES.recharge.rounds[a][r], {
         count: exe.readUInt32LE(offset),
         speed: exe.readFloatLE(offset + 4),

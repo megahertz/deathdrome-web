@@ -75,25 +75,24 @@ function links(sim: Simulation, node: PathNode) {
   return node.links
     .filter((id) => id >= 0)
     .map((id) => sim.paths.find((n) => n.id === id))
-    .filter((n): n is PathNode => n != null);
+    .filter((n): n is PathNode => n !== null && n !== undefined);
 }
 // Both native pools contain 512 slots. Loaded graph nodes and their directed
 // edges consume slots before 42c6d0 allocates any temporary route nodes.
 function routePool(sim: Simulation) {
-  return (sim.aiNavigationPool ??= {
-    nodes: Array<import('./game-types.ts').PathNode | null>(
-      AI_NAVIGATION.nodeCapacity,
-    ).fill(null),
+  sim.aiNavigationPool ??= {
+    nodes: Array.from({ length: AI_NAVIGATION.nodeCapacity }, () => null),
     segments: new Set<number>(),
     graphNodes: sim.paths.length,
     graphSegments: sim.paths.reduce(
       (n, p) => n + p.links.filter((id) => id >= 0).length,
       0,
     ),
-  });
+  };
+  return sim.aiNavigationPool;
 }
 function nodeAt(sim: Simulation, id: number | null | undefined) {
-  return id != null && id < 0
+  return id !== null && id !== undefined && id < 0
     ? routePool(sim).nodes[-id - 1]
     : sim.paths.find((n) => n.id === id);
 }
@@ -109,7 +108,7 @@ function chain(
   const result = [];
   let id = r.navigation?.segment.startNode;
   const seen = new Set();
-  while (id != null && id < 0 && !seen.has(id)) {
+  while (id !== null && id !== undefined && id < 0 && !seen.has(id)) {
     seen.add(id);
     const node = nodeAt(sim, id);
     if (!node) {
@@ -151,7 +150,9 @@ export function routePoolState(sim: Simulation) {
   return {
     graphNodes: p.graphNodes,
     graphSegments: p.graphSegments,
-    temporaryNodes: p.nodes.filter((n): n is PathNode => n != null).length,
+    temporaryNodes: p.nodes.filter(
+      (n): n is PathNode => n !== null && n !== undefined,
+    ).length,
     temporarySegments: p.segments.size,
     nodeCapacity: AI_NAVIGATION.nodeCapacity,
     segmentCapacity: AI_NAVIGATION.segmentCapacity,
@@ -177,7 +178,7 @@ export function pushRouteNode(
   }
   const pool = routePool(sim),
     slot = pool.nodes.findIndex((n, i) => i >= pool.graphNodes && n === null);
-  if (slot < 0) {
+  if (slot === -1) {
     return false;
   }
   let segmentSlot = pool.graphSegments;
@@ -216,17 +217,19 @@ function assignRoute(
   forcedRoute: number | null | undefined,
 ) {
   const counts = sim.aiRouteCounts;
-  if (previous?.routeIndex != null) {
+  if (previous?.routeIndex !== null && previous?.routeIndex !== undefined) {
     counts[previous.routeIndex]--;
   }
   if (forcedRoute !== undefined) {
-    if (forcedRoute != null) {
+    if (forcedRoute !== null && forcedRoute !== undefined) {
       counts[forcedRoute]++;
     }
     return {
       routeIndex: forcedRoute,
       goalColor:
-        forcedRoute == null ? 0 : AI_NAVIGATION.routeColors[forcedRoute],
+        forcedRoute === null || forcedRoute === undefined
+          ? 0
+          : AI_NAVIGATION.routeColors[forcedRoute],
     };
   }
   for (let i = 0; i < 5; i++) {
@@ -264,7 +267,7 @@ export function resetNavigation(
   }
   clearRouteNodes(sim, r);
   const route = assignRoute(sim, r.navigation, routeIndex);
-  if (goalColor != null) {
+  if (goalColor !== null && goalColor !== undefined) {
     route.goalColor = goalColor;
   }
   r.navigation = {
@@ -296,7 +299,7 @@ export function chooseRouteLink(
 ) {
   const options = links(sim, node),
     nav = r.navigation!;
-  if (!options.length) {
+  if (options.length === 0) {
     return null;
   }
   if (connector && node.color === AI_NAVIGATION.centralColor) {
@@ -360,7 +363,8 @@ export function beginRouteRecovery(
         { ...point(n), y: n.position[1] + 1 },
       );
     const chosen =
-      current != null &&
+      current !== null &&
+      current !== undefined &&
       current.id >= 0 &&
       (sim.paths.find((n) => n.color === current.color && visible(n)) ||
         sim.paths.find(
@@ -484,18 +488,9 @@ export function stepNavigation(
     return rates;
   }
   const contact = r.aiContact || { clear: false };
-  if (!contact.clear) {
-    if (contact.wall) {
-      beginRouteRecovery(sim, r, { normal: contact.wall, obstacle: true });
-      return heldAIRates(r);
-    }
-    if (contact.runner != null) {
-      avoidRunner(sim, r);
-      return heldAIRates(r);
-    }
-  } else {
+  if (contact.clear) {
     const hits = probeAIForward(sim, r);
-    if (hits.length) {
+    if (hits.length > 0) {
       const level =
         GAME_TABLES.ai.levels[
           GAME_TABLES.ai.aggression[sim.arena - 1][sim.round - 1]
@@ -509,6 +504,15 @@ export function stepNavigation(
       ) {
         requestAIBarrierJump(sim, r);
       }
+      return heldAIRates(r);
+    }
+  } else {
+    if (contact.wall) {
+      beginRouteRecovery(sim, r, { normal: contact.wall, obstacle: true });
+      return heldAIRates(r);
+    }
+    if (contact.runner !== null && contact.runner !== undefined) {
+      avoidRunner(sim, r);
       return heldAIRates(r);
     }
   }

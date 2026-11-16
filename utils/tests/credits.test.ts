@@ -3,17 +3,16 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { CreditsSequence } from '../../src/credits.ts';
 const data = JSON.parse(
-  (
-    await readFile(
-      new URL('../../private/assets/credits.json', import.meta.url),
-    )
-  ).toString(),
+  await readFile(
+    new URL('../../private/assets/credits.json', import.meta.url),
+    'utf8',
+  ),
 );
 test('the complete credits queue preserves original strings, fonts and row spacing', async () => {
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    offset = (va: string) => parseInt(va, 16) - 0x480000 + 0x68e00;
+    offset = (va: string) => Number.parseInt(va, 16) - 0x48_00_00 + 0x6_8e_00;
   assert.equal(data.rows.length, 123);
   assert.equal(data.rows.filter((r: { text: any }) => r.text).length, 69);
   let y = 240;

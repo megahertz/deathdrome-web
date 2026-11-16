@@ -1,13 +1,10 @@
 import { GAME_TABLES } from './game-tables.ts';
 import type { Runner, Weapon, WeaponName } from './game-types.ts';
 export const WEAPON_IDS = GAME_TABLES.combat.weaponIds;
-export const WEAPON_NAMES = Object.entries(WEAPON_IDS).reduce<Weapon[]>(
-  (a, [name, id]) => (
-    (a[id] = name === 'Laser' ? null : (name as WeaponName)),
-    a
-  ),
-  [],
-);
+export const WEAPON_NAMES: Weapon[] = [];
+for (const [name, id] of Object.entries(WEAPON_IDS)) {
+  WEAPON_NAMES[id] = name === 'Laser' ? null : (name as WeaponName);
+}
 export const weaponCode = (name: Weapon) => WEAPON_IDS[name ?? 'Laser'];
 // The executable stores four cells independently of the active item count.
 // Reads by 42db7c include cells beyond that count; do not clear them on removal.

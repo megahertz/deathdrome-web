@@ -81,17 +81,17 @@ export function applyDriveControls(
     if (r.actionMode !== 5) {
       if (control.brake) {
         acceleration = 0;
-        [, , brake] = dynamics.brakes;
+        brake = dynamics.brakes.at(2)!;
       } else if (throttle < 0 && r.nitro <= 0) {
         if (f(r.speed) < 10) {
           acceleration = f(acceleration - dynamics.accelerationStep);
         } else {
           acceleration = 0;
-          [, , brake] = dynamics.brakes;
+          brake = dynamics.brakes.at(2)!;
         }
       } else if (throttle > 0 && f(r.speed) <= -10) {
         acceleration = 0;
-        [, , brake] = dynamics.brakes;
+        brake = dynamics.brakes.at(2)!;
       } else {
         acceleration =
           throttle > 0 ? f(acceleration + dynamics.accelerationStep) : 0;

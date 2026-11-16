@@ -25,7 +25,9 @@ function fixture(f: {
   sim.ai = () => ({});
   sim.projectileContact = () => {};
   sim.population.nextInactive = () => null;
-  sim.runners.forEach((actor) => (actor.dead = Infinity));
+  for (const actor of sim.runners) {
+    actor.dead = Infinity;
+  }
   for (let i = 0; i < 2; i++) {
     Object.assign(sim.runners[i], {
       dead: 0,
@@ -83,7 +85,7 @@ function fixture(f: {
       .length,
     slots: sim.projectiles
       .filter((p) => p.owner === subject && p.life > 0)
-      .sort((a, b) => a.slot! - b.slot!)
+      .toSorted((a, b) => a.slot! - b.slot!)
       .map((p) => ({
         slot: p.slot,
         kind: p.weaponId,
@@ -109,12 +111,12 @@ test('exit eligibility/entry and final primary pass match 288 original actor cal
       )
       .toString(),
   );
-  a.fixtures.forEach((f: { dt: number }, i: number) => {
+  for (const [i, f] of a.fixtures.entries()) {
     const { sim, snapshot } = fixture(f),
       before = snapshot();
     sim.step(f.dt);
     assert.deepEqual({ before, after: snapshot() }, a.native[i]);
-  });
+  }
 });
 test('the exit actor can consume and initialize a last missile, which then remains frozen', () => {
   const f = {
@@ -150,7 +152,9 @@ test('disabled AI controls damp stored motion and block new weapons until restor
     wallContact: () => null,
   });
   s.countdown = 0;
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[1];
   Object.assign(r, {
     dead: 0,

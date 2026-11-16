@@ -143,16 +143,17 @@ export class TouchControls {
       glyph.setAttribute('aria-hidden', 'true');
       glyphTasks.push(
         new Promise<void>((resolve, reject) => {
-          source.onload = () => {
+          source.addEventListener('load', () => {
             try {
               paintTransparentTouchIcon(glyph, source, name);
               resolve();
             } catch (error) {
               reject(error);
             }
-          };
-          source.onerror = () =>
-            reject(Error('Could not load touch-control artwork'));
+          });
+          source.addEventListener('error', () =>
+            reject(new Error('Could not load touch-control artwork')),
+          );
         }),
       );
       source.src = new URL(glyphs[name], import.meta.url).href;
@@ -307,10 +308,10 @@ export class TouchControls {
     this.mode = mode;
     this.input.enabled = mode === 'playing' && this.media.matches;
     this.root.hidden = !this.input.enabled;
-    if (!this.input.enabled) {
-      this.reset();
-    } else {
+    if (this.input.enabled) {
       this.measure();
+    } else {
+      this.reset();
     }
   }
   reset(options: { keyboard?: boolean } | undefined = {}) {

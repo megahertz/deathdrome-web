@@ -1,102 +1,63 @@
-import {
-  mkdir,
-  readFile,
-  readdir,
-  rename,
-  writeFile,
-  rm,
-} from 'node:fs/promises';
-import { dirname, join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { build } from 'tsdown';
+import { browserBundles, ENGINE_ENTRIES } from '../tsdown.config.ts';
+import { ROOT, isWithin } from './project.ts';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
-const output = join(root, '.build');
-
-async function sources(
-  directory: string,
-  extension = '.ts',
-): Promise<string[]> {
-  const entries = await readdir(directory, { withFileTypes: true }).catch(
-    (error: NodeJS.ErrnoException) => {
-      if (error.code === 'ENOENT') {
-        return [];
+export async function compileProject(root = ROOT, entries = ENGINE_ENTRIES) {
+  const output = join(root, '.build');
+  const staging = join(output, `staging-${process.pid}`);
+  await mkdir(output, { recursive: true });
+  try {
+    const configs = await browserBundles(root, staging, entries);
+    const results = await Promise.allSettled(
+      configs.map((config) => build({ ...config, config: false })),
+    );
+    const failed = results.find((result) => result.status === 'rejected');
+    if (failed?.status === 'rejected') {
+      throw failed.reason;
+    }
+    const handles = results.map((result) => {
+      if (result.status === 'rejected') {
+        throw result.reason;
       }
-      throw error;
-    },
-  );
-  const groups = await Promise.all(
-    entries.map(async (entry) => {
-      const path = join(directory, entry.name);
-      if (entry.isDirectory()) {
-        return sources(path, extension);
-      }
-      return entry.isFile() &&
-        path.endsWith(extension) &&
-        !path.endsWith('.d.ts')
-        ? [path]
-        : [];
-    }),
-  );
-  return groups.flat();
-}
-
-const directories = ['src', 'utils/browser'];
-const expected = new Set<string>();
-await Promise.all(
-  directories.map(async (directory) => {
-    const paths = await sources(join(root, directory));
+      return result.value;
+    });
+    const modules = handles[0].bundles.flatMap((bundle) =>
+      bundle.chunks.flatMap((chunk) =>
+        chunk.type === 'chunk' ? Object.keys(chunk.modules) : [],
+      ),
+    );
+    if (modules.some((path) => isWithin(join(root, 'private'), path))) {
+      throw new Error(
+        'Files from private/ must be loaded at runtime, never bundled',
+      );
+    }
+    const engine = handles[0].bundles
+      .flatMap((bundle) => bundle.chunks.map((chunk) => chunk.fileName))
+      .toSorted();
+    // Replace the generated inventory only after every bundle succeeds. Deleted
+    // entries and obsolete hashed chunks cannot remain available from the server.
     await Promise.all(
-      paths.map(async (path) => {
-        const source = await readFile(path, 'utf8');
-        const result = ts.transpileModule(source, {
-          fileName: path,
-          reportDiagnostics: true,
-          compilerOptions: {
-            target: ts.ScriptTarget.ES2024,
-            module: ts.ModuleKind.ESNext,
-            rewriteRelativeImportExtensions: true,
-          },
-        });
-        const errors =
-          result.diagnostics?.filter(
-            (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
-          ) ?? [];
-        if (errors.length) {
-          throw new Error(
-            ts.formatDiagnosticsWithColorAndContext(errors, {
-              getCurrentDirectory: () => root,
-              getCanonicalFileName: (name) => name,
-              getNewLine: () => '\n',
-            }),
-          );
+      ['src', 'utils/browser'].map(async (name) => {
+        const destination = join(output, name);
+        await rm(destination, { recursive: true, force: true });
+        await mkdir(join(staging, name), { recursive: true });
+        if (name.includes('/')) {
+          await mkdir(join(output, 'utils'), { recursive: true });
         }
-        const target = join(
-          output,
-          relative(root, path).replace(/\.ts$/, '.js'),
-        );
-        expected.add(target);
-        await mkdir(dirname(target), { recursive: true });
-        const temporary = `${target}.${process.pid}.tmp`;
-        await writeFile(
-          temporary,
-          directory === 'utils/browser'
-            ? result.outputText.replaceAll('../../src/', './')
-            : result.outputText,
-        );
-        await rename(temporary, target);
+        await rename(join(staging, name), destination);
       }),
     );
-  }),
-);
-
-// A removed source must stop being served, including after a rename. Only
-// reconcile generated JS after every current source compiled successfully.
-await Promise.all(
-  directories.map(async (directory) => {
-    const generated = await sources(join(output, directory), '.js');
-    await Promise.all(
-      generated.filter((path) => !expected.has(path)).map((path) => rm(path)),
+    await writeFile(
+      join(output, 'engine-files.json'),
+      `${JSON.stringify(engine)}\n`,
     );
-  }),
-);
+  } finally {
+    await rm(staging, { recursive: true, force: true });
+  }
+}
+
+if (import.meta.main) {
+  await compileProject();
+}

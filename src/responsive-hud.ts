@@ -37,10 +37,10 @@ export class ResponsiveHud {
     return responsiveHudLayout(rect.width, rect.height, {
       touch,
       safe: {
-        left: parseFloat(style.paddingLeft),
-        right: parseFloat(style.paddingRight),
-        top: parseFloat(style.paddingTop),
-        bottom: parseFloat(style.paddingBottom),
+        left: Number.parseFloat(style.paddingLeft),
+        right: Number.parseFloat(style.paddingRight),
+        top: Number.parseFloat(style.paddingTop),
+        bottom: Number.parseFloat(style.paddingBottom),
       },
     });
   }

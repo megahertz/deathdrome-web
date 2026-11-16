@@ -116,7 +116,7 @@ export function stepIon(
     r.ionTarget = null;
     return;
   }
-  if (r.ionTarget == null) {
+  if (r.ionTarget === null || r.ionTarget === undefined) {
     r.ionTarget = acquireIonTarget(sim, r);
   }
   const q = sim.runners[r.ionTarget!];

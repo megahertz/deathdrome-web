@@ -111,7 +111,7 @@ export class AudioDirector {
     effect.baseVolume = volume;
     effect.volume = (volume * this.options.sfxVolume) / 9;
     this.effects.add(effect);
-    effect.onended = () => this.effects.delete(effect);
+    effect.addEventListener('ended', () => this.effects.delete(effect));
     effect.play().catch(() => this.effects.delete(effect));
     this.onChange({ sound: name });
     return effect;
@@ -129,12 +129,14 @@ export class AudioDirector {
       this.music = this.createAudio(source);
       this.music.loop = true;
       const { music } = this;
-      music.onloadedmetadata = () =>
+      music.addEventListener('loadedmetadata', () =>
         this.onChange({
           music: { track, source, duration: music.duration, ready: true },
-        });
-      music.onerror = () =>
-        this.onChange({ music: { track, source, ready: false } });
+        }),
+      );
+      music.addEventListener('error', () =>
+        this.onChange({ music: { track, source, ready: false } }),
+      );
     }
     this.apply();
   }

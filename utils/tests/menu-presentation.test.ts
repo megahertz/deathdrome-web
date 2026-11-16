@@ -24,7 +24,7 @@ function audioFixture() {
     cloneNode(): /*elided*/ any;
   }[] = [];
   const createAudio = (src: any) => {
-    const a = {
+    const a = Object.assign(new EventTarget(), {
       src,
       paused: true,
       volume: 1,
@@ -40,7 +40,7 @@ function audioFixture() {
       cloneNode() {
         return createAudio(src);
       },
-    };
+    });
     instances.push(a);
     return a;
   };
@@ -86,7 +86,8 @@ test('muting updates already playing effects, volumes persist independently and 
   assert.equal(a.options.musicEnabled, true);
   assert.equal(readOptions(null).detail, 9);
   assert.equal(
-    readOptions({ detail: 100, brightness: -5, musicVolume: NaN }).detail,
+    readOptions({ detail: 100, brightness: -5, musicVolume: Number.NaN })
+      .detail,
     9,
   );
   assert.equal(readOptions({ brightness: -5 }).brightness, 0);
@@ -229,14 +230,13 @@ test('enhancer carrier faces the viewer from all directions, including a nearby 
 });
 test('health bar endpoints match the original x87 conversion at full, partial and near-zero health', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/opponent-health-bars-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/opponent-health-bars-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   for (const sample of audit.samples) {
     assert.deepEqual(
@@ -251,7 +251,7 @@ test('menu movement and entry resolve their original menu bank IDs, independentl
     new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
   );
   const sourceName = (base: number, id: number) => {
-    const offset = base - 0x480000 + 0x68e00 + 64 * id + 4,
+    const offset = base - 0x48_00_00 + 0x6_8e_00 + 64 * id + 4,
       end = bytes.indexOf(0, offset);
     return bytes
       .subarray(offset, end)
@@ -260,11 +260,11 @@ test('menu movement and entry resolve their original menu bank IDs, independentl
       .at(-1)!
       .replace('.wav', '');
   };
-  assert.equal(MENU_SOUNDS.enter, sourceName(0x48d2d8, 0));
-  assert.equal(MENU_SOUNDS.move, sourceName(0x48d2d8, 3));
-  assert.equal(MENU_SOUNDS.back, sourceName(0x48d2d8, 2));
-  assert.equal(sourceName(0x48bfd8, 11), 'pla_hit');
-  assert.equal(sourceName(0x48bfd8, 32), 'low_end');
+  assert.equal(MENU_SOUNDS.enter, sourceName(0x48_d2_d8, 0));
+  assert.equal(MENU_SOUNDS.move, sourceName(0x48_d2_d8, 3));
+  assert.equal(MENU_SOUNDS.back, sourceName(0x48_d2_d8, 2));
+  assert.equal(sourceName(0x48_bf_d8, 11), 'pla_hit');
+  assert.equal(sourceName(0x48_bf_d8, 32), 'low_end');
 });
 test('menu border uses the original five-pixel strips and four corners around the expanding centre', () => {
   const draws: {

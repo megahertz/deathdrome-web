@@ -16,7 +16,9 @@ export function boxCorners(min: number[], max: number[]) {
   ].map((p) => p.map((v, i) => f((v ? max : min)[i])));
 }
 export function prepareBox(corners: number[][]) {
-  const vertices = corners.map((v: number[]) => v.map(f));
+  const vertices = corners.map((v: number[]) =>
+    v.map((itemValue) => f(itemValue)),
+  );
   return {
     vertices,
     min: axes.map((_, i) => Math.min(...vertices.map((p: any[]) => p[i]))),

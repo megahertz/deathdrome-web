@@ -2,7 +2,7 @@ import { configs, defineConfig } from '@megahertz/oxconfig/oxlint';
 
 export default defineConfig({
   ignorePatterns: [
-    'public/**',
+    'public/vendor/**',
     'private/**',
     'dist/**',
     '.build/**',
@@ -10,29 +10,24 @@ export default defineConfig({
     'utils/unshieldv3-master/**',
     '.agents/**',
     '.codex/**',
-    '.aws/**',
     '.claude/**',
-    '.idea/**',
   ],
   overrides: [
     configs.base,
+    configs.strict,
+    configs.unicorn,
     configs.ts,
-    { ...configs.browser, files: ['src/**/*.ts', 'utils/browser/**/*.ts'] },
+    { files: ['src/**/*.ts', 'utils/browser/**/*.ts'], ...configs.browser },
+    { files: ['utils/**/*.ts'], ...configs.node },
     {
-      ...configs.node,
-      files: [
-        'utils/*.ts',
-        'utils/tests/**/*.ts',
-        'utils/experimental/**/*.ts',
-        '*.config.ts',
-      ],
-    },
-    {
-      files: ['src/**/*.ts', 'utils/**/*.ts'],
       rules: {
-        // Native packed flags, x87-compatible shifts and raster addressing.
         'no-bitwise': 'off',
         'no-plusplus': 'off',
+        'no-param-reassign': ['error', { props: false }],
+        'unicorn/no-null': 'off',
+        'unicorn/number-literal-case': 'off',
+        'unicorn/prefer-math-trunc': 'off',
+        'unicorn/prefer-modern-math-apis': 'off',
       },
     },
   ],

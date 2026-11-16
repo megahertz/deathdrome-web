@@ -42,33 +42,39 @@ async function install(name: string) {
     state.textContent = JSON.stringify({ error: errorMessage(error) });
   }
 }
-document.querySelector<HTMLButtonElement>('#install-a')!.onclick = () =>
-  install('A');
-document.querySelector<HTMLButtonElement>('#install-b')!.onclick = () =>
-  install('B');
-document.querySelector<HTMLButtonElement>('#read')!.onclick = async () => {
-  try {
-    const r = await fetch('assets/probe.json');
-    state.textContent = JSON.stringify({
-      expected: selected,
-      actual: await r.json(),
-      status: r.status,
-    });
-  } catch (error) {
-    state.textContent = JSON.stringify({ error: errorMessage(error) });
-  }
-};
+document
+  .querySelector<HTMLButtonElement>('#install-a')!
+  .addEventListener('click', () => install('A'));
+document
+  .querySelector<HTMLButtonElement>('#install-b')!
+  .addEventListener('click', () => install('B'));
+document
+  .querySelector<HTMLButtonElement>('#read')!
+  .addEventListener('click', async () => {
+    try {
+      const r = await fetch('assets/probe.json');
+      state.textContent = JSON.stringify({
+        expected: selected,
+        actual: await r.json(),
+        status: r.status,
+      });
+    } catch (error) {
+      state.textContent = JSON.stringify({ error: errorMessage(error) });
+    }
+  });
 
-document.querySelector<HTMLButtonElement>('#cache')!.onclick = async () => {
-  const db = await openResourceDB();
-  try {
-    const keys = await new Promise((resolve, reject) => {
-      const r = db.transaction('files').objectStore('files').getAllKeys();
-      r.onsuccess = () => resolve(r.result);
-      r.onerror = () => reject(r.error);
-    });
-    state.textContent = JSON.stringify({ keys });
-  } finally {
-    db.close();
-  }
-};
+document
+  .querySelector<HTMLButtonElement>('#cache')!
+  .addEventListener('click', async () => {
+    const db = await openResourceDB();
+    try {
+      const keys = await new Promise((resolve, reject) => {
+        const r = db.transaction('files').objectStore('files').getAllKeys();
+        r.addEventListener('success', () => resolve(r.result));
+        r.addEventListener('error', () => reject(r.error));
+      });
+      state.textContent = JSON.stringify({ keys });
+    } finally {
+      db.close();
+    }
+  });

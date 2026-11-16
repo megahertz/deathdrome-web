@@ -2,13 +2,12 @@ import { GAME_TABLES } from './game-tables.ts';
 import type { Runner } from './game-types.ts';
 const C = GAME_TABLES.scrub;
 export class Scrub {
-  declare active: boolean;
+  active: boolean = false;
   declare height: number;
   declare scale: number;
   declare finished: boolean;
 
   constructor() {
-    this.active = false;
     this.height = C.initialHeightScale;
     this.scale = 1;
     this.finished = false;

@@ -13,7 +13,9 @@ export function solidPolygonCommands(
   } = {},
 ) {
   // Solid depth retains the row accumulator; the texture mapper stores it first.
-  const points = vertices.map((p: number[]) => p.slice(0, 3).map(f)),
+  const points = vertices.map((p: number[]) =>
+      p.slice(0, 3).map((itemValue) => f(itemValue)),
+    ),
     origin = points[0].slice(0, 2),
     plane = {
       origin,

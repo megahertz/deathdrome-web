@@ -5,16 +5,17 @@ export function runnerLightContour(
 ) {
   const faces = data.meshes.filter((f) => /\/lcl_lt\/lt\//i.test(f.name));
   if (faces.length !== 1) {
-    throw Error('Expected one original runner light polygon');
+    throw new Error('Expected one original runner light polygon');
   }
   const vertices = faces[0].v.map((v) => [v[0], v[2]]);
   if (vertices.length !== LIGHT_VERTEX_LIMIT) {
-    throw Error('Unexpected runner light contour');
+    throw new Error('Unexpected runner light contour');
   }
-  const centre = vertices.reduce(
-    (p, v) => [p[0] + v[0] / vertices.length, p[1] + v[1] / vertices.length],
-    [0, 0],
-  );
+  const centre = [0, 0];
+  for (const v of vertices) {
+    centre[0] += v[0] / vertices.length;
+    centre[1] += v[1] / vertices.length;
+  }
   const edges = vertices.map((a, i) => {
     const b = vertices[(i + 1) % vertices.length],
       dx = b[0] - a[0],

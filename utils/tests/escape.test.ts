@@ -7,10 +7,10 @@ test('exit fold and rise constants match native source data', async () => {
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    f = (va: number) => exe.readFloatLE(va - 0x480000 + 0x68e00);
-  assert.equal(ESCAPE.foldSeconds, f(0x484e00));
-  assert.equal(ESCAPE.foldDegreesPerSecond, f(0x484e04));
-  assert.equal(ESCAPE.riseSpeed, f(0x484deb));
+    f = (va: number) => exe.readFloatLE(va - 0x48_00_00 + 0x6_8e_00);
+  assert.equal(ESCAPE.foldSeconds, f(0x48_4e_00));
+  assert.equal(ESCAPE.foldDegreesPerSecond, f(0x48_4e_04));
+  assert.equal(ESCAPE.riseSpeed, f(0x48_4d_eb));
 });
 test('escape centers the runner, folds, rises and completes only after the sequence', () => {
   const s = new Simulation(),
@@ -48,13 +48,13 @@ test('single-player results add native kill and remaining-time bonuses as separa
   const s = new Simulation(),
     r = s.runners[0];
   r.kills = 3;
-  s.score = 19500;
+  s.score = 19_500;
   s.time = 70.2;
   beginEscape(s, r);
   for (let i = 0; i < 355; i++) {
     s.step(1 / 60);
   }
   assert.deepEqual(s.roundBonus, { kills: 3000, time: 640, credits: 1 });
-  assert.equal(s.score, 23140);
+  assert.equal(s.score, 23_140);
   assert.equal(s.lives, 4);
 });

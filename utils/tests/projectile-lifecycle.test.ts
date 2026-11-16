@@ -21,7 +21,7 @@ test('active actor, deactivation and pool reset match 234 original lifecycle sam
       )
       .toString(),
   );
-  a.fixtures.forEach(({ slots, dt }: any, i: number) => {
+  for (const [i, { slots, dt }] of a.fixtures.entries()) {
     const r = stateFixture<import('../../src/game-types.ts').Runner>({
         id: 1,
         dead: 0,
@@ -47,7 +47,7 @@ test('active actor, deactivation and pool reset match 234 original lifecycle sam
       count: sim.projectiles.filter((p) => p.life > 0).length,
       slots: sim.projectiles
         .filter((p) => p.life > 0)
-        .sort((start, b) => start.slot! - b.slot!)
+        .toSorted((start, b) => start.slot! - b.slot!)
         .map((p) => ({
           slot: p.slot,
           position: [p.x, p.y, p.z],
@@ -68,7 +68,7 @@ test('active actor, deactivation and pool reset match 234 original lifecycle sam
     resetRunnerProjectiles(sim, r);
     samples.push(snapshot());
     assert.deepEqual(samples, a.native[i]);
-  });
+  }
 });
 function controlled() {
   const s = new Simulation({
@@ -78,7 +78,9 @@ function controlled() {
   });
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[0];
   Object.assign(r, { dead: 0, x: 100, y: 10, z: 100, yaw: 0, speed: 0 });
   return { s, r };
@@ -93,7 +95,7 @@ test('destruction hides and freezes live shots until respawn setup releases the 
   const p = s.projectiles[0],
     pose = { x: p.x, y: p.y, z: p.z, age: p.age };
   assert.equal(p.hidden, false);
-  s.damage(r, 10000, 1);
+  s.damage(r, 10_000, 1);
   s.checkRunnerHealth(r);
   assert.equal(p.hidden, true);
   for (let i = 0; i < 100; i++) {
@@ -114,7 +116,7 @@ test('deactivation before the first slot action freezes pending shots without la
   const { s, r } = controlled();
   s.events = [];
   s.fire(r);
-  s.damage(r, 10000, 1);
+  s.damage(r, 10_000, 1);
   s.checkRunnerHealth(r);
   const shots = [...s.projectiles];
   let sounds = 0;

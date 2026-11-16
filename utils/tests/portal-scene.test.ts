@@ -8,14 +8,13 @@ import { Simulation } from '../../src/simulation.ts';
 
 async function arenaView(arena: number) {
   const data = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          `../../private/assets/models/arena${arena}.json`,
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        `../../private/assets/models/arena${arena}.json`,
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   // Retain source geometry and contact flags; textures are irrelevant to queries.
   data.meshes = data.meshes.map((f: any) => ({
@@ -48,7 +47,9 @@ function setup(view: View, arena: number, round: number) {
     updatePortal: (id: any, h: any) => view.setPortalHeight(id, h),
   });
   sim.countdown = 0;
-  sim.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of sim.runners) {
+    r.dead = Infinity;
+  }
   return sim;
 }
 test('stationary portal thresholds in every decoded arena retain their identities and open only in allowed rounds', async () => {
@@ -67,12 +68,13 @@ test('stationary portal thresholds in every decoded arena retain their identitie
       ) {
         continue;
       }
-      const center = f.v.reduce(
-          (p: number[], v: { [x: string]: number }) =>
-            p.map((x, i) => x + v[i] / f.v.length),
-          [0, 0, 0],
-        ),
-        hits = view.ground(center[0], center[2], center[1] + 2, true);
+      const center = [0, 0, 0];
+      for (const vertex of f.v) {
+        for (let axis = 0; axis < 3; axis++) {
+          center[axis] += vertex[axis] / f.v.length;
+        }
+      }
+      const hits = view.ground(center[0], center[2], center[1] + 2, true);
       if (
         hits.some(
           (h: { portal: any; height: number }) =>
@@ -127,7 +129,9 @@ test('support contact opens once per actor and rejects a different floor more th
           : height) as import('../../src/game-types.ts').GroundQuery,
     });
     sim.countdown = 0;
-    sim.runners.forEach((r) => (r.dead = Infinity));
+    for (const r of sim.runners) {
+      r.dead = Infinity;
+    }
     Object.assign(sim.runners[0], { x: 100, y: 0, z: 100, dead: 0 });
     sim.step(1 / 60);
     assert.equal(sim.portals.doors.get('11')?.height ?? 0, height <= 9 ? 1 : 0);
@@ -177,7 +181,9 @@ test('a portal is activated by front support, while wall/center/side-only contac
           : [],
     });
     sim.countdown = 0;
-    sim.runners.forEach((r) => (r.dead = Infinity));
+    for (const r of sim.runners) {
+      r.dead = Infinity;
+    }
     const r = sim.runners[0],
       pose = { x: 100, y: 0, z: 100, yaw: 0 };
     Object.assign(r, pose, {
@@ -262,14 +268,13 @@ test('altitude queries reject ceilings and retain steep upward slopes as in nati
 });
 test('both THE WALL approaches reproduce original physical and portal actions for 180 frames', async () => {
   const audit = JSON.parse(
-      (
-        await readFile(
-          new URL(
-            '../../private/verification/portal-contact-native.json',
-            import.meta.url,
-          ),
-        )
-      ).toString(),
+      await readFile(
+        new URL(
+          '../../private/verification/portal-contact-native.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
     ),
     cases = audit.results.filter((r: { arena: number }) => r.arena === 6);
   assert.equal(cases.length, 2);
@@ -318,24 +323,22 @@ test('both THE WALL approaches reproduce original physical and portal actions fo
 });
 test('THE WALL local approaches match 240 physical updates with independent native grid and hierarchy queries', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/wall-portal-hierarchy-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/wall-portal-hierarchy-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(audit.passed, true);
   for (const fixture of audit.results) {
     // oxlint-disable no-await-in-loop -- Keep each reference fixture and its assertions together, bounding live scene memory.
     const data = JSON.parse(
-      (
-        await readFile(
-          new URL('../../private/assets/models/arena6.json', import.meta.url),
-        )
-      ).toString(),
+      await readFile(
+        new URL('../../private/assets/models/arena6.json', import.meta.url),
+        'utf8',
+      ),
     );
     // oxlint-enable no-await-in-loop
     data.meshes = data.meshes
@@ -391,14 +394,13 @@ test('THE WALL local approaches match 240 physical updates with independent nati
 });
 test('THE WALL approaches match 240 original updates after native loading of the complete arena and external models', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/gamegen-wall-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/gamegen-wall-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   const hash = (
     bytes: string | NonSharedBuffer | NodeJS.ArrayBufferView<ArrayBufferLike>,
@@ -500,12 +502,12 @@ test('THE WALL approaches match 240 original updates after native loading of the
         ],
         [Object.values(r.worldVelocity!), sample.native.worldVelocity],
       ]) {
-        actual.forEach((value: number, i: number) =>
+        for (const [i, value] of actual.entries()) {
           assert.ok(
             Math.abs(value - expected[i]) < 1e-10,
             `velocity side ${fixture.side}, frame ${frame}`,
-          ),
-        );
+          );
+        }
       }
       assert.equal(r.grounded, sample.native.grounded);
       assert.equal(r.controlsEnabled, sample.native.controlsEnabled);

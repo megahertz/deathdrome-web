@@ -92,7 +92,7 @@ export class EnhancedPipeline {
   }
   blackMaterial(source: THREE.Material) {
     if (!this.blackMaterials.has(source)) {
-      const black = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      const black = new THREE.MeshBasicMaterial({ color: 0x00_00_00 });
       const dispose = () => {
         source.removeEventListener('dispose', dispose);
         this.blackMaterials.delete(source);
@@ -135,7 +135,10 @@ export class EnhancedPipeline {
           return;
         }
         if (node.userData.enhancedSkipGlow) {
-          restore.push(() => (node.visible = true));
+          restore.push(() => {
+            node.visible = true;
+            return node.visible;
+          });
           if (!node.visible) {
             restore.pop();
             return;
@@ -148,7 +151,10 @@ export class EnhancedPipeline {
               .glowOnly,
             old = uniform.value;
           uniform.value = true;
-          restore.push(() => (uniform.value = old));
+          restore.push(() => {
+            uniform.value = old;
+            return uniform.value;
+          });
         }
         let glow = false;
         for (
@@ -166,7 +172,10 @@ export class EnhancedPipeline {
           node.material = Array.isArray(original)
             ? original.map((m) => this.blackMaterial(m))
             : this.blackMaterial(original);
-          restore.push(() => (node.material = original));
+          restore.push(() => {
+            node.material = original;
+            return node.material;
+          });
         }
       },
     );

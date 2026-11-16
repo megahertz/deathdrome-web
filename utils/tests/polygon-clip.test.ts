@@ -17,7 +17,10 @@ const audit = JSON.parse(
     ),
   ).toString(),
 );
-const canonical = (value: number[][]) => JSON.parse(JSON.stringify(value));
+const canonical = (value: number[][]) => {
+  const serialized = JSON.stringify(value);
+  return JSON.parse(serialized);
+};
 test('camera clipping matches original near-plane UV/color/normal interpolation and far rejection', () => {
   assert.equal(audit.passed, true);
   assert.equal(audit.clipCases, 540);
@@ -88,7 +91,7 @@ test('projection matches original stored reciprocal depth, viewport offsets and 
 });
 test('camera-to-indexed-pixel pipeline matches 160 native polygon draws in both texture axes', () => {
   assert.equal(audit.pipelineCases, 160);
-  assert.equal(audit.comparedFrameBytes, 20480000);
+  assert.equal(audit.comparedFrameBytes, 20_480_000);
   for (const fixture of audit.pipeline) {
     const vertices = prepareProjectedTexturePolygon(
       fixture.vertices,
@@ -96,12 +99,12 @@ test('camera-to-indexed-pixel pipeline matches 160 native polygon draws in both 
     );
     assert.deepEqual(canonical(vertices), canonical(fixture.native));
     for (const axis of [0, 1]) {
-      const target = new Uint8Array(64000).fill(255),
+      const target = new Uint8Array(64_000).fill(255),
         [width, height] = fixture.size,
         pixels = Uint8Array.from({ length: width * height }, (_, i) =>
           axis ? Math.floor(i / width) % 256 : (i % width) % 256,
         );
-      if (vertices.length) {
+      if (vertices.length > 0) {
         drawIndexedTexturePolygon(
           target,
           320,

@@ -11,13 +11,13 @@ test('cinematic camera constants match original exit action operands', async () 
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    f = (va: number) => exe.readFloatLE(va - 0x480000 + 0x68e00);
+    f = (va: number) => exe.readFloatLE(va - 0x48_00_00 + 0x6_8e_00);
   for (const [key, va] of [
-    ['lookHeight', 0x484e3b],
-    ['distance', 0x484e08],
-    ['depth', 0x484e10],
-    ['reverseDegrees', 0x484e14],
-    ['riseFactor', 0x484def],
+    ['lookHeight', 0x48_4e_3b],
+    ['distance', 0x48_4e_08],
+    ['depth', 0x48_4e_10],
+    ['reverseDegrees', 0x48_4e_14],
+    ['riseFactor', 0x48_4d_ef],
   ] as const) {
     assert.equal(ESCAPE.camera[key], f(va));
   }

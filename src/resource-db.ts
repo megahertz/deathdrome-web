@@ -6,12 +6,12 @@ const DB_NAME = 'deathdrome-original-resources';
 export function openResourceDB() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = () => {
+    request.addEventListener('upgradeneeded', () => {
       request.result.createObjectStore('files');
       request.result.createObjectStore('meta');
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    });
+    request.addEventListener('success', () => resolve(request.result));
+    request.addEventListener('error', () => reject(request.error));
   });
 }
 export async function installedResources() {
@@ -19,8 +19,8 @@ export async function installedResources() {
   try {
     return await new Promise<Installation | null>((resolve, reject) => {
       const r = db.transaction('meta').objectStore('meta').get('active');
-      r.onsuccess = () => resolve(r.result);
-      r.onerror = () => reject(r.error);
+      r.addEventListener('success', () => resolve(r.result));
+      r.addEventListener('error', () => reject(r.error));
     });
   } finally {
     db.close();
@@ -52,25 +52,28 @@ export async function saveResources(
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(['files', 'meta'], 'readwrite'),
         store = tx.objectStore('files');
-      store.delete(IDBKeyRange.bound(id + '/', id + '/\uffff'));
+      store.delete(IDBKeyRange.bound(id + '/', id + '/\uFFFF'));
       // One transaction: a failed install leaves the previous installation intact.
       let saved = 0;
+      const savedOne = () => {
+        saved++;
+        if (saved % 32 === 0 || saved === files.length) {
+          onProgress({ loaded: saved, total: files.length });
+        }
+      };
       for (const file of files) {
         const request = store.put(
           new Blob([file.data], { type: resourceType(file.path) }),
           id + '/' + file.path,
         );
-        request.onsuccess = () => {
-          saved++;
-          if (saved % 32 === 0 || saved === files.length) {
-            onProgress({ loaded: saved, total: files.length });
-          }
-        };
+        request.addEventListener('success', savedOne);
       }
       tx.objectStore('meta').put(installation, 'active');
-      tx.oncomplete = () => resolve();
-      tx.onabort = () => reject(tx.error || Error('Could not save resources'));
-      tx.onerror = () => {};
+      tx.addEventListener('complete', () => resolve());
+      tx.addEventListener('abort', () =>
+        reject(tx.error || new Error('Could not save resources')),
+      );
+      tx.addEventListener('error', () => {});
     });
     return installation;
   } finally {
@@ -100,18 +103,20 @@ export async function hasResourceFiles(
       const tx = db.transaction('files'),
         store = tx.objectStore('files'),
         count = store.count(
-          IDBKeyRange.bound(profile.id + '/', profile.id + '/\uffff'),
+          IDBKeyRange.bound(profile.id + '/', profile.id + '/\uFFFF'),
         ),
         keys = paths.map((path) => store.getKey(profile.id + '/' + path));
-      tx.oncomplete = () =>
+      tx.addEventListener('complete', () =>
         resolve(
           count.result >= paths.length &&
-            (profile.resourceCount == null ||
+            (profile.resourceCount === null ||
+              profile.resourceCount === undefined ||
               count.result === profile.resourceCount) &&
             keys.every((key) => key.result !== undefined),
-        );
-      tx.onabort = () => reject(tx.error);
-      tx.onerror = () => {};
+        ),
+      );
+      tx.addEventListener('abort', () => reject(tx.error));
+      tx.addEventListener('error', () => {});
     });
   } finally {
     db.close();
@@ -131,14 +136,14 @@ export async function rememberResourceSource(
       const tx = db.transaction('meta', 'readwrite'),
         store = tx.objectStore('meta'),
         current = store.get('active');
-      current.onsuccess = () => {
+      current.addEventListener('success', () => {
         if (current.result?.id === profile.id) {
           store.put(updated, 'active');
         }
-      };
-      tx.oncomplete = () => resolve();
-      tx.onabort = () => reject(tx.error);
-      tx.onerror = () => {};
+      });
+      tx.addEventListener('complete', () => resolve());
+      tx.addEventListener('abort', () => reject(tx.error));
+      tx.addEventListener('error', () => {});
     });
     return updated;
   } finally {
@@ -148,15 +153,18 @@ export async function rememberResourceSource(
 export function resourceType(path: string) {
   if (path.endsWith('.png')) {
     return 'image/png';
-  } else if (path.endsWith('.json')) {
-    return 'application/json';
-  } else if (path.endsWith('.wav')) {
-    return 'audio/wav';
-  } else if (path.endsWith('.ogg')) {
-    return 'audio/ogg';
-  } else {
-    return 'application/octet-stream';
   }
+  if (path.endsWith('.json')) {
+    return 'application/json';
+  }
+  if (path.endsWith('.wav')) {
+    return 'audio/wav';
+  }
+  if (path.endsWith('.ogg')) {
+    return 'audio/ogg';
+  }
+
+  return 'application/octet-stream';
 }
 
 export async function pinResources(installationId: string) {
@@ -173,10 +181,10 @@ export async function pinResources(installationId: string) {
               .openCursor(
                 IDBKeyRange.bound(
                   installationId + '/',
-                  installationId + '/\uffff',
+                  installationId + '/\uFFFF',
                 ),
               );
-          request.onsuccess = () => {
+          request.addEventListener('success', () => {
             const c = request.result;
             if (c) {
               values.push({
@@ -187,8 +195,8 @@ export async function pinResources(installationId: string) {
             } else {
               resolve(values);
             }
-          };
-          request.onerror = () => reject(request.error);
+          });
+          request.addEventListener('error', () => reject(request.error));
         },
       );
     } finally {
@@ -209,14 +217,21 @@ export async function pinResources(installationId: string) {
   await new Promise<void>((resolve, reject) => {
     const timeout = setTimeout(
       () =>
-        reject(Error('The resource service did not respond. Reload the page.')),
-      10000,
+        reject(
+          new Error('The resource service did not respond. Reload the page.'),
+        ),
+      10_000,
     );
-    channel.port1.onmessage = ({ data }) => {
+    channel.port1.addEventListener('message', ({ data }) => {
       clearTimeout(timeout);
       channel.port1.close();
-      data.ok ? resolve() : reject(Error(data.error));
-    };
+      if (data.ok) {
+        resolve();
+      } else {
+        reject(new Error(data.error));
+      }
+    });
+    channel.port1.start();
     navigator.serviceWorker.controller!.postMessage(
       { type: 'use-installation', installationId },
       [channel.port2],
@@ -229,7 +244,7 @@ export async function activateResourceService() {
     return;
   }
   const registration = await navigator.serviceWorker.register(
-    new URL('./resource-sw.js', import.meta.url),
+    new URL('resource-sw.js', import.meta.url),
     { type: 'module', scope: './' },
   );
   const { installing } = registration;
@@ -239,7 +254,7 @@ export async function activateResourceService() {
         if (installing.state === 'activated') {
           resolve();
         } else if (installing.state === 'redundant') {
-          reject(Error('Could not activate the resource service'));
+          reject(new Error('Could not activate the resource service'));
         }
       });
     });
@@ -251,8 +266,9 @@ export async function activateResourceService() {
   ) {
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(
-        () => reject(Error('Reload the page to activate the resource loader')),
-        15000,
+        () =>
+          reject(new Error('Reload the page to activate the resource loader')),
+        15_000,
       );
       navigator.serviceWorker.addEventListener(
         'controllerchange',

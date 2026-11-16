@@ -11,7 +11,10 @@ const reference = JSON.parse(
     new URL('../../private/verification/native-geometry.json', import.meta.url),
   ).toString(),
 );
-const canonical = (x: unknown) => JSON.parse(JSON.stringify(x));
+const canonical = (x: unknown) => {
+  const serialized = JSON.stringify(x);
+  return JSON.parse(serialized);
+};
 test('first-three-vertex facing and normals match 3,000 original front/back/threshold cases', () => {
   assert.equal(reference.passed, true);
   assert.equal(reference.facingCases, 3000);

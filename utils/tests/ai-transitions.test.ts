@@ -102,14 +102,13 @@ test('160 original AI wrapper traces match 1440 transitions, primary dispatches 
         if (target) {
           if (target.id === 0 && step.active) {
             return [{ kind: 'runner', runner: 0 }];
-          } else {
-            return [];
           }
-        } else if (step.probeWall) {
-          return [{ kind: 'wall' }];
-        } else {
           return [];
         }
+        if (step.probeWall) {
+          return [{ kind: 'wall' }];
+        }
+        return [];
       };
       const before = sim.events.length;
       sim.ai(r, 1 / 60);

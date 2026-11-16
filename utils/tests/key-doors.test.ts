@@ -45,7 +45,7 @@ test('secret door callback lifecycle and contact refresh match 2740 native updat
       const { touchEnabled, ...state } = d.doors.x;
       assert.deepEqual(state, sample.after, t.name + ' frame ' + frame);
       assert.equal(writes.length, sample.writes);
-      if (writes.length) {
+      if (writes.length > 0) {
         assert.deepEqual(writes[0], { key: 'x', height: sample.after.height });
       }
     }

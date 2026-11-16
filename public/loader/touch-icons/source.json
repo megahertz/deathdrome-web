@@ -1,36 +1,13 @@
 {
   "source": "User-supplied control mockup: Gemini_Generated_Image_4wr2724wr2724wr2.jpeg",
   "sourceSha256": "65e6d70196af03996fa895636a9dfc8706e7f2e6b43eab26acb3615486f0b43c",
-  "sourceSize": [
-    2766,
-    1536
-  ],
+  "sourceSize": [2766, 1536],
   "method": "Unscaled rectangular crops of the supplied JPEG decoded to PNG; no generated replacement glyphs. Only action-icon pixels are included, not the game scene.",
   "rectanglesXYWH": {
-    "jump": [
-      2298,
-      828,
-      144,
-      132
-    ],
-    "weapon": [
-      2047,
-      1052,
-      180,
-      174
-    ],
-    "barrier": [
-      2521,
-      1066,
-      174,
-      114
-    ],
-    "fire": [
-      2284,
-      1285,
-      164,
-      142
-    ]
+    "jump": [2298, 828, 144, 132],
+    "weapon": [2047, 1052, 180, 174],
+    "barrier": [2521, 1066, 174, 114],
+    "fire": [2284, 1285, 164, 142]
   },
   "sprites": {
     "jump.png": "6c618391558f00e35093e43f0a34b49f45ae68b94af6bfe13f0c6b448db557fa",

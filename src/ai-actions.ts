@@ -72,7 +72,7 @@ export function acquireAITarget(
   const f = Math.fround,
     origin = { ...r, x: f(r.x), y: f(r.y), z: f(r.z) },
     from = { ...origin, y: f(origin.y + AI_ACTIONS.rayHeight) };
-  for (const q of [...sim.runners].sort((a, b) => a.id - b.id)) {
+  for (const q of [...sim.runners].toSorted((a, b) => a.id - b.id)) {
     if (!aiTargetActive(q)) {
       continue;
     }
@@ -303,7 +303,7 @@ export function stepAIAttack(
     return heldAIRates(r);
   }
   const hits = probeAIForward(sim, r);
-  if (hits.length) {
+  if (hits.length > 0) {
     const barrier = hits.find((h: { kind: string }) => h.kind === 'barrier');
     if (barrier && level.barrierJumpEnabled) {
       if (barrier.owner !== r.id) {
@@ -352,13 +352,13 @@ export function stepAIAttack(
     now = aiClock(sim);
   // 42c3c5: only a newly acquired lock defers firing. Blocked/contact early
   // returns above leave this latch and deadline untouched.
-  if (r.missileLockTarget != null) {
+  if (r.missileLockTarget === null || r.missileLockTarget === undefined) {
+    a.lockActive = false;
+  } else {
     if (!a.lockActive) {
       a.shotAt = Math.fround(now + AI_ATTACK.missileDelay);
     }
     a.lockActive = true;
-  } else {
-    a.lockActive = false;
   }
   if (
     now > a.shotAt &&

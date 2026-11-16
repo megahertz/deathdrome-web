@@ -45,7 +45,11 @@ export function previewFloorPolygons(
       | undefined;
     for (const facet of facets ?? []) {
       const world = facet.vertices.map((vertex: number[] | ArrayLike<number>) =>
-        point.fromArray(vertex).applyMatrix4(node.matrixWorld).toArray().map(f),
+        point
+          .fromArray(vertex)
+          .applyMatrix4(node.matrixWorld)
+          .toArray()
+          .map((itemValue) => f(itemValue)),
       );
       const { uv } = registeredTextureCoordinates(world);
       const vertices = world.map(
@@ -70,7 +74,7 @@ export function drawPreviewFloor(
   spanBuffer = new SpanBuffer(200),
 ) {
   for (const polygon of polygons) {
-    if (!polygon.projected.length) {
+    if (polygon.projected.length === 0) {
       continue;
     }
     const texture = textureFor(polygon.texture);

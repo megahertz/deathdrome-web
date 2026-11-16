@@ -6,7 +6,7 @@ import { drawIndexedTexturePolygon } from '../../src/texture-spans.ts';
 const $ = <T extends HTMLElement = HTMLElement>(selector: string): T => {
   const element = document.querySelector<T>(selector);
   if (!element) {
-    throw Error('Missing diagnostic element: ' + selector);
+    throw new Error('Missing diagnostic element: ' + selector);
   }
   return element;
 };
@@ -37,9 +37,9 @@ try {
   for (const [fixtureIndex, fixture] of fixtures.entries()) {
     for (const axis of [0, 1]) {
       const native = Uint8Array.from(atob(fixture.nativePixels[axis]), (c) =>
-          c.charCodeAt(0),
+          c.codePointAt(0)!,
         ),
-        target = new Uint8Array(64000).fill(255),
+        target = new Uint8Array(64_000).fill(255),
         buffer = new SpanBuffer(200);
       for (const p of fixture.polygons) {
         const [width, height] = p.size,

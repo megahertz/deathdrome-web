@@ -134,7 +134,7 @@ export function animateMenuEntry(
       menu.classList.remove('menu-entering');
       return;
     }
-    if (old.length) {
+    if (old.length > 0) {
       g.fillStyle = '#000';
       g.fillRect(0, 0, 320, 200);
       for (const { im, x, y, w, h } of old) {

@@ -20,7 +20,12 @@ test('576 original region-health traces match 5184 health, timer and message obs
     new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
   );
   assert.deepEqual(
-    [...exe.subarray(0x43364d - 0x410000 + 0x400, 0x43364f - 0x410000 + 0x400)],
+    [
+      ...exe.subarray(
+        0x43_36_4d - 0x41_00_00 + 0x4_00,
+        0x43_36_4f - 0x41_00_00 + 0x4_00,
+      ),
+    ],
     [0xd9, 0xe8],
   );
   assert.equal(OUTSIDE_REGION_SECONDS, 1);

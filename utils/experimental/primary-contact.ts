@@ -93,7 +93,7 @@ export function dispatchPrimaryContacts(
     p.life = 0;
     return true;
   }
-  if (!hits.length) {
+  if (hits.length === 0) {
     return false;
   }
   for (const hit of hits) {
@@ -114,7 +114,7 @@ export function dispatchPrimaryContacts(
     const runner = findContactNode(node, 'runner_');
     if (runner) {
       impact(point);
-      const id = runner.name.charCodeAt(7) - 48;
+      const id = runner.name.codePointAt(7)! - 48;
       if (id >= 0 && id < sim.runners.length) {
         applyPrimaryHit(sim, p, sim.runners[id]);
       }

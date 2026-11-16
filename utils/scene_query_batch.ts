@@ -14,9 +14,7 @@ export async function queryScene(q: {
   globalThis.fetch = async (path) => {
     const name = String(path).split('?')[0];
     const data = JSON.parse(
-      (
-        await readFile(new URL('../private/' + name, import.meta.url))
-      ).toString(),
+      await readFile(new URL('../private/' + name, import.meta.url), 'utf8'),
     );
     return Response.json({
       ...data,
@@ -35,7 +33,7 @@ export async function queryScene(q: {
       objects: new THREE.Group(),
       camera: new THREE.PerspectiveCamera(),
     });
-    view.scene.background = new THREE.Color(0x090b10);
+    view.scene.background = new THREE.Color(0x09_0b_10);
     await view.arena(q.arena);
     view.configurePortals(q.round ?? 1);
     const results = q.fixtures.map(

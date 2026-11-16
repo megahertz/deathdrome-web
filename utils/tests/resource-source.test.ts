@@ -39,7 +39,9 @@ test('image overrides resolve local and remote URLs and report missing explicit 
     resolveImage('https://example.com/files/disc.iso', base),
     'https://example.com/files/disc.iso',
   );
+  // oxlint-disable no-script-url -- Verify that script URLs are rejected.
   assert.throws(() => resolveImage('javascript:alert(1)', base), /HTTP/);
+  // oxlint-enable no-script-url
   await assert.rejects(
     () =>
       readImage('assets/missing.iso', {
@@ -64,7 +66,7 @@ test('an image without CD tracks never requests music while PCM effects still pl
       musicTracks: [],
       createAudio: (src) => {
         sources.push(src);
-        return {
+        return Object.assign(new EventTarget(), {
           cloneNode() {
             return this;
           },
@@ -72,7 +74,7 @@ test('an image without CD tracks never requests music while PCM effects still pl
             return Promise.resolve();
           },
           pause() {},
-        } as unknown as HTMLAudioElement;
+        }) as unknown as HTMLAudioElement;
       },
     });
   director.unlock();
@@ -154,12 +156,12 @@ test('LAN resource URLs cover models, textures and recorded music without a serv
         musicExtension: 'wav',
         createAudio: (src) => {
           sources.push(src);
-          return {
+          return Object.assign(new EventTarget(), {
             play() {
               return Promise.resolve();
             },
             pause() {},
-          } as unknown as HTMLAudioElement;
+          }) as unknown as HTMLAudioElement;
         },
       });
     director.playMusic(11);

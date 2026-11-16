@@ -30,16 +30,16 @@ test('planar response constants match native collision instructions and data', a
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    data = (va: number) => va - 0x480000 + 0x68e00;
-  assert.equal(COLLISION.velocityFactor, exe.readFloatLE(data(0x484208)));
+    data = (va: number) => va - 0x48_00_00 + 0x6_8e_00;
+  assert.equal(COLLISION.velocityFactor, exe.readFloatLE(data(0x48_42_08)));
   assert.equal(
     COLLISION.turnDegreesPerSpeed,
-    exe.readFloatLE(0x432bcb - 0x410000 + 0x400),
+    exe.readFloatLE(0x43_2b_cb - 0x41_00_00 + 0x4_00),
   );
-  assert.equal(COLLISION.impactDamage, -exe.readFloatLE(data(0x484220)));
+  assert.equal(COLLISION.impactDamage, -exe.readFloatLE(data(0x48_42_20)));
   assert.equal(
     COLLISION.impactDamageThreshold,
-    exe.readFloatLE(data(0x484214)),
+    exe.readFloatLE(data(0x48_42_14)),
   );
 });
 test('legacy planar contact approximation halves speed and rejects a separating impact', () => {

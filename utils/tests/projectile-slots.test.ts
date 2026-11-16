@@ -25,10 +25,13 @@ test('weapon IDs match the executable fire dispatch table, including Nitro zero 
   const exe = fs.readFileSync(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    offset = 0x437520 - 0x410000 + 0x400;
+    offset = 0x43_75_20 - 0x41_00_00 + 0x4_00;
   assert.deepEqual(
     Array.from({ length: 7 }, (_, i) => exe.readUInt32LE(offset + i * 4)),
-    [0x43757c, 0x437572, 0x4375b5, 0x4375c9, 0x43756b, 0x4375d3, 0x4375dd],
+    [
+      0x43_75_7c, 0x43_75_72, 0x43_75_b5, 0x43_75_c9, 0x43_75_6b, 0x43_75_d3,
+      0x43_75_dd,
+    ],
   );
   assert.deepEqual(PROJECTILE.weaponIds, {
     'Nitro Ram': 0,
@@ -42,7 +45,7 @@ test('weapon IDs match the executable fire dispatch table, including Nitro zero 
 });
 test('slot allocation and one/two-shot capacity decisions match 64 original fire-dispatch fixtures', () => {
   const a = report('projectile-slots');
-  a.allocationFixtures.forEach(({ slots, missile }: any, i: number) => {
+  for (const [i, { slots, missile }] of a.allocationFixtures.entries()) {
     const r = stateFixture<import('../../src/game-types.ts').Runner>({
         id: 0,
         x: 0,
@@ -67,11 +70,11 @@ test('slot allocation and one/two-shot capacity decisions match 64 original fire
       },
       a.allocationNative[i],
     );
-  });
+  }
 });
 test('fixed slot order reproduces native mixed-projectile guidance and expiry cleanup', () => {
   const a = report('projectile-slots');
-  a.dispatchFixtures.forEach(({ slots, dt }: any, i: number) => {
+  for (const [i, { slots, dt }] of a.dispatchFixtures.entries()) {
     const r = stateFixture<import('../../src/game-types.ts').Runner>({
         id: 0,
         x: 0,
@@ -115,12 +118,12 @@ test('fixed slot order reproduces native mixed-projectile guidance and expiry cl
       },
       a.dispatchNative[i],
     );
-  });
+  }
 });
 test('weapon cycling preserves locks only for Nitro and Missile, matching native cycle cases', () => {
   const a = report('weapon-selection'),
     sim = { selectWeapon: Simulation.prototype.selectWeapon, emit() {} };
-  a.cycles.forEach(({ selected, weapons }: any, i: number) => {
+  for (const [i, { selected, weapons }] of a.cycles.entries()) {
     const r = stateFixture<import('../../src/game-types.ts').Runner>({
       selectedWeapon: selected,
       weapons,
@@ -131,15 +134,15 @@ test('weapon cycling preserves locks only for Nitro and Missile, matching native
       { selected: r.selectedWeapon, target: r.missileLockTarget },
       a.cycleNative[i],
     );
-  });
+  }
 });
 test('Nitro steering matches original float heading outputs from supplied planar bases', () => {
   const a = report('weapon-selection');
-  a.nitro.forEach((fixture: any, i: number) => {
+  for (const [i, fixture] of a.nitro.entries()) {
     const { r, target, dt } = structuredClone(fixture);
     steerNitro(r, target, dt);
     assert.equal(Math.fround((r.yaw * 180) / Math.PI), a.nitroNative[i]);
-  });
+  }
 });
 test('an active Nitro boost follows the shared pointer and stops steering when weapon cycling clears it', () => {
   const s = new Simulation({
@@ -149,7 +152,9 @@ test('an active Nitro boost follows the shared pointer and stops steering when w
   });
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[0],
     q = s.runners[1];
   Object.assign(r, {

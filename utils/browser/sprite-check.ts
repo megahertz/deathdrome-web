@@ -8,14 +8,14 @@ import {
   texturesReady,
 } from '../../src/renderer.ts';
 const view = new View(document.querySelector<HTMLCanvasElement>('#view')!);
-view.scene.background = new THREE.Color(0x38596b);
+view.scene.background = new THREE.Color(0x38_59_6b);
 let lit = true,
   rear = false;
 for (let x = -20; x < 20; x += 4) {
   const p = new THREE.Mesh(
     new THREE.PlaneGeometry(4, 20),
     new THREE.MeshBasicMaterial({
-      color: (x / 4) % 2 ? 0x342e4d : 0x3e4d35,
+      color: (x / 4) % 2 ? 0x34_2e_4d : 0x3e_4d_35,
       side: THREE.DoubleSide,
     }),
   );
@@ -41,17 +41,21 @@ for (let i = 0; i < names.length; i++) {
 }
 view.enablePlayerSpotlight(await modelData('redrunr'));
 view.playerSpot!.set(0, 0, 0);
-document.querySelector<HTMLButtonElement>('#light')!.onclick = () => {
-  lit = !lit;
-  view.playerSpot!.set(0, lit ? 0 : -10000, 0);
-  document.querySelector<HTMLButtonElement>('#light')!.textContent =
-    'Light: ' + (lit ? 'on' : 'off');
-  render(0, true);
-};
-document.querySelector<HTMLButtonElement>('#rear')!.onclick = () => {
-  rear = !rear;
-  render(0, true);
-};
+document
+  .querySelector<HTMLButtonElement>('#light')!
+  .addEventListener('click', () => {
+    lit = !lit;
+    view.playerSpot!.set(0, lit ? 0 : -10_000, 0);
+    document.querySelector<HTMLButtonElement>('#light')!.textContent =
+      'Light: ' + (lit ? 'on' : 'off');
+    render(0, true);
+  });
+document
+  .querySelector<HTMLButtonElement>('#rear')!
+  .addEventListener('click', () => {
+    rear = !rear;
+    render(0, true);
+  });
 function render(seconds: number | undefined, capture = false) {
   view.camera.position.set(rear ? 6 : 0, 6, rear ? -25 : 25);
   view.camera.lookAt(0, 1.5, 0);

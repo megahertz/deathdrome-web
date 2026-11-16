@@ -16,7 +16,7 @@ export function sceneQueryOrder(
     cell?.[1] ?? 0,
     cell?.[0] ?? 0,
     worldOrder ?? Number.MAX_SAFE_INTEGER,
-    worldOrder == null ? instanceOrder : 0,
+    worldOrder === null || worldOrder === undefined ? instanceOrder : 0,
     contactRank ?? fallback,
     fallback,
   ];

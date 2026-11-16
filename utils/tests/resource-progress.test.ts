@@ -37,10 +37,10 @@ test('image transfer occupies exactly 70%, and complete extraction/startup stays
 });
 test('unknown-length transfers remain indeterminate until byte completion establishes the 70% boundary', () => {
   const p = new ResourceProgress();
-  p.download({ loaded: 1048576, total: 0 });
+  p.download({ loaded: 1_048_576, total: 0 });
   assert.equal(p.indeterminate, true);
   assert.match(p.label, /1.0 MB received/);
-  p.download({ loaded: 1048576, total: 1048576 });
+  p.download({ loaded: 1_048_576, total: 1_048_576 });
   assert.equal(p.indeterminate, false);
   assert.equal(p.value, 70);
 });
@@ -75,7 +75,10 @@ test('menu images must actually load; a broken cached image rejects readiness', 
   const image = Object.assign(new EventTarget(), { complete: false });
   const ready = imageReady(image);
   let done = false;
-  ready.then(() => (done = true));
+  ready.then(() => {
+    done = true;
+    return done;
+  });
   await Promise.resolve();
   assert.equal(done, false);
   image.dispatchEvent(new Event('load'));

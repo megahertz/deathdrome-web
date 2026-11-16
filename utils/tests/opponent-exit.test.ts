@@ -37,9 +37,9 @@ test('opponent exit time gate and separate rise speed match the original executa
   const b = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    at = (v: number) => v - 0x480000 + 0x68e00;
-  assert.equal(ESCAPE.aiExitSeconds, b.readFloatLE(at(0x483f66)));
-  assert.equal(ESCAPE.aiRiseSpeed, b.readFloatLE(at(0x484de7)));
+    at = (v: number) => v - 0x48_00_00 + 0x6_8e_00;
+  assert.equal(ESCAPE.aiExitSeconds, b.readFloatLE(at(0x48_3f_66)));
+  assert.equal(ESCAPE.aiRiseSpeed, b.readFloatLE(at(0x48_4d_e7)));
   assert.equal(ESCAPE.aiRiseSpeed, 25);
 });
 test('only qualified live opponents at the central ground exit can leave at or below thirty-five seconds', () => {

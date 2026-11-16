@@ -9,7 +9,7 @@ function clipPlane(
   limit: number,
   upper = false,
 ) {
-  if (!vertices.length) {
+  if (vertices.length === 0) {
     return [];
   }
   const result = [];
@@ -22,13 +22,16 @@ function clipPlane(
       const factor = f(
         (limit - previous[axis]) / (current[axis] - previous[axis]),
       );
+      const previousPoint = previous;
       const point = current.map((value: number, i: number) =>
-        i === axis ? limit : f((value - previous[i]) * factor + previous[i]),
+        i === axis
+          ? limit
+          : f((value - previousPoint[i]) * factor + previousPoint[i]),
       );
       result.push(point);
     }
     if (currentInside) {
-      result.push(current.slice());
+      result.push([...current]);
     }
     previous = current;
     previousInside = currentInside;
@@ -37,9 +40,13 @@ function clipPlane(
 }
 export function clipCameraPolygon(
   vertices: number[][],
-  { near = 0.75, far = 1200, flags = 16 } = {},
+  { near: inputNear = 0.75, far: inputFar = 1200, flags = 16 } = {},
 ) {
-  let points = vertices.map((p: number[]) => p.map(f));
+  let near = inputNear,
+    far = inputFar;
+  let points = vertices.map((p: number[]) =>
+    p.map((itemValue) => f(itemValue)),
+  );
   near = f(near);
   far = f(far);
   if (flags & 16) {
@@ -57,8 +64,10 @@ export function clipScreenPolygon(
   vertices: number[][],
   { bounds = [0, 0, 320, 200], flags = 15 } = {},
 ) {
-  let points = vertices.map((p: number[]) => p.map(f));
-  const [left, top, right, bottom] = bounds.map(f);
+  let points = vertices.map((p: number[]) =>
+    p.map((itemValue) => f(itemValue)),
+  );
+  const [left, top, right, bottom] = bounds.map((itemValue) => f(itemValue));
   // Screen clipping uses right/bottom minus one and strict upper predicates.
   for (const [bit, axis, limit, upper] of [
     [1, 0, left, false],
@@ -76,13 +85,13 @@ export function projectTexturePolygon(
   vertices: number[][],
   { scale = [1, 1], center = [0, 0], offset = [0, 0] } = {},
 ) {
-  const s = scale.map(f),
-    c = center.map(f),
-    o = offset.map(f);
+  const s = scale.map((itemValue) => f(itemValue)),
+    c = center.map((itemValue) => f(itemValue)),
+    o = offset.map((itemValue) => f(itemValue));
   return vertices.map((vertex: number[]) => {
-    const p = vertex.map(f),
+    const p = vertex.map((itemValue) => f(itemValue)),
       q = p[2] === 0 ? 1 : f(1 / p[2]);
-    const result = p.slice();
+    const result = [...p];
     result[0] = f(p[0] * q * s[0] + c[0] + o[0]);
     result[1] = f(p[1] * q * s[1] + c[1] + o[1]);
     result[2] = q;
@@ -114,7 +123,7 @@ export function prepareProjectedTexturePolygon(
     flags: options.cameraFlags ?? 16,
   });
   if (
-    !camera.length ||
+    camera.length === 0 ||
     (options.cullBackfaces &&
       !nativePolygonFacing(camera, options.twoSided).visible)
   ) {

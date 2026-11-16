@@ -17,7 +17,7 @@ import { RUNNERS } from '../../src/simulation.ts';
 const $ = <T extends HTMLElement = HTMLElement>(selector: string): T => {
     const element = document.querySelector<T>(selector);
     if (!element) {
-      throw Error('Missing diagnostic element: ' + selector);
+      throw new Error('Missing diagnostic element: ' + selector);
     }
     return element;
   },
@@ -27,12 +27,12 @@ let runner: import('../../src/game-types.ts').RunnerPose,
   root: Group<Object3DEventMap>,
   context = 'game',
   busy = false;
-GAME_TABLES.runners.forEach((r, i) => {
+for (const [i, r] of GAME_TABLES.runners.entries()) {
   const option = document.createElement('option');
   option.value = String(i);
   option.textContent = r.name;
   $<HTMLSelectElement>('#runner').append(option);
-});
+}
 $<HTMLSelectElement>('#runner').value = '6';
 function render() {
   const yaw = (Number($<HTMLSelectElement>('#angle').value) * Math.PI) / 180;
@@ -112,19 +112,20 @@ async function load() {
     busy = false;
   }
 }
-$<HTMLButtonElement>('#load').onclick = load;
-$<HTMLSelectElement>('#scene').onchange = load;
-$<HTMLSelectElement>('#runner').onchange = load;
+$<HTMLButtonElement>('#load').addEventListener('click', load);
+$<HTMLSelectElement>('#scene').addEventListener('change', load);
+$<HTMLSelectElement>('#runner').addEventListener('change', load);
+const showLightingChange = () => {
+  if (!busy) {
+    render();
+    $('#status').textContent =
+      'Ready — ' +
+      context +
+      '; heading ' +
+      $<HTMLSelectElement>('#angle').value;
+  }
+};
 for (const id of ['#angle', '#mask']) {
-  $(id).onchange = () => {
-    if (!busy) {
-      render();
-      $('#status').textContent =
-        'Ready — ' +
-        context +
-        '; heading ' +
-        $<HTMLSelectElement>('#angle').value;
-    }
-  };
+  $(id).addEventListener('change', showLightingChange);
 }
 load();

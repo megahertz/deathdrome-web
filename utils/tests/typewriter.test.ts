@@ -4,11 +4,10 @@ import { test } from 'node:test';
 import { TypewriterSequence } from '../../src/typewriter.ts';
 test('all five training pages retain original strings at their executable addresses', async () => {
   const data = JSON.parse(
-      (
-        await readFile(
-          new URL('../../private/assets/training.json', import.meta.url),
-        )
-      ).toString(),
+      await readFile(
+        new URL('../../private/assets/training.json', import.meta.url),
+        'utf8',
+      ),
     ),
     exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
@@ -16,7 +15,7 @@ test('all five training pages retain original strings at their executable addres
   assert.equal(data.pages.length, 5);
   for (const page of data.pages) {
     for (const p of page.paragraphs) {
-      const offset = Number(p.address) - 0x480000 + 0x68e00,
+      const offset = Number(p.address) - 0x48_00_00 + 0x6_8e_00,
         end = exe.indexOf(0, offset);
       assert.equal(p.text, exe.subarray(offset, end).toString('ascii'));
       assert.ok(p.x >= 0 && p.y < 180);

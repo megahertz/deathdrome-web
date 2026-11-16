@@ -11,7 +11,7 @@ import { drawRoundResults } from '../../src/round-results.ts';
 const $ = <T extends HTMLElement = HTMLElement>(selector: string): T => {
     const element = document.querySelector<T>(selector);
     if (!element) {
-      throw Error('Missing diagnostic element: ' + selector);
+      throw new Error('Missing diagnostic element: ' + selector);
     }
     return element;
   },
@@ -56,8 +56,8 @@ await Promise.all(
     (path) =>
       new Promise((resolve) => {
         const im = new Image();
-        im.onerror = resolve;
-        im.onload = im.onerror;
+        im.addEventListener('error', resolve);
+        im.addEventListener('load', resolve);
         im.src = 'assets/' + path + '.png';
         pictures.set(path, im);
       }),
@@ -76,30 +76,30 @@ const roundSnapshotContext = roundSnapshot.getContext('2d')!;
 function resultFixture() {
   return [
     { score: 8630, roundBonus: { kills: 2000, time: 1330, credits: 0 } },
-    { score: 23140, roundBonus: { kills: 3000, time: 640, credits: 1 } },
-    { score: 40830, roundBonus: { kills: 20000, time: 1330, credits: 2 } },
+    { score: 23_140, roundBonus: { kills: 3000, time: 640, credits: 1 } },
+    { score: 40_830, roundBonus: { kills: 20_000, time: 1330, credits: 2 } },
   ][Number($<HTMLSelectElement>('#result-credit').value)];
 }
-$<HTMLSelectElement>('#result-credit').onchange = () => {
+$<HTMLSelectElement>('#result-credit').addEventListener('change', () => {
   showFrame = false;
   sequence = null;
   result = null;
   fixedTime = null;
   rows = 3;
-};
+});
 function introOptions() {
   return {
     round: Number($<HTMLSelectElement>('#round').value),
     fromGo: $<HTMLSelectElement>('#start-origin').value === 'go',
   };
 }
-$<HTMLSelectElement>('#start-origin').onchange = () => {
+$<HTMLSelectElement>('#start-origin').addEventListener('change', () => {
   showFrame = false;
   rows = null;
   result = null;
   sequence = null;
   fixedTime = 0.3;
-};
+});
 function cue(name: string) {
   trace.push(name);
   $('#cues').textContent = 'События: ' + trace.join(' → ');
@@ -117,7 +117,7 @@ function cue(name: string) {
   };
   audio.sound(sounds[name as keyof typeof sounds]);
 }
-$<HTMLButtonElement>('#intro').onclick = () => {
+$<HTMLButtonElement>('#intro').addEventListener('click', () => {
   showFrame = false;
   audio.unlock();
   trace = [];
@@ -125,18 +125,18 @@ $<HTMLButtonElement>('#intro').onclick = () => {
   result = null;
   fixedTime = null;
   sequence = new DomainSequence({ ...introOptions(), onCue: cue });
+});
+const showFixedTime = (button: HTMLElement) => {
+  showFrame = false;
+  rows = null;
+  result = null;
+  sequence = null;
+  fixedTime = Number(button.dataset.time);
 };
-document.querySelectorAll<HTMLElement>('[data-time]').forEach(
-  (b) =>
-    (b.onclick = () => {
-      showFrame = false;
-      rows = null;
-      result = null;
-      sequence = null;
-      fixedTime = Number(b.dataset.time);
-    }),
-);
-$<HTMLButtonElement>('#results').onclick = () => {
+for (const b of document.querySelectorAll<HTMLElement>('[data-time]')) {
+  b.addEventListener('click', () => showFixedTime(b));
+}
+$<HTMLButtonElement>('#results').addEventListener('click', () => {
   showFrame = false;
   audio.unlock();
   trace = [];
@@ -150,20 +150,20 @@ $<HTMLButtonElement>('#results').onclick = () => {
     },
   });
   rows = 0;
+});
+const showFixedRows = (button: HTMLElement) => {
+  showFrame = false;
+  sequence = null;
+  result = null;
+  fixedTime = null;
+  rows = Number(button.dataset.rows);
 };
-document.querySelectorAll<HTMLElement>('[data-rows]').forEach(
-  (b) =>
-    (b.onclick = () => {
-      showFrame = false;
-      sequence = null;
-      result = null;
-      fixedTime = null;
-      rows = Number(b.dataset.rows);
-    }),
-);
-$<HTMLButtonElement>('#menu-frame').onclick = () => {
+for (const b of document.querySelectorAll<HTMLElement>('[data-rows]')) {
+  b.addEventListener('click', () => showFixedRows(b));
+}
+$<HTMLButtonElement>('#menu-frame').addEventListener('click', () => {
   showFrame = true;
-};
+});
 const frameCanvas = document.createElement('canvas');
 frameCanvas.width = 320;
 frameCanvas.height = 200;

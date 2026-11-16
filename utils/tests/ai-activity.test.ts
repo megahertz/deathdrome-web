@@ -8,11 +8,11 @@ test('activity timing constants match the original executable', () => {
   const exe = readFileSync(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    at = (v: number) => v - 0x480000 + 0x68e00;
-  assert.equal(AI_ACTIVITY.sleepDelaySeconds, exe.readFloatLE(at(0x483dbb)));
+    at = (v: number) => v - 0x48_00_00 + 0x6_8e_00;
+  assert.equal(AI_ACTIVITY.sleepDelaySeconds, exe.readFloatLE(at(0x48_3d_bb)));
   assert.equal(
     AI_ACTIVITY.keepActiveRemainingSeconds,
-    exe.readFloatLE(at(0x483f66)),
+    exe.readFloatLE(at(0x48_3f_66)),
   );
 });
 test('80 native region-activity sequences match 1520 model dispatches, including disabled controls and timer boundaries', () => {
@@ -40,7 +40,9 @@ test('80 native region-activity sequences match 1520 model dispatches, including
       }),
       r = sim.runners[1];
     sim.countdown = 0;
-    sim.runners.forEach((q) => (q.inactive = q.id !== 1));
+    for (const q of sim.runners) {
+      q.inactive = q.id !== 1;
+    }
     Object.assign(r, {
       x: 100,
       y: 0,

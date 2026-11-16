@@ -6,11 +6,10 @@ import { Scrub } from '../../src/scrub.ts';
 import { Simulation } from '../../src/simulation.ts';
 test('the exported scrub includes all 32 original instance references', async () => {
   const data = JSON.parse(
-    (
-      await readFile(
-        new URL('../../private/assets/models/scrub.json', import.meta.url),
-      )
-    ).toString(),
+    await readFile(
+      new URL('../../private/assets/models/scrub.json', import.meta.url),
+      'utf8',
+    ),
   );
   assert.equal(data.instanceDefinitions, 1);
   assert.equal(data.instanceReferences, 32);
@@ -31,13 +30,13 @@ test('scrub growth and contraction constants match the supplied executable', asy
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    at = (v: number) => v - 0x480000 + 0x68e00;
+    at = (v: number) => v - 0x48_00_00 + 0x6_8e_00;
   assert.equal(
     GAME_TABLES.scrub.contractionRate,
-    exe.readFloatLE(at(0x484a4e)),
+    exe.readFloatLE(at(0x48_4a_4e)),
   );
-  assert.equal(GAME_TABLES.scrub.heightGrowth, exe.readFloatLE(at(0x484a56)));
-  assert.equal(GAME_TABLES.scrub.finishScale, exe.readDoubleLE(at(0x484a62)));
+  assert.equal(GAME_TABLES.scrub.heightGrowth, exe.readFloatLE(at(0x48_4a_56)));
+  assert.equal(GAME_TABLES.scrub.finishScale, exe.readDoubleLE(at(0x48_4a_62)));
   const s = new Scrub();
   s.start();
   let duration = 0;

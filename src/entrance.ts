@@ -59,7 +59,7 @@ export function beginEntrance(sim: Simulation) {
 }
 function applyEntrance(sim: Simulation) {
   const e = sim.entrance!;
-  sim.runners.forEach((r: Runner, i: number) => {
+  for (const [i, r] of sim.runners.entries()) {
     const p = e.local[i],
       rotated = rotate([p.x, p.y, p.z], e.yawDegrees);
     Object.assign(r, {
@@ -69,7 +69,7 @@ function applyEntrance(sim: Simulation) {
       yaw: (p.yawDegrees + e.yawDegrees) * RAD,
       vy: 0,
     });
-  });
+  }
   const p = e.local[sim.player],
     c = e.cameraLocal,
     rotated = rotate([F(c.x + p.x), F(c.y + p.y), F(c.z + p.z)], e.yawDegrees);
@@ -105,7 +105,7 @@ function cameraStep(
       e.start = { ...e.cameraLocal };
       e.velocity = {};
       e.acceleration = {};
-      (['x', 'y', 'z'] as const).forEach((k, i) => {
+      for (const [i, k] of (['x', 'y', 'z'] as const).entries()) {
         const v = delta[i] * C.velocityFactor * C.inverseSeconds;
         e.velocity![k]! = F(v);
         e.acceleration![k]! = F(
@@ -113,7 +113,7 @@ function cameraStep(
             C.velocityFactor *
             C.inverseSecondsSquared,
         );
-      });
+      }
       e.cameraStage = 2;
       e.cameraTime = 0;
     }

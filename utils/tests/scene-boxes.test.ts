@@ -32,38 +32,32 @@ test('box corners and 1815 face, endpoint, inside and grazing queries match nati
         ),
       ),
     );
-    points.forEach((p, i) =>
-      p.forEach((v, j) => assert.ok(v === c.native[i][j])),
-    );
+    for (const [i, p] of points.entries()) {
+      for (const [j, v] of p.entries()) {
+        assert.ok(v === c.native[i][j]);
+      }
+    }
   }
   const boxes = audit.boxes.map((b: { vertices: number[][] }) =>
     prepareBox(b.vertices),
   );
-  audit.fixtures.forEach(
-    (
-      f: {
-        box: string | number;
-        from: { [x: string]: number };
-        to: { [x: string]: number };
-      },
-      i: number,
-    ) => {
-      const h = intersectBox(
-          boxes[f.box],
-          f.from as unknown as import('../../src/game-types.ts').Vec3,
-          f.to as unknown as import('../../src/game-types.ts').Vec3,
-        ),
-        expected = audit.native[i];
-      assert.equal(!!h, !!expected, `hit ${i}`);
-      if (h) {
-        for (const k of ['normal', 'point']) {
-          Object.values(h[k as keyof typeof h]).forEach((v, j) =>
-            assert.ok(v === expected[k][j], `${i} ${k}.${j}`),
-          );
+  for (const [i, f] of audit.fixtures.entries()) {
+    const h: ReturnType<typeof intersectBox> = intersectBox(
+        boxes[f.box],
+        f.from as unknown as import('../../src/game-types.ts').Vec3,
+        f.to as unknown as import('../../src/game-types.ts').Vec3,
+      ),
+      expected = audit.native[i];
+    assert.equal(!!h, !!expected, `hit ${i}`);
+    if (h) {
+      for (const k of ['normal', 'point']) {
+        const components: number[] = Object.values(h[k as 'normal' | 'point']);
+        for (let j = 0; j < components.length; j++) {
+          assert.ok(components[j] === expected[k][j], `${i} ${k}.${j}`);
         }
       }
-    },
-  );
+    }
+  }
 });
 test('all 18 source arena boxes replace their display faces in production queries', () => {
   const models = new Map(),
@@ -99,26 +93,24 @@ test('all 18 source arena boxes replace their display faces in production querie
     );
   }
   assert.equal(views.size, 18);
-  audit.fixtures.forEach(
-    (f: { box: string | number; from: any; to: any }, i: number) => {
-      const view = views.get(f.box);
-      if (!view) {
-        return;
+  for (const [i, f] of audit.fixtures.entries()) {
+    const view = views.get(f.box);
+    if (!view) {
+      continue;
+    }
+    const hits = view.sweepContacts(
+        f.from,
+        f.to as unknown as import('../../src/game-types.ts').Vec3,
+      ),
+      expected = audit.native[i];
+    assert.equal(hits.length, expected ? 1 : 0, `contacts ${i}`);
+    if (expected) {
+      assert.equal(hits[0].name, audit.boxes[f.box].name);
+      for (const [j, k] of ['x', 'y', 'z'].entries()) {
+        assert.ok(hits[0].point[k] === expected.point[j]);
       }
-      const hits = view.sweepContacts(
-          f.from,
-          f.to as unknown as import('../../src/game-types.ts').Vec3,
-        ),
-        expected = audit.native[i];
-      assert.equal(hits.length, expected ? 1 : 0, `contacts ${i}`);
-      if (expected) {
-        assert.equal(hits[0].name, audit.boxes[f.box].name);
-        for (const [j, k] of ['x', 'y', 'z'].entries()) {
-          assert.ok(hits[0].point[k] === expected.point[j]);
-        }
-      }
-    },
-  );
+    }
+  }
   for (const view of views.values()) {
     view.arenaGroup.traverse(
       (o: import('../../src/model-types.ts').RenderNode) => {

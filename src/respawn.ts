@@ -9,7 +9,7 @@ export function cancelRespawn(
   sim: Simulation,
   r: Pick<Runner, 'respawn'> & Partial<Runner>,
 ) {
-  if (r.respawn?.routeIndex != null) {
+  if (r.respawn?.routeIndex !== null && r.respawn?.routeIndex !== undefined) {
     sim.aiRouteCounts[r.respawn.routeIndex]--;
   }
   r.respawn = null;
@@ -32,7 +32,10 @@ export function beginRespawn(
   } = {},
 ) {
   cancelRespawn(sim, r);
-  if (r.navigation?.routeIndex != null) {
+  if (
+    r.navigation?.routeIndex !== null &&
+    r.navigation?.routeIndex !== undefined
+  ) {
     sim.aiRouteCounts[r.navigation.routeIndex]--;
   }
   clearRouteNodes(sim, r);
@@ -59,7 +62,7 @@ export function beginRespawn(
     allocateRoute,
     born: sim.elapsed,
   };
-  if (routeIndex != null) {
+  if (routeIndex !== null && routeIndex !== undefined) {
     sim.aiRouteCounts[routeIndex]++;
   }
   sim.emit('respawnStarted', { runner: r.id });

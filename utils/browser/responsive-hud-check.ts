@@ -42,32 +42,35 @@ for (const [label, y] of [
   button.style.top = y / 2 + '%';
   button.setAttribute('aria-label', label);
   button.append(bitmapLabel(label, { color: 'gren' }));
-  button.onclick = () => {
+  button.addEventListener('click', () => {
     if (label === 'FULLSCREEN') {
       document.querySelector<HTMLButtonElement>('#fullscreen')!.click();
     } else {
       paused.checked = false;
       pauseMode();
     }
-  };
+  });
   menu.append(button);
 }
-touch.onchange = () => {
+touch.addEventListener('change', () => {
   touchMode();
   pauseMode();
-};
-paused.onchange = pauseMode;
+});
+paused.addEventListener('change', pauseMode);
 touchMode();
 pauseMode();
-document.querySelector<HTMLSelectElement>('#cutout')!.onchange = (e) => {
-  hud.probe.style.paddingLeft =
-    (e.target as HTMLSelectElement).value === 'left' ? '32px' : '0px';
-  hud.probe.style.paddingRight =
-    (e.target as HTMLSelectElement).value === 'right' ? '32px' : '0px';
-};
+document
+  .querySelector<HTMLSelectElement>('#cutout')!
+  .addEventListener('change', (e) => {
+    hud.probe.style.paddingLeft =
+      (e.target as HTMLSelectElement).value === 'left' ? '32px' : '0px';
+    hud.probe.style.paddingRight =
+      (e.target as HTMLSelectElement).value === 'right' ? '32px' : '0px';
+  });
 let fullscreenStatus = '';
-document.querySelector<HTMLButtonElement>('#fullscreen')!.onclick =
-  async () => {
+document
+  .querySelector<HTMLButtonElement>('#fullscreen')!
+  .addEventListener('click', async () => {
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
@@ -78,7 +81,7 @@ document.querySelector<HTMLButtonElement>('#fullscreen')!.onclick =
     } catch {
       fullscreenStatus = 'fullscreen unavailable';
     }
-  };
+  });
 const player = {
   id: 0,
   x: 0,
@@ -98,7 +101,7 @@ const sim = {
   lives: 3,
   time: 186.3,
   requiredKills: 2,
-  score: 123400,
+  score: 123_400,
   round: 1,
   countdown: 0,
 };

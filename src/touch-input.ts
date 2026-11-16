@@ -166,7 +166,7 @@ export class TouchInput {
       return false;
     }
     let role;
-    if (touchedButtons(x, y, width, height, this.geometry.buttons).length) {
+    if (touchedButtons(x, y, width, height, this.geometry.buttons).length > 0) {
       role = 'buttons';
     } else if (x < this.geometry.width / 2) {
       role = 'stick';

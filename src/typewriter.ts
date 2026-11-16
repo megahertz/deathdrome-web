@@ -16,7 +16,7 @@ export class TypewriterSequence {
     this.stage = 'delay';
     this.remaining = paragraphs[0]?.delayFrames || 0;
     this.accumulator = 0;
-    this.done = !paragraphs.length;
+    this.done = paragraphs.length === 0;
   }
   finish() {
     this.visible = this.paragraphs.map(

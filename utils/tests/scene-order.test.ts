@@ -24,11 +24,11 @@ function compare(
     const actualRecord = actual as Record<string, unknown>,
       expectedRecord = expected as Record<string, unknown>;
     assert.deepEqual(
-      Object.keys(actual).sort(),
-      Object.keys(expected).sort(),
+      Object.keys(actual).toSorted(),
+      Object.keys(expected).toSorted(),
       path,
     );
-    for (const key in expected) {
+    for (const key of Object.keys(expected)) {
       compare(
         actualRecord[key],
         expectedRecord[key],
@@ -89,35 +89,25 @@ test('all 5116 full native-initialized arena queries preserve contact order as w
         `arena ${row.arena}, query ${i}`,
       );
       count++;
-      hits.forEach(
-        (
-          native: {
-            normal: Record<string, number>;
-            point: Record<string, number>;
-            name: string;
-            height: number;
-          },
-          j: string | number,
-        ) => {
-          const h = actual[i][j];
-          assert.equal(
-            h.name,
-            native.name,
-            `arena ${row.arena}, query ${i}, contact ${j}`,
-          );
-          for (const field of [
-            'normal' as const,
-            ...(row.fixtures[i].kind === 'sweep' ? ['point' as const] : []),
-          ]) {
-            for (const axis of ['x', 'y', 'z']) {
-              assert.ok(Math.abs(h[field][axis] - native[field][axis]) < 1e-4);
-            }
+      for (const [j, native] of hits.entries()) {
+        const h = actual[i][j];
+        assert.equal(
+          h.name,
+          native.name,
+          `arena ${row.arena}, query ${i}, contact ${j}`,
+        );
+        for (const field of [
+          'normal' as const,
+          ...(row.fixtures[i].kind === 'sweep' ? ['point' as const] : []),
+        ]) {
+          for (const axis of ['x', 'y', 'z']) {
+            assert.ok(Math.abs(h[field][axis] - native[field][axis]) < 1e-4);
           }
-          if (row.fixtures[i].kind === 'ground') {
-            assert.ok(Math.abs(h.height - native.height) < 1e-4);
-          }
-        },
-      );
+        }
+        if (row.fixtures[i].kind === 'ground') {
+          assert.ok(Math.abs(h.height - native.height) < 1e-4);
+        }
+      }
     }
   }
   assert.equal(count, 5116);

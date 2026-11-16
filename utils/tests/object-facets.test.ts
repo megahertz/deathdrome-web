@@ -28,53 +28,38 @@ test('multi-polygon source order agrees with 3444 original shape queries on all 
       return Object.assign(Object.create(View.prototype), { arenaGroup: root });
     },
   );
-  audit.fixtures.forEach(
-    (
-      f: {
-        group: string | number;
-        kind: string;
-        x: any;
-        z: any;
-        from: any;
-        to: any;
-      },
-      i: number,
-    ) => {
-      const view = views[f.group],
-        hits =
-          f.kind === 'altitude'
-            ? view.ground(f.x, f.z, 200, true)
-            : view.sweepContacts(f.from, f.to),
-        actual = hits[0],
-        expected = audit.native[i];
-      assert.ok(
-        hits.length <= 1,
-        `one shape returns at most one contact: ${i}`,
-      );
-      assert.equal(!!actual, !!expected, `hit ${i}`);
-      if (actual) {
+  for (const [i, f] of audit.fixtures.entries()) {
+    const view = views[f.group],
+      hits =
+        f.kind === 'altitude'
+          ? view.ground(f.x, f.z, 200, true)
+          : view.sweepContacts(f.from, f.to),
+      actual = hits[0],
+      expected = audit.native[i];
+    assert.ok(hits.length <= 1, `one shape returns at most one contact: ${i}`);
+    assert.equal(!!actual, !!expected, `hit ${i}`);
+    if (actual) {
+      for (const [j, k] of ['x', 'y', 'z'].entries()) {
+        assert.ok(
+          Math.abs(actual.normal[k] - expected.normal[j]) <= 1e-5,
+          `normal ${i}`,
+        );
+      }
+      if (f.kind === 'altitude') {
+        assert.ok(
+          Math.abs(actual.height - expected.height) <= 1e-5,
+          `height ${i}`,
+        );
+      } else {
         for (const [j, k] of ['x', 'y', 'z'].entries()) {
           assert.ok(
-            Math.abs(actual.normal[k] - expected.normal[j]) <= 1e-5,
-            `normal ${i}`,
+            Math.abs(actual.point[k] - expected.point[j]) <= 1e-5,
+            `point ${i}`,
           );
-        }
-        if (f.kind === 'altitude') {
-          assert.ok(
-            Math.abs(actual.height - expected.height) <= 1e-5,
-            `height ${i}`,
-          );
-        } else {
-          for (const [j, k] of ['x', 'y', 'z'].entries()) {
-            assert.ok(
-              Math.abs(actual.point[k] - expected.point[j]) <= 1e-5,
-              `point ${i}`,
-            );
-          }
         }
       }
-    },
-  );
+    }
+  }
   for (const view of views) {
     view.arenaGroup.traverse(
       (o: import('../../src/model-types.ts').RenderNode) => {

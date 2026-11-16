@@ -43,11 +43,13 @@ function select(point: Vec3, reach: number, contacts: any[]) {
 // rebound a falling point when the target differs from its previous height.
 export function stepSupportPoint(
   y: number,
-  velocity: number,
+  inputVelocity: number,
   floor: number,
   normalY: number,
   dt: number,
 ) {
+  let velocity = inputVelocity;
+
   const gravityStep = f(dt * SUPPORT.gravity),
     next = f(y + dt * velocity);
   if (next - dt * gravityStep > floor) {
@@ -182,13 +184,15 @@ export function stepSuspension(
     | 'z'
   > &
     Partial<Runner>,
-  dt: number,
+  inputDt: number,
   query: (x: number, z: number, y: number) => number | GroundHit[],
   worldVelocity: { x: any; y: any; z: any },
   {
     onFrontContacts = () => {},
   }: { onFrontContacts?: (hits: GroundHit[]) => void } = {},
 ) {
+  let dt = inputDt;
+
   const wasGrounded = r.grounded,
     wasJumping = r.actionMode === 2;
   dt = f(dt);

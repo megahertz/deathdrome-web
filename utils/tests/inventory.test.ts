@@ -27,7 +27,7 @@ const report = (name: string) =>
   );
 test('four-cell inventory writes, active count, selection, pointer and bonuses match original action fixtures', () => {
   const a = report('inventory');
-  a.fixtures.forEach(({ state, actions }: any, i: number) => {
+  for (const [i, { state, actions }] of a.fixtures.entries()) {
     let r = stateFixture<import('../../src/game-types.ts').Runner>({
       weaponCells: [...state.cells],
       weapons: state.cells
@@ -68,11 +68,11 @@ test('four-cell inventory writes, active count, selection, pointer and bonuses m
       },
     );
     assert.deepEqual(samples, a.native[i]);
-  });
+  }
 });
 test('AI rolls, duplicate choices and RNG draw counts match 217 original x86 fixtures', () => {
   const a = report('ai-enhancers');
-  a.fixtures.forEach(({ cells, count, draws }: any, i: number) => {
+  for (const [i, { cells, count, draws }] of a.fixtures.entries()) {
     let index = 0;
     const sim = stateFixture<import('../../src/simulation.ts').Simulation>({
       randomInt: () => draws[index++],
@@ -86,7 +86,7 @@ test('AI rolls, duplicate choices and RNG draw counts match 217 original x86 fix
       },
       chosen = weaponCode(chooseAIEnhancer(sim, r));
     assert.deepEqual({ raw, rawDraws, chosen, draws: index }, a.native[i]);
-  });
+  }
 });
 test('a consumed NanoShield stays in an inactive cell and changes later AI choices', () => {
   const r = stateFixture<import('../../src/game-types.ts').Runner>({
@@ -152,13 +152,15 @@ test('full delayed player respawn discards active pickups and preserves their re
   const s = new Simulation({ ground: () => 0, blocked: () => false });
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[s.player];
   Object.assign(r, { dead: 0, x: 100, y: 0, z: 100 });
   s.collect(r, { type: 'enh_lock.gam' });
   s.collect(r, { type: 'enh_nano.gam' });
   const cells = [...inventoryCells(r)];
-  s.damage(r, 10000, 1);
+  s.damage(r, 10_000, 1);
   for (let i = 0; i < 210; i++) {
     s.step(1 / 60);
   }

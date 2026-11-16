@@ -16,11 +16,11 @@ test('Nitro Ram acceleration, steering and impact values match native source dat
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    f = (va: number) => exe.readFloatLE(va - 0x480000 + 0x68e00);
-  assert.equal(NITRO.acceleration, f(0x48f194));
-  assert.equal(NITRO.steerDegrees, f(0x48450c));
-  assert.equal(NITRO.contactDamage, -f(0x4841fc));
-  assert.equal(NITRO.normalContactFactor, f(0x4841f8));
+    f = (va: number) => exe.readFloatLE(va - 0x48_00_00 + 0x6_8e_00);
+  assert.equal(NITRO.acceleration, f(0x48_f1_94));
+  assert.equal(NITRO.steerDegrees, f(0x48_45_0c));
+  assert.equal(NITRO.contactDamage, -f(0x48_41_fc));
+  assert.equal(NITRO.normalContactFactor, f(0x48_41_f8));
 });
 test('Nitro Ram boosts forward acceleration, steers toward a lock and preserves a second pickup while active', () => {
   const { s, a, b } = pair();

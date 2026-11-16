@@ -16,7 +16,7 @@ export const KEEP_MOVING = Object.freeze({
 // index (48f1b8) is shared with the other 436028 impact callers.
 export function createKeepMovingState() {
   return {
-    timers: Array(8).fill(0),
+    timers: Array.from({ length: 8 }, () => 0),
     positions: Array.from({ length: 8 }, () => ({ x: 0, y: 0, z: 0 })),
     impactVoice: 0,
   };

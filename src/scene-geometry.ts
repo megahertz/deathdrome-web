@@ -133,7 +133,10 @@ function cache(mesh: import('./model-types.ts').RenderNode) {
     }
   }
   const facets: WorldFacet[] = source.map((s) => ({
-      ...prepareFacet(s.vertices.map(transform), s.twoSided),
+      ...prepareFacet(
+        s.vertices.map((itemValue) => transform(itemValue)),
+        s.twoSided,
+      ),
       name: s.name,
       contactObject: s.contactObject,
       contactOrder: s.contactOrder,
@@ -331,15 +334,18 @@ export function segmentFacetHits(
       }
     }
   });
-  return result.sort((a, b) =>
+  return result.toSorted((a, b) =>
     compareSceneQueryOrder(ordering.get(a), ordering.get(b)),
   );
 }
 export function altitudeFacetHits(
   root: Group<Object3DEventMap>,
-  x: number,
-  z: number,
+  inputX: number,
+  inputZ: number,
 ) {
+  let x = inputX;
+  let z = inputZ;
+
   x = Math.fround(x);
   z = Math.fround(z);
   const result: any[] = [],
@@ -387,7 +393,7 @@ export function altitudeFacetHits(
       }
     }
   });
-  return result.sort((a, b) =>
+  return result.toSorted((a, b) =>
     compareSceneQueryOrder(ordering.get(a), ordering.get(b)),
   );
 }

@@ -21,7 +21,7 @@ const audit = JSON.parse(
 test('all eight production menu floors retain the native clipping/projection at six headings', () => {
   assert.equal(audit.passed, true);
   assert.equal(audit.cases, 48);
-  assert.equal(audit.comparedIndexBytes, 3072000);
+  assert.equal(audit.comparedIndexBytes, 3_072_000);
   for (const fixture of audit.fixtures) {
     assert.deepEqual(MENU_PROJECTION, fixture.options);
     const data = JSON.parse(
@@ -42,17 +42,13 @@ test('all eight production menu floors retain the native clipping/projection at 
     const camera = new THREE.PerspectiveCamera(18, 1, 1.5, 1024);
     camera.position.set(0, 2.3, 10);
     camera.rotation.set((-10 * Math.PI) / 180, 0, 0);
-    assert.deepEqual(
-      JSON.parse(
-        JSON.stringify(
-          previewFloorPolygons(root, camera).map(({ vertices, projected }) => ({
-            vertices,
-            projected,
-          })),
-        ),
-      ),
-      fixture.polygons,
+    const serialized = JSON.stringify(
+      previewFloorPolygons(root, camera).map(({ vertices, projected }) => ({
+        vertices,
+        projected,
+      })),
     );
+    assert.deepEqual(JSON.parse(serialized), fixture.polygons);
   }
 });
 

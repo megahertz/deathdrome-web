@@ -97,9 +97,9 @@ test('shielded projectile contacts still score without subtracting health', () =
   const s = new Simulation();
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) =>
-    Object.assign(r, { x: 500 + r.id * 10, y: 0, z: 500 }),
-  );
+  for (const r of s.runners) {
+    Object.assign(r, { x: 500 + r.id * 10, y: 0, z: 500 });
+  }
   const p = s.runners[0],
     q = s.runners[1];
   Object.assign(p, { x: 100, z: 100, yaw: 0 });

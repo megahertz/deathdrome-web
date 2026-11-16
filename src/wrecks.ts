@@ -8,7 +8,7 @@ export class Wrecks {
   declare states: any[];
 
   constructor() {
-    this.states = Array(8).fill(null);
+    this.states = Array.from({ length: 8 }, () => null);
   }
   create(
     r: Pick<Runner, 'id' | 'x' | 'y' | 'yaw' | 'z'> & Partial<Runner>,
@@ -16,7 +16,7 @@ export class Wrecks {
     ground: GroundQuery,
   ) {
     const spec = WRECK.runners[r.id];
-    return (this.states[r.id] = {
+    this.states[r.id] = {
       runner: r.id,
       x: r.x,
       y: ground(r.x, r.z, r.y + 5),
@@ -45,7 +45,8 @@ export class Wrecks {
         scale: 1,
         visible: true,
       })),
-    });
+    };
+    return this.states[r.id];
   }
   step(
     dt: number,

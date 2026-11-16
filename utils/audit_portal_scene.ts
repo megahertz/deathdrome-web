@@ -9,11 +9,10 @@ const results = [],
 for (let arena = 1; arena <= 8; arena++) {
   // oxlint-disable no-await-in-loop -- Keep each reference fixture and its assertions together, bounding live scene memory.
   const data = JSON.parse(
-    (
-      await readFile(
-        new URL(`../private/assets/models/arena${arena}.json`, import.meta.url),
-      )
-    ).toString(),
+    await readFile(
+      new URL(`../private/assets/models/arena${arena}.json`, import.meta.url),
+      'utf8',
+    ),
   );
   // oxlint-enable no-await-in-loop
   data.meshes = data.meshes.map((f: any) => ({
@@ -34,7 +33,7 @@ for (let arena = 1; arena <= 8; arena++) {
   view.arenaGroup.updateMatrixWorld(true);
   for (let round = 1; round <= 3; round++) {
     view.configurePortals(round);
-    const ids = Object.keys(view.portals).sort(),
+    const ids = Object.keys(view.portals).toSorted(),
       chosen = [
         ...ids.filter((id) => !portalLocked(id, round)).slice(0, 2),
         ...ids.filter((id) => portalLocked(id, round)).slice(0, 1),
@@ -84,7 +83,9 @@ for (let arena = 1; arena <= 8; arena++) {
             view.setPortalHeight(portalId, h),
         });
         sim.countdown = 0;
-        sim.runners.forEach((r) => (r.dead = Infinity));
+        for (const r of sim.runners) {
+          r.dead = Infinity;
+        }
         const r = sim.runners[0];
         Object.assign(r, approachPose, {
           dead: 0,

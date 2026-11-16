@@ -8,14 +8,14 @@ test('single-player population reset matches native default and pruning instruct
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    data = (va: number) => va - 0x480000 + 0x68e00,
-    code = (va: number) => va - 0x410000 + 0x400;
-  assert.equal(POPULATION.initialCount, exe.readUInt32LE(data(0x48d8ac)));
-  assert.equal(POPULATION.initialCount, exe.readUInt32LE(code(0x4187d6)));
+    data = (va: number) => va - 0x48_00_00 + 0x6_8e_00,
+    code = (va: number) => va - 0x41_00_00 + 0x4_00;
+  assert.equal(POPULATION.initialCount, exe.readUInt32LE(data(0x48_d8_ac)));
+  assert.equal(POPULATION.initialCount, exe.readUInt32LE(code(0x41_87_d6)));
   assert.equal(POPULATION.initialCount, 5);
   assert.ok(
     exe
-      .subarray(code(0x434580), code(0x4345f6))
+      .subarray(code(0x43_45_80), code(0x43_45_f6))
       .includes(Buffer.from([0x8d, 0x5a, 0xff])),
     'pruning begins at the last loaded model',
   );
@@ -61,7 +61,7 @@ test('AI destruction materializes the next inactive model after the native delay
   s.ai = () => ({});
   const victim = s.runners[1];
   Object.assign(victim, { x: 100, y: 0, z: 100 });
-  s.damage(victim, 10000, s.player);
+  s.damage(victim, 10_000, s.player);
   s.checkRunnerHealth(victim);
   const wreck = s.wrecks.states[1];
   for (let i = 0; i < 149; i++) {
@@ -105,11 +105,10 @@ test('replacement cursor scans cyclically, preserves the human and ignores a liv
 });
 test('replacement uses the first deficient route rather than initial round-priority allocation', async () => {
   const paths = JSON.parse(
-      (
-        await readFile(
-          new URL('../../private/assets/ai-paths.json', import.meta.url),
-        )
-      ).toString(),
+      await readFile(
+        new URL('../../private/assets/ai-paths.json', import.meta.url),
+        'utf8',
+      ),
     ),
     s = new Simulation({ arena: 1, round: 3, paths: paths[0] });
   assert.deepEqual(s.aiRouteCounts, [0, 0, 0, 2, 2]);
@@ -125,7 +124,7 @@ test('the selected human respawns in the same model rather than joining the AI r
   s.countdown = 0;
   s.ai = () => ({});
   const p = s.runners[7];
-  s.damage(p, 10000, 0);
+  s.damage(p, 10_000, 0);
   s.checkRunnerHealth(p);
   for (let i = 0; i < 151; i++) {
     s.step(1 / 60);

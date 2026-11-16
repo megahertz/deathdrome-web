@@ -13,18 +13,7 @@ test('profile health math/protection matches 480 original executable cases', () 
       )
       .toString(),
   );
-  a.fixtures.forEach(
-    (
-      f:
-        | {
-            health: number;
-            delta: number;
-            profileType?: number | undefined;
-            shielded?: boolean | undefined;
-            invulnerableHuman?: boolean | undefined;
-          }
-        | undefined,
-      i: number,
-    ) => assert.equal(healthAfterDelta(f!.health, f!.delta, f), a.native[i]),
-  );
+  for (const [i, f] of a.fixtures.entries()) {
+    assert.equal(healthAfterDelta(f!.health, f!.delta, f), a.native[i]);
+  }
 });

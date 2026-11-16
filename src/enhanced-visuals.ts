@@ -1,59 +1,15 @@
 import type { Vec3 } from './game-types.ts';
 // Visual-only policy and state: never consumes the simulation RNG or changes runners.
-export class AdaptiveResolution {
-  declare factor: number;
-  declare elapsed: number;
-  declare slow: number;
-  declare fast: number;
-  declare cooldown: number;
-  declare average: number;
-
-  constructor() {
-    this.reset();
-  }
-  reset() {
-    this.factor = 1;
-    this.elapsed = 0;
-    this.slow = 0;
-    this.fast = 0;
-    this.cooldown = 0;
-    this.average = 1 / 60;
-  }
-  sample(dt: number, active = true) {
-    if (!active || !Number.isFinite(dt) || dt <= 0 || dt > 0.1) {
-      return this.factor;
-    }
-    this.elapsed += dt;
-    this.cooldown = Math.max(0, this.cooldown - dt);
-    this.average += (dt - this.average) * 0.08;
-    if (this.elapsed < 2) {
-      return this.factor;
-    } // Ignore shader compilation and entry transitions.
-    this.slow = this.average > 1 / 43 ? this.slow + dt : 0;
-    this.fast = this.average < 1 / 57 ? this.fast + dt : 0;
-    if (!this.cooldown && this.slow > 1) {
-      this.factor = Math.max(0.4, this.factor - 0.15);
-      this.cooldown = 2;
-      this.fast = 0;
-      this.slow = this.fast;
-    } else if (!this.cooldown && this.fast > 6) {
-      this.factor = Math.min(1, this.factor + 0.1);
-      this.cooldown = 3;
-      this.fast = 0;
-      this.slow = this.fast;
-    }
-    return this.factor;
-  }
-}
+export { AdaptiveResolution } from './adaptive-resolution.ts';
 export const FOG_PROFILES = Object.freeze([
-  [0x0b1118, 0.0009],
-  [0x080d18, 0.0008],
-  [0x111418, 0.00085],
-  [0x101118, 0.0009],
-  [0x1a0e0b, 0.001],
-  [0x0b1416, 0.00085],
-  [0x12110d, 0.0009],
-  [0x160d15, 0.0009],
+  [0x0b_11_18, 0.0009],
+  [0x08_0d_18, 0.0008],
+  [0x11_14_18, 0.00085],
+  [0x10_11_18, 0.0009],
+  [0x1a_0e_0b, 0.001],
+  [0x0b_14_16, 0.00085],
+  [0x12_11_0d, 0.0009],
+  [0x16_0d_15, 0.0009],
 ]);
 export function contactShadowPose(
   r: { x: any; y: any; z: any; yaw: any; dead?: any; inactive?: any },
@@ -67,7 +23,7 @@ export function contactShadowPose(
       (p: { height: number; normal: { y: any } }) =>
         p.height <= r.y + 0.4 && Math.abs(p.normal?.y || 0) > 0.35,
     )
-    .sort(
+    .toSorted(
       (a: { height: number }, b: { height: number }) => b.height - a.height,
     )[0];
   if (!floor) {
@@ -95,11 +51,11 @@ export class VisualParticles {
   constructor(capacity = 384) {
     this.capacity = capacity;
     this.items = [];
-    this.seed = 0x62731945;
+    this.seed = 0x62_73_19_45;
   }
   random() {
-    this.seed = (Math.imul(this.seed, 1664525) + 1013904223) >>> 0;
-    return this.seed / 4294967296;
+    this.seed = (Math.imul(this.seed, 1_664_525) + 1_013_904_223) >>> 0;
+    return this.seed / 4_294_967_296;
   }
   clear() {
     this.items.length = 0;
@@ -130,7 +86,7 @@ export class VisualParticles {
       age: 0,
       life,
       size,
-      color: color.slice(),
+      color: [...color],
       smoke,
       trail,
     });
@@ -155,7 +111,9 @@ export class VisualParticles {
       }
     }
   }
-  step(dt: number) {
+  step(inputDt: number) {
+    let dt = inputDt;
+
     if (!Number.isFinite(dt) || dt <= 0) {
       return;
     }

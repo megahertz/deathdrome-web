@@ -59,9 +59,13 @@ function reset() {
 }
 reset();
 let otherRegion = false;
-document.querySelector<HTMLButtonElement>('#region-target')!.onclick = () =>
-  (otherRegion = !otherRegion);
-screen.onchange = () => {
+document
+  .querySelector<HTMLButtonElement>('#region-target')!
+  .addEventListener('click', () => {
+    otherRegion = !otherRegion;
+    return otherRegion;
+  });
+screen.addEventListener('change', () => {
   reset();
   canvas.setAttribute(
     'aria-label',
@@ -70,24 +74,30 @@ screen.onchange = () => {
       : 'Production HUD fixture',
   );
   canvas.focus();
-};
-document.querySelector<HTMLButtonElement>('#reset')!.onclick = reset;
-document.querySelector<HTMLButtonElement>('#scale')!.onclick = () => {
-  const full = canvas.style.width !== '960px';
-  canvas.style.width = full ? '960px' : '640px';
-  canvas.style.height = full ? '600px' : '400px';
-};
-document.querySelector<HTMLButtonElement>('#target')!.onclick = () => {
-  targetEdge = !targetEdge;
-  status.textContent = targetEdge
-    ? 'Lock target outside viewport; reticle clamped at right edge.'
-    : 'Lock target centered.';
-};
-canvas.onclick = () => {
+});
+document
+  .querySelector<HTMLButtonElement>('#reset')!
+  .addEventListener('click', reset);
+document
+  .querySelector<HTMLButtonElement>('#scale')!
+  .addEventListener('click', () => {
+    const full = canvas.style.width !== '960px';
+    canvas.style.width = full ? '960px' : '640px';
+    canvas.style.height = full ? '600px' : '400px';
+  });
+document
+  .querySelector<HTMLButtonElement>('#target')!
+  .addEventListener('click', () => {
+    targetEdge = !targetEdge;
+    status.textContent = targetEdge
+      ? 'Lock target outside viewport; reticle clamped at right edge.'
+      : 'Lock target centered.';
+  });
+canvas.addEventListener('click', () => {
   if (screen.value === 'results') {
     advance();
   }
-};
+});
 window.addEventListener('keydown', (e) => {
   if ((e.target as Element | null)?.matches('select,button')) {
     return;
@@ -122,7 +132,7 @@ function frame() {
     warning = screen.value === 'warning';
   sim.time = warning ? 213.5 : 296.2;
   sim.score = warning ? 1000 : 0;
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     r.dead = r.id === 6 && warning ? 2 : 0;
     if (r.id === 6) {
       if (warning) {
@@ -140,7 +150,7 @@ function frame() {
     r.inactive = warning ? [2, 4, 7].includes(r.id) : r.id > 3 && r.id !== 6;
     r.x = 0;
     r.z = 0;
-  });
+  }
   if (screen.value === 'regions') {
     const poses = {
         6: [0, -300],

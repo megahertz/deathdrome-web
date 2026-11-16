@@ -18,12 +18,15 @@ export function projectileSlots(
     ),
     used = new Set(
       active
-        .filter((p: import('./game-types.ts').Projectile) => p.slot != null)
+        .filter(
+          (p: import('./game-types.ts').Projectile) =>
+            p.slot !== null && p.slot !== undefined,
+        )
         .map((p: import('./game-types.ts').Projectile) => p.slot),
     );
   // Controlled fixtures from older diagnostics may omit slot IDs.
   for (const p of active) {
-    if (p.slot == null) {
+    if (p.slot === null || p.slot === undefined) {
       let slot = 0;
       while (used.has(slot)) {
         slot++;
@@ -32,7 +35,7 @@ export function projectileSlots(
       used.add(slot);
     }
   }
-  return active.sort((a, b) => a.slot! - b.slot!);
+  return active.toSorted((a, b) => a.slot! - b.slot!);
 }
 // 43781c hides the pool without releasing its active flags. Inactive actors
 // stop visiting the weapon wrapper; 4356f4 clears the pool during setup.
@@ -71,7 +74,7 @@ export function missileTarget(
   let target = previous;
   const dx = f(forward.x);
   const dz = f(forward.z);
-  for (const q of [...runners].sort((a, b) => a.id - b.id)) {
+  for (const q of [...runners].toSorted((a, b) => a.id - b.id)) {
     if (
       q.id === r.id ||
       q.dead ||
@@ -341,7 +344,7 @@ export function stepRunnerProjectiles(
     if (p.kind === 'Missile') {
       p.target = r.missileLockTarget ?? null;
     }
-    if (p.target != null && (p.age ?? 0) > 0) {
+    if (p.target !== null && p.target !== undefined && (p.age ?? 0) > 0) {
       steerMissile(p, sim.runners[p.target], dt);
     }
     const old = stepProjectileMotion(p, dt);

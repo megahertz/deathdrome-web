@@ -15,10 +15,10 @@ export class RecordedDemo {
       bytes = new Uint8Array(buffer);
     if (
       data.byteLength < 44 ||
-      data.getUint32(0, true) !== 0x02265847 ||
+      data.getUint32(0, true) !== 0x02_26_58_47 ||
       data.getUint32(8, true) !== 3
     ) {
-      throw Error('Unsupported DeathDrome recording');
+      throw new Error('Unsupported DeathDrome recording');
     }
     this.date = new TextDecoder()
       .decode(bytes.slice(12, 44))
@@ -31,30 +31,31 @@ export class RecordedDemo {
       ended = false;
     while (p < data.byteLength) {
       if (p + 8 > data.byteLength) {
-        throw Error('Truncated recording header');
+        throw new Error('Truncated recording header');
       }
       const kind = data.getUint32(p, true),
         time = data.getFloat32(p + 4, true) / 1000;
       p += 8;
       const size = { 0: 72, 1: 68, 2: 0 }[kind];
-      if (size == null || p + size > data.byteLength) {
-        throw Error('Invalid recording payload');
+      if (size === null || size === undefined || p + size > data.byteLength) {
+        throw new Error('Invalid recording payload');
       }
+      const offset = p;
       if (kind === 0) {
         this.controls.push({
           time,
           words: Array.from({ length: 14 }, (_, i) =>
-            data.getUint32(p + i * 4, true),
+            data.getUint32(offset + i * 4, true),
           ),
           axes: Array.from({ length: 4 }, (_, i) =>
-            data.getFloat32(p + 56 + i * 4, true),
+            data.getFloat32(offset + 56 + i * 4, true),
           ),
         });
       } else if (kind === 1) {
-        const f = (n: number) => data.getFloat32(p + n, true),
+        const f = (n: number) => data.getFloat32(offset + n, true),
           id = data.getUint8(p + 60);
         if (id > 7) {
-          throw Error('Invalid recorded runner');
+          throw new Error('Invalid recorded runner');
         }
         this.tracks[id].push({
           time,
@@ -81,8 +82,8 @@ export class RecordedDemo {
       }
       p += size;
     }
-    if (!ended || this.tracks.some((t) => !t.length)) {
-      throw Error('Incomplete recording');
+    if (!ended || this.tracks.some((t) => t.length === 0)) {
+      throw new Error('Incomplete recording');
     }
   }
   sample(seconds: number) {

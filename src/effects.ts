@@ -51,7 +51,9 @@ export class Effects {
       'fx_smexp',
       'fx_lgexp',
     ];
-    const data = await Promise.all(names.map(modelData));
+    const data = await Promise.all(
+      names.map((itemValue) => modelData(itemValue)),
+    );
     return new Effects(view, new Map(names.map((n, i) => [n, data[i]])));
   }
   constructor(
@@ -83,7 +85,7 @@ export class Effects {
         makeModel(
           data,
           (f: { name: string }) =>
-            !f.name.match(/\/(fire|dedbody|\d{3}_\d{2})\//),
+            !/\/(fire|dedbody|\d{3}_\d{2})\//.test(f.name),
         ),
       );
       for (const token of [...tokens, 'fire', 'dedbody']) {
@@ -177,7 +179,7 @@ export class Effects {
       ['shots', sim.projectiles.filter((p) => !p.pending && !p.hidden)],
       ['barriers', sim.barriers],
     ] as [string, any[]][]) {
-      items.forEach((item, i) => {
+      for (const [i, item] of items.entries()) {
         const name =
             pool === 'barriers'
               ? BARRIERS[item.owner]
@@ -197,7 +199,7 @@ export class Effects {
               return;
             }
             const a = o.geometry.attributes.position;
-            o.userData.sourceVertices ??= Array.from(a.array);
+            o.userData.sourceVertices ??= [...a.array];
             const source: number[] = o.userData.sourceVertices;
             for (let j = 0; j < a.count; j++) {
               const p =
@@ -247,12 +249,16 @@ export class Effects {
             }
           });
         }
-      });
-      this.pools[pool].forEach((entry, i) => {
+      }
+      for (const [i, entry] of this.pools[pool].entries()) {
+        if (!entry) {
+          continue;
+        }
+
         if (i >= items.length) {
           entry.mesh.visible = false;
         }
-      });
+      }
     }
     this.syncIons(sim);
     this.syncShields(sim);
@@ -273,7 +279,12 @@ export class Effects {
     });
   }
   syncWrecks(sim: { wrecks: { states: any } }) {
-    this.pools.wrecks.forEach((e) => (e.mesh.visible = false));
+    for (const e of this.pools.wrecks) {
+      if (!e) {
+        continue;
+      }
+      e.mesh.visible = false;
+    }
     for (const w of sim.wrecks.states) {
       if (!w) {
         continue;
@@ -319,7 +330,12 @@ export class Effects {
     }
   }
   syncShields(sim: { runners: any; escape?: any }) {
-    this.pools.shields.forEach((e) => (e.mesh.visible = false));
+    for (const e of this.pools.shields) {
+      if (!e) {
+        continue;
+      }
+      e.mesh.visible = false;
+    }
     for (const r of sim.runners) {
       if (r.dead || r.shield <= 0 || !r.shieldPlanes) {
         continue;
@@ -339,7 +355,12 @@ export class Effects {
     }
   }
   syncRespawns(sim: Simulation) {
-    this.pools.respawns.forEach((e) => (e.mesh.visible = false));
+    for (const e of this.pools.respawns) {
+      if (!e) {
+        continue;
+      }
+      e.mesh.visible = false;
+    }
     for (const r of sim.runners) {
       if (!r.respawn?.shroudVisible) {
         continue;
@@ -369,43 +390,42 @@ export class Effects {
   }
   syncHotSpots(sim: { hotSpots: { spots: any } }) {
     const { spots } = sim.hotSpots;
-    spots.forEach(
-      (
-        s: { phase: number; matrix: number[]; scale: number; color: number[] },
-        i: number,
-      ) => {
-        const name = 'hotspot' + ([1, 2][s.phase] ?? 3),
-          mesh = this.slot('hotSpots', i, name);
-        mesh.visible = true;
-        mesh.matrix.fromArray(s.matrix);
-        mesh.matrixAutoUpdate = false;
-        for (const child of mesh.children) {
-          if (child.userData.hotForce) {
-            child.scale.set(s.scale, 1, s.scale);
-          }
-          if (child.userData.hotSpike) {
-            child.traverse((o: import('./model-types.ts').RenderNode) => {
-              if (o.material) {
-                o.material.color.setRGB(
-                  ...(s.color as [number, number, number]),
-                  THREE.SRGBColorSpace,
-                );
-              }
-            });
-          }
+    for (const [i, s] of spots.entries()) {
+      const name = 'hotspot' + ([1, 2][s.phase] ?? 3),
+        mesh = this.slot('hotSpots', i, name);
+      mesh.visible = true;
+      mesh.matrix.fromArray(s.matrix);
+      mesh.matrixAutoUpdate = false;
+      for (const child of mesh.children) {
+        if (child.userData.hotForce) {
+          child.scale.set(s.scale, 1, s.scale);
         }
-      },
-    );
-    this.pools.hotSpots.forEach((e, i) => {
+        if (child.userData.hotSpike) {
+          child.traverse((o: import('./model-types.ts').RenderNode) => {
+            if (o.material) {
+              o.material.color.setRGB(
+                ...(s.color as [number, number, number]),
+                THREE.SRGBColorSpace,
+              );
+            }
+          });
+        }
+      }
+    }
+    for (const [i, e] of this.pools.hotSpots.entries()) {
+      if (!e) {
+        continue;
+      }
+
       if (i >= spots.length) {
         e.mesh.visible = false;
       }
-    });
+    }
   }
   syncIons(sim: Simulation) {
     const active = sim.runners.filter((r) => !r.dead && r.ionSeconds > 0);
     let flareIndex = 0;
-    active.forEach((r, i) => {
+    for (const [i, r] of active.entries()) {
       const mesh = this.slot('ions', i, 'ionsword'),
         s = Math.sin(r.yaw),
         c = Math.cos(r.yaw);
@@ -430,7 +450,7 @@ export class Effects {
           return;
         }
         const attribute = o.geometry.attributes.position;
-        o.userData.sourceVertices ??= Array.from(attribute.array);
+        o.userData.sourceVertices ??= [...attribute.array];
         const source: number[] = o.userData.sourceVertices;
         for (let j = 0; j < attribute.count; j++) {
           const x = source[j * 3],
@@ -467,16 +487,24 @@ export class Effects {
         flare.quaternion.copy(this.view.camera.quaternion);
         flare.scale.setScalar(point === end ? 5 : 1);
       }
-    });
-    this.pools.ions.forEach((e, i) => {
+    }
+    for (const [i, e] of this.pools.ions.entries()) {
+      if (!e) {
+        continue;
+      }
+
       if (i >= active.length) {
         e.mesh.visible = false;
       }
-    });
-    this.pools.flares.forEach((e, i) => {
+    }
+    for (const [i, e] of this.pools.flares.entries()) {
+      if (!e) {
+        continue;
+      }
+
       if (i >= flareIndex) {
         e.mesh.visible = false;
       }
-    });
+    }
   }
 }

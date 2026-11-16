@@ -66,21 +66,21 @@ test('AI forward probe lengths, runner avoidance and jump schedules come from th
   const b = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    at = (v: number) => v - 0x480000 + 0x68e00;
+    at = (v: number) => v - 0x48_00_00 + 0x6_8e_00;
   for (const [k, v] of Object.entries({
-    probeHeight: 0x483f3a,
-    probeLength: 0x483f3e,
-    runnerAvoidSeconds: 0x483f52,
-    pathJumpSeconds: 0x483f42,
-    attackJumpRandomScale: 0x483e07,
-    attackJumpSeconds: 0x483e0b,
+    probeHeight: 0x48_3f_3a,
+    probeLength: 0x48_3f_3e,
+    runnerAvoidSeconds: 0x48_3f_52,
+    pathJumpSeconds: 0x48_3f_42,
+    attackJumpRandomScale: 0x48_3e_07,
+    attackJumpSeconds: 0x48_3e_0b,
   })) {
     assert.equal(
       AI_OBSTACLES[k as keyof typeof AI_OBSTACLES],
       b.readFloatLE(at(v)),
     );
   }
-  assert.equal(AI_OBSTACLES.runnerAvoidRadians, b.readDoubleLE(at(0x483f56)));
+  assert.equal(AI_OBSTACLES.runnerAvoidRadians, b.readDoubleLE(at(0x48_3f_56)));
   close(AI_OBSTACLES.runnerAvoidRadians, Math.PI / 6);
 });
 test('look-ahead uses exact lifted endpoints and preserves all control rates when a wall is ahead', () => {
@@ -173,7 +173,7 @@ test('path barrier jumps preserve the encoded integer-division timer while attac
   const { s, r, q } = setup();
   s.arena = 5;
   s.round = 1;
-  s.randomInt = () => 12345;
+  s.randomInt = () => 12_345;
   s.sceneContacts = () => [{ kind: 'barrier', owner: 1 }];
   const level = GAME_TABLES.ai.levels[3];
   stepNavigation(s, r, 1 / 60, 100);
@@ -191,7 +191,7 @@ test('path barrier jumps preserve the encoded integer-division timer while attac
     r.aiState.jumpAt,
     Math.fround(
       7 +
-        12345 *
+        12_345 *
           AI_OBSTACLES.attackJumpRandomScale *
           AI_OBSTACLES.attackJumpSeconds,
     ),
@@ -204,14 +204,13 @@ test('path barrier jumps preserve the encoded integer-division timer while attac
 });
 test('all 1216 original obstacle decisions include entrance-region permission and float-stored tilted probes', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/ai-obstacles-native-audit.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/ai-obstacles-native-audit.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(audit.passed, true);
   assert.equal(audit.fixtureCount, 1216);
@@ -311,9 +310,9 @@ test('entrance-region permission stays at its initial sample and does not extend
     s.regions.maskAt(s.spawnPose(s.player).x, s.spawnPose(s.player).z),
   );
   s.countdown = 0;
-  s.runners.forEach(
-    (candidate) => (candidate.inactive = candidate.id !== s.player),
-  );
+  for (const candidate of s.runners) {
+    candidate.inactive = candidate.id !== s.player;
+  }
   s.runners[s.player].x = 300;
   s.step(1 / 60);
   assert.equal(s.entranceZoneMask, mask);

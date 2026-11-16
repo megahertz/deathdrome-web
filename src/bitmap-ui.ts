@@ -1,8 +1,9 @@
+import { resourceURL } from './resource-urls.ts';
 export interface BitmapLabel extends HTMLCanvasElement {
   setText(label: string): void;
   setColor(color: string): void;
 }
-import { resourceURL } from './resource-urls.ts';
+
 // The supplied ZFO atlases, exported without redrawing the original lettering.
 export const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,-_!?<>/"=| *%';
 // 449704 / 449984: only I, 1, period, comma and ! use the short advance.
@@ -29,19 +30,21 @@ export function imageReady(
   if (image.complete) {
     return image.naturalWidth
       ? Promise.resolve()
-      : Promise.reject(Error('Could not load a game interface image'));
+      : Promise.reject(new Error('Could not load a game interface image'));
   }
   return new Promise<void>((resolve, reject) => {
     image.addEventListener('load', () => resolve(), { once: true });
     image.addEventListener(
       'error',
-      () => reject(Error('Could not load a game interface image')),
+      () => reject(new Error('Could not load a game interface image')),
       { once: true },
     );
   });
 }
 export function bitmapFontsReady() {
-  return Promise.all([...atlases.values()].map(imageReady));
+  return Promise.all(
+    [...atlases.values()].map((itemValue) => imageReady(itemValue)),
+  );
 }
 function atlas(name: string) {
   if (!atlases.has(name)) {
@@ -144,10 +147,12 @@ function glyphImage(image: HTMLImageElement, index: number, size: number) {
 export function drawBitmapText(
   ctx: CanvasRenderingContext2D,
   label: string,
-  x: number,
+  inputX: number,
   y: number,
   { size = 10, color = 'whit', scale = 1 } = {},
 ) {
+  let x = inputX;
+
   const image = atlas(`${size === 10 ? '10' : '5'}x_${color}`);
   if (!image.complete || !image.naturalWidth) {
     return;
@@ -155,7 +160,7 @@ export function drawBitmapText(
   ctx.imageSmoothingEnabled = false;
   for (const c of String(label).toUpperCase().replaceAll(':', '*')) {
     const index = GLYPHS.indexOf(c);
-    if (index >= 0) {
+    if (index !== -1) {
       ctx.drawImage(
         glyphImage(image, index, size),
         x,
@@ -182,16 +187,16 @@ export function bitmapLabel(label: string, { size = 10, color = 'grey' } = {}) {
         return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      value.split('\n').forEach((line, row) => {
+      for (const [row, line] of value.split('\n').entries()) {
         let x = 0;
         for (const c of line) {
           const glyph = GLYPHS.indexOf(c);
-          if (glyph >= 0) {
+          if (glyph !== -1) {
             ctx.drawImage(glyphImage(image, glyph, size), x, row * size);
           }
           x += glyphAdvance(c, size);
         }
-      });
+      }
     };
     if (image.complete && image.naturalWidth) {
       paint();

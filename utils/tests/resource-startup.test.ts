@@ -73,7 +73,7 @@ test('nocache bypasses database reads and launches no saved installation', async
   const result = await run(
     request('assets/cd.iso', true, true),
     installation(),
-    { readError: Error('must not read storage') },
+    { readError: new Error('must not read storage') },
   );
   assert.equal(result.route, 'image');
   assert.equal(result.reads, 0);
@@ -95,7 +95,7 @@ test('missing, old-converter and incomplete caches take the image import path', 
   }
 });
 test('a storage read error still allows selecting or downloading the original', async () => {
-  const error = Error('storage unavailable'),
+  const error = new Error('storage unavailable'),
     result = await run(request(), null, { readError: error });
   assert.equal(result.route, 'image');
   assert.deepEqual(result.errors, [error]);
@@ -110,7 +110,7 @@ test('a cached game launch error is surfaced without silently downloading a larg
       readInstalled: async () => installation(),
       hasResources: async () => true,
       launch: async () => {
-        throw Error('game failed');
+        throw new Error('game failed');
       },
       loadImage: async () => images++,
     }),

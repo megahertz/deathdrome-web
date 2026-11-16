@@ -162,7 +162,7 @@ export function collectRunnerContacts(
       to = lift(endpoint, height),
       hits = query(from, to);
     queries.push({ from, to });
-    if (hits.length) {
+    if (hits.length > 0) {
       classifyContacts(hits, source, endpoint, { records, scrubCollidable });
     }
     return hits.length === 0;
@@ -335,7 +335,7 @@ export function followCollisionFloor(
     from = lift(source, 1.5),
     to = lift(endpoint, 1.5),
     hits = query(from, to);
-  if (hits.length) {
+  if (hits.length > 0) {
     delete records.floor;
     classifyContacts(hits, source, endpoint, { records, scrubCollidable });
   }

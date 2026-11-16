@@ -21,7 +21,8 @@ test('enhanced graphics defaults off, accepts only booleans and survives saved-o
     musicEnabled: false,
     brightness: 3,
   });
-  assert.deepEqual(readOptions(JSON.parse(JSON.stringify(options))), options);
+  const serialized = JSON.stringify(options);
+  assert.deepEqual(readOptions(JSON.parse(serialized)), options);
   const director = new AudioDirector({ options });
   director.setOption('sfxVolume', 2);
   assert.equal(director.options.enhancedGraphics, true);

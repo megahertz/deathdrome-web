@@ -5,9 +5,10 @@ import { RecordedDemo } from '../src/recorded-demo.ts';
 import { updateVertical } from '../src/vertical.ts';
 const root = new URL('../', import.meta.url),
   manifest = JSON.parse(
-    (
-      await readFile(new URL('private/assets/recordings/manifest.json', root))
-    ).toString(),
+    await readFile(
+      new URL('private/assets/recordings/manifest.json', root),
+      'utf8',
+    ),
   );
 const reports = [];
 for (const entry of manifest) {
@@ -59,12 +60,12 @@ for (const entry of manifest) {
     });
   }
   const summary = (key: string) => {
-    if (!samples.length) {
+    if (samples.length === 0) {
       return null;
     }
     const xs = samples
       .map((s) => s[key as keyof typeof s])
-      .sort((a, b) => a - b);
+      .toSorted((a, b) => a - b);
     return {
       median: xs[Math.floor(xs.length * 0.5)],
       p90: xs[Math.floor(xs.length * 0.9)],
@@ -77,7 +78,7 @@ for (const entry of manifest) {
     positionUnits: summary('positionError'),
     verticalSpeedUnitsPerSecond: summary('verticalSpeedError'),
     largestPositionDifferences: [...samples]
-      .sort((a, b) => b.positionError - a.positionError)
+      .toSorted((a, b) => b.positionError - a.positionError)
       .slice(0, 5),
   });
 }

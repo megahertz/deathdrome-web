@@ -28,8 +28,12 @@ function compare(a: unknown, b: unknown, t = 0, path = '') {
     assert.ok(a && typeof a === 'object');
     const aa = a as Record<string, unknown>,
       bb = b as Record<string, unknown>;
-    assert.deepEqual(Object.keys(a).sort(), Object.keys(b).sort(), path);
-    for (const k in b) {
+    assert.deepEqual(
+      Object.keys(a).toSorted(),
+      Object.keys(b).toSorted(),
+      path,
+    );
+    for (const k of Object.keys(b)) {
       compare(aa[k], bb[k], t, path + '.' + k);
     }
     return;
@@ -53,15 +57,15 @@ const recordsJSON = (
 test('contact categories and recursive node lookup match 1040 original actions', () => {
   const a = audit('collision-classification');
   assert.equal(a.passed, true);
-  a.fixtures.forEach((original: any, i: number) => {
+  for (const [i, original] of a.fixtures.entries()) {
     const f = structuredClone(original);
     let count = 0;
-    function ids(n: { id: string; name: string; parents: any }) {
+    const ids = (n: { id: string; name: string; parents: any }): void => {
       n.id = n.name + '#' + count++;
       for (const c of n.parents ?? []) {
         ids(c);
       }
-    }
+    };
     for (const h of f.hits) {
       ids(h.node);
     }
@@ -96,12 +100,12 @@ test('contact categories and recursive node lookup match 1040 original actions',
       ]),
     );
     compare(row, a.native[i], 0, `classification ${i}`);
-  });
+  }
 });
 test('sweep endpoints, short circuit and retained records match 512 original actions', () => {
   const a = audit('collision-sweeps');
   assert.equal(a.passed, true);
-  a.fixtures.forEach((original: any, i: number) => {
+  for (const [i, original] of a.fixtures.entries()) {
     const f = structuredClone(original),
       { r } = f;
     r.rearProbe = Object.fromEntries(
@@ -149,12 +153,12 @@ test('sweep endpoints, short circuit and retained records match 512 original act
       records: recordsJSON(result.records),
     };
     compare(row, a.native[i], a.tolerance, `sweep ${i}`);
-  });
+  }
 });
 test('floor following and additional query match 432 original actions', () => {
   const a = audit('collision-floor');
   assert.equal(a.passed, true);
-  a.fixtures.forEach((original: any, i: number) => {
+  for (const [i, original] of a.fixtures.entries()) {
     const f = structuredClone(original),
       { r } = f,
       records = {
@@ -197,12 +201,12 @@ test('floor following and additional query match 432 original actions', () => {
       ),
     };
     compare(row, a.native[i], a.tolerance, `floor ${i}`);
-  });
+  }
 });
 test('candidate position rejection matches 192 original query/classifier actions', () => {
   const a = audit('collision-rejection');
   assert.equal(a.passed, true);
-  a.fixtures.forEach((original: any, i: number) => {
+  for (const [i, original] of a.fixtures.entries()) {
     const f = structuredClone(original);
     let count = 0;
     const result = rejectCollisionPosition(
@@ -233,5 +237,5 @@ test('candidate position rejection matches 192 original query/classifier actions
       a.tolerance,
       `rejection ${i}`,
     );
-  });
+  }
 });

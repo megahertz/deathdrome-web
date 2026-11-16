@@ -4,15 +4,15 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "python3 utils/serve.py",
-    "start:clean": "python3 utils/serve.py --clean",
-    "preview": "python3 utils/serve.py --dist",
-    "test": "python3 utils/run_tests.py",
-    "test:reference": "python3 utils/run_tests.py --reference",
-    "build": "npm run typecheck && python3 utils/package_browser_converter.py && python3 utils/build_static.py",
-    "check:dist": "python3 utils/check_dist.py",
-    "start:reference": "python3 utils/serve.py --private --host 127.0.0.1",
-    "test:portable": "python3 utils/run_tests.py --portable",
+    "start": "node utils/serve.ts",
+    "start:clean": "node utils/serve.ts --clean",
+    "preview": "node utils/serve.ts --dist",
+    "test": "node utils/run-tests.ts",
+    "test:reference": "node utils/run-tests.ts --reference",
+    "build": "npm run typecheck && node utils/build.ts",
+    "check:dist": "node utils/check-dist.ts",
+    "start:reference": "node utils/serve.ts --private --host 127.0.0.1",
+    "test:portable": "node utils/run-tests.ts --portable",
     "typecheck": "tsc --noEmit",
     "lint": "oxfmt --check && oxlint --max-warnings 0",
     "format": "oxfmt && oxlint --fix",
@@ -26,9 +26,11 @@
     "@megahertz/oxconfig": "1.0.2",
     "@types/node": "26.6.6",
     "@types/three": "0.170.0",
+    "fflate": "0.8.3",
     "oxfmt": "0.78.0",
     "oxlint": "1.93.0",
-    "typescript": "6.0.3"
+    "tsdown": "0.23.7",
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=26.0.0"

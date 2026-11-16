@@ -1,7 +1,9 @@
 import { errorMessage } from './errors.ts';
-declare const self: ServiceWorkerGlobalScope;
 import { openResourceDB } from './resource-db.ts';
 import type { Installation } from './resource-types.ts';
+
+declare const self: ServiceWorkerGlobalScope;
+
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) =>
   event.waitUntil(self.clients.claim()),
@@ -33,10 +35,10 @@ async function readResource(request: Request, path: string, clientId: string) {
         const tx = db.transaction(['files', 'meta']),
           meta = tx.objectStore('meta'),
           r = meta.get('client:' + clientId);
-        r.onsuccess = () => {
+        r.addEventListener('success', () => {
           const pinned = r.result,
             a = meta.get('active');
-          a.onsuccess = () => {
+          a.addEventListener('success', () => {
             const activeWorker = a.result,
               id = pinned || activeWorker?.id;
             if (!id) {
@@ -44,12 +46,14 @@ async function readResource(request: Request, path: string, clientId: string) {
               return;
             }
             const f = tx.objectStore('files').get(id + '/' + path);
-            f.onsuccess = () => resolve([activeWorker || { id }, f.result]);
-            f.onerror = () => reject(f.error);
-          };
-          a.onerror = () => reject(a.error);
-        };
-        r.onerror = () => reject(r.error);
+            f.addEventListener('success', () =>
+              resolve([activeWorker || { id }, f.result]),
+            );
+            f.addEventListener('error', () => reject(f.error));
+          });
+          a.addEventListener('error', () => reject(a.error));
+        });
+        r.addEventListener('error', () => reject(r.error));
       },
     );
   } finally {
@@ -72,8 +76,8 @@ async function readResource(request: Request, path: string, clientId: string) {
   const range = request.headers.get('Range');
   if (range) {
     const match = /^bytes=(\d*)-(\d*)$/.exec(range);
-    let start = NaN,
-      end = NaN;
+    let start = Number.NaN,
+      end = Number.NaN;
     if (match) {
       start = match[1]
         ? Number(match[1])
@@ -118,25 +122,22 @@ self.addEventListener('message', (event) => {
             event.data.installationId,
             'client:' + (event.source as Client).id,
           );
-          tx.oncomplete = () => resolve();
-          tx.onabort = () => reject(tx.error);
+          tx.addEventListener('complete', () => resolve());
+          tx.addEventListener('abort', () => reject(tx.error));
         });
         event.ports[0]?.postMessage({ ok: true });
         // Keep each live tab's installation, then discard caches left by closed tabs.
-        const live = new Set(
-          (
-            await self.clients.matchAll({
-              type: 'window',
-              includeUncontrolled: true,
-            })
-          ).map((c: { id: string }) => 'client:' + c.id),
-        );
+        const clients = await self.clients.matchAll({
+          type: 'window',
+          includeUncontrolled: true,
+        });
+        const live = new Set(clients.map((c) => 'client:' + c.id));
         await new Promise<void>((resolve, reject) => {
           const tx = db.transaction(['meta', 'files'], 'readwrite'),
             meta = tx.objectStore('meta'),
             keep = new Set(),
             cursor = meta.openCursor();
-          cursor.onsuccess = () => {
+          cursor.addEventListener('success', () => {
             const c = cursor.result;
             if (c) {
               if (c.key === 'active') {
@@ -149,7 +150,7 @@ self.addEventListener('message', (event) => {
               c.continue();
             } else {
               const files = tx.objectStore('files').openKeyCursor();
-              files.onsuccess = () => {
+              files.addEventListener('success', () => {
                 const f = files.result;
                 if (f) {
                   if (!keep.has(String(f.key).split('/')[0])) {
@@ -157,11 +158,11 @@ self.addEventListener('message', (event) => {
                   }
                   f.continue();
                 }
-              };
+              });
             }
-          };
-          tx.oncomplete = () => resolve();
-          tx.onabort = () => reject(tx.error);
+          });
+          tx.addEventListener('complete', () => resolve());
+          tx.addEventListener('abort', () => reject(tx.error));
         });
       } catch (error) {
         event.ports[0]?.postMessage({

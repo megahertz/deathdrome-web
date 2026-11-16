@@ -52,13 +52,15 @@ export function resultContinuation({
 }) {
   if (!win) {
     return { kind: 'menu' as const };
-  } else if (round < 3) {
-    return { kind: 'round' as const, arena, round: round + 1 };
-  } else if (arena < 8) {
-    return { kind: 'domain' as const, arena: arena + 1, round: 1 };
-  } else {
-    return { kind: 'freedom' as const };
   }
+  if (round < 3) {
+    return { kind: 'round' as const, arena, round: round + 1 };
+  }
+  if (arena < 8) {
+    return { kind: 'domain' as const, arena: arena + 1, round: 1 };
+  }
+
+  return { kind: 'freedom' as const };
 }
 export function visibleResultLabels(
   sim: Simulation,

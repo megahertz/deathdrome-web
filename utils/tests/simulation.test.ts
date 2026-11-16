@@ -16,7 +16,7 @@ test('dynamics constants match the disc scripts', async () => {
     'utf8',
   );
   const get = (n: string) =>
-    Number(s.match(new RegExp('^' + n + '\\s+([.0-9]+)', 'm'))![1]);
+    Number(s.match(new RegExp('^' + n + String.raw`\s+([.0-9]+)`, 'm'))![1]);
   assert.equal(DYNAMICS.maxAcceleration, get('RunDynSetAccelMax'));
   assert.equal(DYNAMICS.turnDamping, get('RunDynSetTurnDamp'));
   assert.equal(DYNAMICS.nitroDuration, get('RunDynSetNitroDuration'));
@@ -84,24 +84,19 @@ test('escape requires quota, ground height and the original central radius', () 
 });
 test('eight domains, runners and AI path graphs decode to finite data', async () => {
   const paths = JSON.parse(
-    (
-      await readFile(
-        new URL('../../private/assets/ai-paths.json', import.meta.url),
-      )
-    ).toString(),
+    await readFile(
+      new URL('../../private/assets/ai-paths.json', import.meta.url),
+      'utf8',
+    ),
   );
   assert.equal(paths.length, 8);
   for (let i = 1; i <= 8; i++) {
     // oxlint-disable no-await-in-loop -- Keep each reference fixture and its assertions together, bounding live scene memory.
     const data = JSON.parse(
-      (
-        await readFile(
-          new URL(
-            `../../private/assets/models/arena${i}.json`,
-            import.meta.url,
-          ),
-        )
-      ).toString(),
+      await readFile(
+        new URL(`../../private/assets/models/arena${i}.json`, import.meta.url),
+        'utf8',
+      ),
     );
     // oxlint-enable no-await-in-loop
     assert.ok(data.meshes.length > 1000);
@@ -114,7 +109,7 @@ test('eight domains, runners and AI path graphs decode to finite data', async ()
     }
     for (const m of data.meshes) {
       for (const v of m.v) {
-        assert.ok(v.every(Number.isFinite));
+        assert.ok(v.every((itemValue: unknown) => Number.isFinite(itemValue)));
       }
     }
   }
@@ -126,20 +121,20 @@ test('runner, quota and combat values match original executable tables', async (
   const exe = await readFile(
     new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
   );
-  const at = (va: number) => va - 0x480000 + 0x68e00;
+  const at = (va: number) => va - 0x48_00_00 + 0x6_8e_00;
   for (let i = 0; i < 8; i++) {
     assert.equal(
       GAME_TABLES.runners[i].maxSpeed,
-      exe.readFloatLE(at(0x48dcd8) + i * 4),
+      exe.readFloatLE(at(0x48_dc_d8) + i * 4),
     );
     assert.equal(
       GAME_TABLES.runners[i].maxTurnDegrees,
-      exe.readFloatLE(at(0x48dcf8) + i * 4),
+      exe.readFloatLE(at(0x48_dc_f8) + i * 4),
     );
     for (let r = 0; r < 3; r++) {
       assert.equal(
         new Simulation({ arena: i + 1, round: r + 1 }).requiredKills,
-        exe.readUInt32LE(at(0x48dbb4) + (i * 3 + r) * 4),
+        exe.readUInt32LE(at(0x48_db_b4) + (i * 3 + r) * 4),
       );
     }
   }
@@ -194,7 +189,7 @@ test('the third death exhausts the three original runner credits', () => {
   s.ai = () => ({});
   for (let i = 2; i >= 0; i--) {
     r.shield = 0;
-    s.damage(r, 10000, 1);
+    s.damage(r, 10_000, 1);
     s.checkRunnerHealth(r);
     assert.equal(s.lives, i + 1);
     assert.equal(s.phase, 'running');
@@ -211,9 +206,9 @@ test('the third death exhausts the three original runner credits', () => {
 test('one score update crossing several thresholds grants only one life', () => {
   const s = new Simulation();
   s.lives = 1;
-  s.addScore(60000);
+  s.addScore(60_000);
   assert.equal(s.lives, 2);
-  s.addScore(-100000);
+  s.addScore(-100_000);
   assert.equal(s.score, 0);
 });
 test('disc spawn headings drive outward from the central platform', () => {

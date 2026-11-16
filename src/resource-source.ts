@@ -22,7 +22,7 @@ export function resolveImage(
 ) {
   const url = new URL(value, base);
   if (!['http:', 'https:'].includes(url.protocol)) {
-    throw Error('Enter an HTTP(S) URL or a relative file path');
+    throw new Error('Enter an HTTP(S) URL or a relative file path');
   }
   return url.href;
 }
@@ -52,7 +52,7 @@ export async function readImage(
       noCache ? { cache: 'no-store' } : undefined,
     );
   } catch {
-    throw Error(
+    throw new Error(
       'Could not download the image. Remote servers must allow CORS; you can download the file and select it locally instead.',
     );
   }
@@ -60,7 +60,7 @@ export async function readImage(
     return null;
   }
   if (!response.ok) {
-    throw Error(
+    throw new Error(
       `Could not load the file (HTTP ${response.status}). Select a file from your computer.`,
     );
   }

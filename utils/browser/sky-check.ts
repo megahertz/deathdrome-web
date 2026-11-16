@@ -13,11 +13,11 @@ view.camera.lookAt(185, 63, 184);
 function render() {
   view.setEnhancedGraphics(graphics.value === 'enhanced');
   (view.scene.background as import('#three').Color).set(
-    background.value === 'previous' ? 0x090b10 : 0x000000,
+    background.value === 'previous' ? 0x09_0b_10 : 0x00_00_00,
   );
   view.draw(0);
   status.textContent = `${graphics.value.toUpperCase()} · background #${(view.scene.background as import('#three').Color).getHexString()} · ${canvas.width} × ${canvas.height}`;
 }
-background.onchange = render;
-graphics.onchange = background.onchange;
+background.addEventListener('change', render);
+graphics.addEventListener('change', render);
 render();

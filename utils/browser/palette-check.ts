@@ -7,7 +7,7 @@ import {
 const $ = <T extends HTMLElement = HTMLElement>(selector: string): T => {
     const element = document.querySelector<T>(selector);
     if (!element) {
-      throw Error('Missing diagnostic element: ' + selector);
+      throw new Error('Missing diagnostic element: ' + selector);
     }
     return element;
   },
@@ -31,8 +31,9 @@ for (const [i, color] of colors.entries()) {
   rect.setAttribute('fill', `rgb(${color.join(',')})`);
   patches.append(rect);
 }
-$<HTMLSelectElement>('#level').onchange = () =>
-  filter.setLevel(Number($<HTMLSelectElement>('#level').value));
+$<HTMLSelectElement>('#level').addEventListener('change', () =>
+  filter.setLevel(Number($<HTMLSelectElement>('#level').value)),
+);
 async function renderPNG() {
   const copy = svg.cloneNode(true) as SVGSVGElement;
   copy.prepend(filter.svg.firstChild.cloneNode(true));
@@ -71,7 +72,7 @@ async function run() {
       for (const [i, color] of colors.entries()) {
         const offset =
             ((Math.floor(i / 32) * 8 + 4) * 256 + (i % 32) * 8 + 4) * 4,
-          actual = Array.from(data.slice(offset, offset + 4)),
+          actual = data.slice(offset, offset + 4),
           expected = [...paletteBrightness(color, level), 255];
         if (actual.some((v, j) => v !== expected[j])) {
           mismatches.push({ i, actual, expected });
@@ -108,5 +109,5 @@ async function run() {
     $<HTMLSelectElement>('#level').disabled = false;
   }
 }
-$<HTMLButtonElement>('#run').onclick = run;
+$<HTMLButtonElement>('#run').addEventListener('click', run);
 run();

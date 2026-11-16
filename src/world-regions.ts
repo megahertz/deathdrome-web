@@ -43,7 +43,9 @@ export class WorldRegions {
         bit = this.colors.length;
         this.colors.push(face.color);
       }
-      const vertices = face.vertices.map((p: number[]) => p.map(f));
+      const vertices = face.vertices.map((p: number[]) =>
+        p.map((itemValue) => f(itemValue)),
+      );
       for (let row = 0; row < this.rows; row++) {
         for (let column = 0; column < this.columns; column++) {
           const x = f(
@@ -63,7 +65,10 @@ export class WorldRegions {
   }
   // 44437c clamps to the world interior before truncating grid coordinates.
   // Inputs and clamped positions are float stores; the scaled quotient is not.
-  index(x: number, z: number) {
+  index(inputX: number, inputZ: number) {
+    let x = inputX;
+    let z = inputZ;
+
     x = f(x);
     z = f(z);
     const [left, top] = this.origin,

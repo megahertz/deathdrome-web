@@ -1,20 +1,21 @@
-declare const self: DedicatedWorkerGlobalScope;
 import { errorMessage } from './errors.ts';
 import { loadPyodide } from './vendor/pyodide/pyodide.mjs';
+declare const self: DedicatedWorkerGlobalScope;
+
 const reportProgress = (phase: any, completed = 0, total = 0) =>
   postMessage({ type: 'progress', phase, completed, total });
 self.reportProgress = reportProgress;
-self.onmessage = async (event) => {
+self.addEventListener('message', async (event) => {
   try {
     reportProgress('Preparing the installer');
     const py = await loadPyodide({
-      indexURL: new URL('./vendor/pyodide/', import.meta.url).href,
+      indexURL: new URL('vendor/pyodide/', import.meta.url).href,
     });
     const response = await fetch(
-      new URL('./resource-code/converter.zip', import.meta.url),
+      new URL('resource-code/converter.zip', import.meta.url),
     );
     if (!response.ok) {
-      throw Error('Could not load the resource converter');
+      throw new Error('Could not load the resource converter');
     }
     py.unpackArchive(new Uint8Array(await response.arrayBuffer()), 'zip', {
       extractDir: '/work',
@@ -51,7 +52,8 @@ profile_json=json.dumps(profile)
     for (const path of paths) {
       files.push({
         path,
-        data: py.FS.readFile('/work/private/assets/' + path).slice().buffer,
+        data: new Uint8Array(py.FS.readFile('/work/private/assets/' + path))
+          .buffer,
       });
       if (files.length % 32 === 0 || files.length === paths.length) {
         reportProgress('Preparing resource files', files.length, paths.length);
@@ -68,4 +70,4 @@ profile_json=json.dumps(profile)
       message: 'Could not prepare resources: ' + lines.at(-1),
     });
   }
-};
+});

@@ -40,8 +40,8 @@ export class ResourceProgress {
   download({ loaded, total }: import('./resource-types.ts').ProgressBytes) {
     this.indeterminate = !total;
     this.bytes = total
-      ? `${(loaded / 1048576).toFixed(1)} / ${(total / 1048576).toFixed(1)} MB`
-      : `${(loaded / 1048576).toFixed(1)} MB received`;
+      ? `${(loaded / 1_048_576).toFixed(1)} / ${(total / 1_048_576).toFixed(1)} MB`
+      : `${(loaded / 1_048_576).toFixed(1)} MB received`;
     if (total) {
       this.value = Math.max(this.value, Math.min(70, (loaded / total) * 70));
     }

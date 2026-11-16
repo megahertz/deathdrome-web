@@ -1,13 +1,9 @@
 // 440294 schedules one palette action. 44023c adds 70 for its first callback,
 // 140 for the second, then restores the base palette and permits a new flash.
 export class PaletteFlash {
-  declare remaining: number;
-  declare active: boolean;
+  remaining: number = 0;
+  active: boolean = false;
 
-  constructor() {
-    this.remaining = 0;
-    this.active = false;
-  }
   trigger() {
     if (this.active) {
       return false;

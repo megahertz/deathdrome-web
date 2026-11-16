@@ -79,14 +79,13 @@ async function request(q: {
       );
     }
     const data = JSON.parse(
-      (
-        await readFile(
-          new URL(
-            `../private/assets/models/arena${q.arena}.json`,
-            import.meta.url,
-          ),
-        )
-      ).toString(),
+      await readFile(
+        new URL(
+          `../private/assets/models/arena${q.arena}.json`,
+          import.meta.url,
+        ),
+        'utf8',
+      ),
     );
     data.meshes = data.meshes.map((f: any) => ({
       ...f,
@@ -130,7 +129,9 @@ async function request(q: {
       updatePortal: (id: any, h: any) => view.setPortalHeight(id, h),
     });
     sim.countdown = 0;
-    sim.runners.forEach((actor) => (actor.dead = Infinity));
+    for (const actor of sim.runners) {
+      actor.dead = Infinity;
+    }
     [r] = sim.runners;
     Object.assign(r, pose, {
       dead: 0,
@@ -144,7 +145,7 @@ async function request(q: {
     return {
       r: { ...r, aiState: undefined, navigation: undefined },
       state: snapshot(),
-      portalIds: Object.keys(view.portals).sort(),
+      portalIds: Object.keys(view.portals).toSorted(),
     };
   }
   const v = q.engine === 'native' ? nativeView : view;
@@ -173,7 +174,7 @@ async function request(q: {
       ),
     };
   }
-  throw Error('Unknown scene request');
+  throw new Error('Unknown scene request');
 }
 for await (const line of createInterface({ input: process.stdin })) {
   try {

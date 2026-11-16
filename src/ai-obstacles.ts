@@ -110,8 +110,8 @@ export function probeAIForward(
   hits = [
     ...hits,
     ...barrierRayContacts(start, end, sim.barrierTrails?.active || []),
-  ].sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
-  if (hits.length) {
+  ].toSorted((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+  if (hits.length > 0) {
     sim.emit('aiProbe', {
       runner: r.id,
       hits: hits.map((h: { kind: any; owner: any; runner: any }) => ({

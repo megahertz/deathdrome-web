@@ -40,7 +40,7 @@ test('shared lock selection matches native range, zone, activity, retention and 
       )
       .toString(),
   );
-  a.fixtures.forEach((fixture: any, i: number) => {
+  for (const [i, fixture] of a.fixtures.entries()) {
     const { runners, active, previous } = structuredClone(fixture),
       r = runners[0];
     r.missileLockTarget = previous;
@@ -49,7 +49,7 @@ test('shared lock selection matches native range, zone, activity, retention and 
       projectiles: active ? [{ owner: 0, kind: 'Missile', life: 1 }] : [],
     });
     assert.equal(updateMissileLock(sim, r), a.native[i]);
-  });
+  }
 });
 test('combined moving-target flights reproduce native velocity, position, age and stored visual angles', () => {
   const a = JSON.parse(
@@ -62,7 +62,8 @@ test('combined moving-target flights reproduce native velocity, position, age an
       )
       .toString(),
   );
-  a.fixtures.forEach(({ r, dt, targets }: any, i: number) => {
+  for (const [i, { r: inputRunner, dt, targets }] of a.fixtures.entries()) {
+    let r = inputRunner;
     r = structuredClone(r);
     const sim = stateFixture<import('../../src/simulation.ts').Simulation>({
       player: 0,
@@ -72,7 +73,7 @@ test('combined moving-target flights reproduce native velocity, position, age an
     });
     launchProjectiles(sim, r, true);
     const p = sim.projectiles[0];
-    targets.forEach((t: { x: any; y: any; z: any }, j: string | number) => {
+    for (const [j, t] of targets.entries()) {
       if (p.age > 0) {
         steerMissile(p, t, dt);
       }
@@ -86,8 +87,8 @@ test('combined moving-target flights reproduce native velocity, position, age an
       );
       assert.equal(p.age, n.age);
       assert.equal(p.life > 0, n.active);
-    });
-  });
+    }
+  }
 });
 test('non-Nitro/non-missile selection preserves the shared pointer without scanning', () => {
   const r = stateFixture<import('../../src/game-types.ts').Runner>({
@@ -133,7 +134,9 @@ test('all live missiles follow their owner shared lock and retain its last point
   });
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[0],
     a = s.runners[1],
     b = s.runners[2];
@@ -170,7 +173,9 @@ test('laser cleanup clears the shared pointer even while a missile remains in fl
   });
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[0];
   Object.assign(r, {
     dead: 0,
@@ -229,6 +234,10 @@ test('zero-heading guidance preserves a finite incoming vector while native stac
     speed: 150,
   });
   steerMissile(p, { x: 50, y: 10, z: -100 }, 1 / 60);
-  assert.ok([p.vx, p.vy, p.vz, p.dx, p.dy, p.dz].every(Number.isFinite));
+  assert.ok(
+    [p.vx, p.vy, p.vz, p.dx, p.dy, p.dz].every((itemValue) =>
+      Number.isFinite(itemValue),
+    ),
+  );
   assert.ok(p.vx > 0);
 });

@@ -8,8 +8,10 @@ export function resetExitHangar(sim: import('./simulation.ts').Simulation) {
 // remains raised until every concurrent exit action has finished.
 export function stepExitHangar(
   sim: import('./simulation.ts').Simulation,
-  dt: number,
+  inputDt: number,
 ) {
+  let dt = inputDt;
+
   const h = sim.exitHangar;
   if (!h?.moving) {
     return;

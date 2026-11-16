@@ -19,14 +19,13 @@ import { fixture as stateFixture } from './fixtures.ts';
 
 test('HUD text, frame and life positions agree with captured original display records', async () => {
   const native = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hud-layout-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hud-layout-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   ).modes['0'];
   const sim = stateFixture<import('../../src/simulation.ts').Simulation>({
       player: 0,
@@ -87,7 +86,7 @@ test('HUD text, frame and life positions agree with captured original display re
 });
 test('HUD preserves field boundaries for singular kills, quota, inventories and life counts', () => {
   const sim = stateFixture<import('../../src/simulation.ts').Simulation>({
-    score: 123456,
+    score: 123_456,
     lives: 7,
     time: 60,
     requiredKills: 2,
@@ -112,14 +111,13 @@ test('HUD preserves field boundaries for singular kills, quota, inventories and 
 });
 test('one, two and three notifications follow the original centered four-second queue', async () => {
   const native = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hud-layout-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hud-layout-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   ).notifications;
   for (const rows of native) {
     const commands = notificationLayout(
@@ -138,18 +136,20 @@ test('one, two and three notifications follow the original centered four-second 
 });
 test('barrier gauge follows original capacity and retraction fields independently of health or laser slots', async () => {
   const native = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hud-layout-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hud-layout-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   ).barrierMeter;
   for (const sample of native) {
     assert.equal(
-      barrierGauge({ ...sample, points: Array(sample.count + 1) }),
+      barrierGauge({
+        ...sample,
+        points: Array.from({ length: sample.count + 1 }),
+      }),
       sample.width,
       JSON.stringify(sample),
     );
@@ -157,14 +157,13 @@ test('barrier gauge follows original capacity and retraction fields independentl
 });
 test('all eight X/Y/Z key combinations match original HUD rectangles and palette entries', async () => {
   const native = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hud-layout-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hud-layout-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   ).keys;
   for (const sample of native) {
     const r = stateFixture<import('../../src/game-types.ts').Runner>({
@@ -193,71 +192,50 @@ test('all eight X/Y/Z key combinations match original HUD rectangles and palette
 });
 test('radar projection, cardinal rounding and edge precedence match 216 original actions', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hud-radar-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hud-radar-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(audit.passed, true);
-  audit.fixtures.forEach(
-    (
-      f: {
-        origin: { x: number; z: number };
-        target: { x: number; z: number };
-        forward: { z: number; x: number };
-      },
-      i: number,
-    ) =>
-      assert.deepEqual(
-        projectRadar(f.origin, f.target, f.forward),
-        audit.native[i],
-      ),
-  );
+  for (const [i, f] of audit.fixtures.entries()) {
+    assert.deepEqual(
+      projectRadar(f.origin, f.target, f.forward),
+      audit.native[i],
+    );
+  }
 });
 test('warning health threshold, shared-lock precedence and blink timer match 180 original actions', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hud-warning-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hud-warning-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(audit.passed, true);
-  audit.fixtures.forEach(
-    (
-      f: {
-        active?: any;
-        timer?: any;
-        dt?: any;
-        health: number;
-        locked: boolean;
+  for (const [i, f] of audit.fixtures.entries()) {
+    const state: Parameters<typeof stepHudWarning>[0] = {
+        active: f.active,
+        timer: f.timer,
       },
-      i: number,
-    ) => {
-      const state: Parameters<typeof stepHudWarning>[0] = {
-          active: f.active,
-          timer: f.timer,
-        },
-        result = stepHudWarning(state, f, f.dt);
-      assert.deepEqual(
-        {
-          active: state.active,
-          timer: state.timer,
-          message: result.started ? state.message : null,
-          shade: state.shade ?? null,
-          clear: result.clear,
-        },
-        audit.native[i],
-      );
-    },
-  );
+      result = stepHudWarning(state, f, f.dt);
+    assert.deepEqual(
+      {
+        active: state.active,
+        timer: state.timer,
+        message: result.started ? state.message : null,
+        shade: state.shade ?? null,
+        clear: result.clear,
+      },
+      audit.native[i],
+    );
+  }
   const sim = stateFixture<import('../../src/simulation.ts').Simulation>({
     runners: [
       { id: 0 },
@@ -271,25 +249,18 @@ test('warning health threshold, shared-lock precedence and blink timer match 180
 });
 test('lock reticle projection and viewport clamping match 200 original actions', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hud-reticle-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hud-reticle-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(audit.passed, true);
-  audit.fixtures.forEach(
-    (
-      f: {
-        point: { x: any; y: any; z: any };
-        options: { small?: boolean | undefined } | undefined;
-      },
-      i: number,
-    ) => assert.deepEqual(projectReticle(f.point, f.options), audit.native[i]),
-  );
+  for (const [i, f] of audit.fixtures.entries()) {
+    assert.deepEqual(projectReticle(f.point, f.options), audit.native[i]);
+  }
 });
 test('world lock reticle follows the current camera pose without waiting for the scene draw', () => {
   const camera = new THREE.PerspectiveCamera(35, 1.6, 0.75, 1200);
@@ -301,12 +272,12 @@ test('world lock reticle follows the current camera pose without waiting for the
     { x: 156, y: 82, width: 8, height: 8 },
   );
   assert.equal(
-    View.prototype.hudReticle.call(view, { x: 10010, y: 8, z: -80 })!.x,
+    View.prototype.hudReticle.call(view, { x: 10_010, y: 8, z: -80 })!.x,
     310,
   );
-  camera.position.x = 10010;
+  camera.position.x = 10_010;
   assert.equal(
-    View.prototype.hudReticle.call(view, { x: 10010, y: 8, z: -80 })!.x,
+    View.prototype.hudReticle.call(view, { x: 10_010, y: 8, z: -80 })!.x,
     156,
   );
   assert.equal(View.prototype.hudReticle.call(view, null), null);

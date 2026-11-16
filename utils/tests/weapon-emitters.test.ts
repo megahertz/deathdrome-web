@@ -22,16 +22,16 @@ test('emitter matrices and endpoints match original x86 human/AI pose fixtures',
       )
       .toString(),
   );
-  audit.fixtures.forEach(({ r, human }: any, i: number) => {
-    emitterMatrix(r, human).forEach((v, j) =>
-      close(v, audit.native[i].matrix[j]),
-    );
-    emitterOrigins(r, human).forEach((p, j) => {
+  for (const [i, { r, human }] of audit.fixtures.entries()) {
+    for (const [j, v] of emitterMatrix(r, human).entries()) {
+      close(v, audit.native[i].matrix[j]);
+    }
+    for (const [j, p] of emitterOrigins(r, human).entries()) {
       for (const k of ['x', 'y', 'z']) {
         close(p[k as keyof typeof p], audit.native[i].origins[j][k]);
       }
-    });
-  });
+    }
+  }
 });
 test('human cockpit lean moves the paired emitters while AI uses its reduced chassis frame', () => {
   const r = stateFixture<import('../../src/game-types.ts').Runner>({

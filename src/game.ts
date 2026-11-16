@@ -61,7 +61,7 @@ import { TypewriterSequence } from './typewriter.ts';
 const $ = <T extends HTMLElement = HTMLElement>(selector: string): T => {
     const element = document.querySelector<T>(selector);
     if (!element) {
-      throw Error('Missing interface element: ' + selector);
+      throw new Error('Missing interface element: ' + selector);
     }
     return element;
   },
@@ -226,9 +226,9 @@ function message(s: string, color = 'whit', tag: string | null = null) {
   msgUntil = performance.now() + 4000;
   gameMessages.push({ text: s.toUpperCase(), color, tag, until: msgUntil });
   gameMessages = gameMessages.slice(-3);
-  gameMessages.forEach(
-    (m, i) => (m.y = 60 - (gameMessages.length - 1 - i) * 11),
-  );
+  for (const [i, m] of gameMessages.entries()) {
+    m.y = 60 - (gameMessages.length - 1 - i) * 11;
+  }
 }
 function save() {
   try {
@@ -310,7 +310,7 @@ function base(title: string, background = 'dombak1', animate = true) {
   resultsContinue = null;
   gameMessages = [];
   warningState = { active: false, timer: 0 };
-  menu.removeAttribute('data-scroll-pixels');
+  delete menu.dataset.scrollPixels;
   menu.removeAttribute('aria-label');
   trainingWriter = null;
   menuActions = null;
@@ -355,7 +355,7 @@ function button(label: string, y: number, fn: () => unknown, x = 15, w = 70) {
   const b = document.createElement('button');
   b.textContent = label;
   b.style.cssText = `top:${y}%;left:${x}%;width:${w}%;height:9%`;
-  b.onclick = () => {
+  b.addEventListener('click', () => {
     if (/^back$/i.test(label)) {
       menuCue = MENU_SOUNDS.back;
       fn();
@@ -363,7 +363,7 @@ function button(label: string, y: number, fn: () => unknown, x = 15, w = 70) {
     } else {
       fn();
     }
-  };
+  });
   menu.append(b);
   return b;
 }
@@ -388,21 +388,25 @@ function nativeButton(
   b.style.height = '5%';
   b.setAttribute('aria-label', label);
   b.replaceChildren(bitmapLabel(label));
-  b.onfocus = () => (b.firstChild as BitmapLabel).setColor('yelo');
-  b.onpointerenter = (e) => {
+  b.addEventListener('focus', () =>
+    (b.firstChild as BitmapLabel).setColor('yelo'),
+  );
+  b.addEventListener('pointerenter', (e) => {
     if (e.pointerType === 'mouse' && document.activeElement !== b) {
       sound(MENU_SOUNDS.move, 0.5);
       b.focus({ preventScroll: true });
     }
-  };
-  b.onblur = () => (b.firstChild as BitmapLabel).setColor('grey');
+  });
+  b.addEventListener('blur', () =>
+    (b.firstChild as BitmapLabel).setColor('grey'),
+  );
   return b;
 }
 function clickableBackHint(image: string | Node) {
   const b = document.createElement('button');
   b.className = 'key-hint-button';
   b.setAttribute('aria-label', 'Back');
-  b.onclick = () => navigateBack('hint');
+  b.addEventListener('click', () => navigateBack('hint'));
   b.append(image);
   menu.append(b);
   return b;
@@ -441,7 +445,9 @@ function mainMenu() {
     ['CREDITS...', credits],
     ['FULLSCREEN', toggleFullscreen],
   ] as const;
-  actions.forEach(([label, fn], i) => nativeButton(label, 94, 70 + i * 17, fn));
+  for (const [i, [label, fn]] of actions.entries()) {
+    nativeButton(label, 94, 70 + i * 17, fn);
+  }
   hints(false);
   menu.querySelector<HTMLButtonElement>('button')!.focus();
   picture('hud/small/hud_top');
@@ -541,22 +547,17 @@ function chooseArena() {
   base('SELECT DOMAIN', 'dombak1');
   menuBack = gameOptions;
   sound('sel_dom', 0.5);
+  const chooseDomainIndex = (selectedArena: number) => {
+    arena = selectedArena;
+    gameOptions();
+  };
   for (let i = 1; i <= 8; i++) {
     const col = (i - 1) % 4,
       row = Math.floor((i - 1) / 4),
       x = 22 + col * 70;
     art('ar' + i + 'logo', x + 12, 54 + row * 50, 40, 30);
     const label = GAME_TABLES.domains[i - 1].name,
-      b = nativeButton(
-        label,
-        x,
-        85 + row * 50,
-        () => {
-          arena = i;
-          gameOptions();
-        },
-        66,
-      );
+      b = nativeButton(label, x, 85 + row * 50, () => chooseDomainIndex(i), 66);
     b.style.height = '3.5%';
     b.replaceChildren(bitmapLabel(label, { size: 7 }));
     (b.firstChild as HTMLElement).style.maxWidth = '100%';
@@ -627,7 +628,7 @@ async function chooseRunner(changing = false) {
   // MENU.GW includes the textured floor under the runner inside this viewport.
   preview = makeRunnerPreview(data);
   view.preview = true;
-  view.scene.background = new THREE.Color(0x000000);
+  view.scene.background = new THREE.Color(0x00_00_00);
   view.objects.add(preview);
   view.camera.position.set(0, 2.3, 10);
   view.camera.rotation.set((-10 * Math.PI) / 180, 0, 0);
@@ -667,18 +668,15 @@ function training(page = 0) {
     art('framebut', 121 + i * 29, 6, 20, 9);
   }
   clickableBackHint(art('esc', 1, 192, 64, 8));
+  const moveTrainingPage = (pageDelta: number) => {
+    return training(trainingPage + pageDelta);
+  };
   for (const [direction, x, name, delta] of [
     ['left', 50, 'arrol', -1],
     ['right', 270, 'arror', 1],
   ] as const) {
     if (trainingPage + delta >= 0 && trainingPage + delta < 5) {
-      const b = button(
-        '',
-        4,
-        () => training(trainingPage + delta),
-        x / 3.2,
-        9 / 3.2,
-      );
+      const b = button('', 4, () => moveTrainingPage(delta), x / 3.2, 9 / 3.2);
       b.style.cssText +=
         ';height:2.5%;display:flex;align-items:center;line-height:0;font-size:0';
       b.classList.add('training-arrow');
@@ -698,19 +696,17 @@ function updateTraining(dt: number) {
   if (!trainingWriter?.step(dt)) {
     return;
   }
-  trainingData.pages[trainingPage].paragraphs.forEach(
-    (p: { text: string }, i: number) => {
-      const c = trainingBlocks[i];
-      c.setText(p.text.slice(0, trainingWriter!.visible[i]));
-      c.style.width = c.width / 3.2 + '%';
-      c.style.height = c.height / 2 + '%';
-    },
-  );
+  for (const [i, p] of trainingData.pages[trainingPage].paragraphs.entries()) {
+    const c = trainingBlocks[i];
+    c.setText(p.text.slice(0, trainingWriter!.visible[i]));
+    c.style.width = c.width / 3.2 + '%';
+    c.style.height = c.height / 2 + '%';
+  }
 }
 function highScores() {
   base('HIGH SCORES', 'dombak4');
   const list = saved.scores || [];
-  if (list.length) {
+  if (list.length > 0) {
     for (const [label, x] of [
       ['RANK', 15],
       ['NAME', 52],
@@ -737,7 +733,7 @@ function highScores() {
   menu.setAttribute(
     'aria-label',
     'High scores. ' +
-      (list.length
+      (list.length > 0
         ? list
             .slice(0, 10)
             .map(
@@ -757,7 +753,7 @@ function credits() {
     'aria-label',
     'Credits. Original scrolling sequence. Escape returns.',
   );
-  menu.setAttribute('data-scroll-pixels', '0');
+  menu.dataset.scrollPixels = '0';
   creditsBlocks = creditsData.rows.map(
     (row: { text: string; size: number; color: any; x: number; y: number }) => {
       if (!row.text) {
@@ -778,13 +774,13 @@ function updateCredits(dt: number) {
   if (!creditsWriter?.step(dt)) {
     return;
   }
-  menu.setAttribute('data-scroll-pixels', String(creditsWriter.pixels));
-  creditsData.rows.forEach((row: { y: number }, i: number) => {
+  menu.dataset.scrollPixels = String(creditsWriter.pixels);
+  for (const [i, row] of creditsData.rows.entries()) {
     const c = creditsBlocks[i];
     if (c) {
       c.style.top = (row.y - creditsWriter!.pixels) / 2 + '%';
     }
-  });
+  }
   if (creditsWriter.finished) {
     mainMenu();
   }
@@ -813,24 +809,20 @@ function options() {
       const value = bitmapLabel('ORIGINAL');
       value.classList.add('graphic-mode-value');
       b.append(value);
-      const focus = b.onfocus,
-        blur = b.onblur;
-      b.onfocus = () => {
-        focus?.call(b, new FocusEvent('focus'));
+      b.addEventListener('focus', () => {
         value.setColor('yelo');
-      };
-      b.onblur = () => {
-        blur?.call(b, new FocusEvent('blur'));
+      });
+      b.addEventListener('blur', () => {
         value.setColor('grey');
-      };
-      b.onkeydown = (event) => {
+      });
+      b.addEventListener('keydown', (event) => {
         if (event.code === 'Space') {
           event.preventDefault();
           if (!event.repeat) {
             b.click();
           }
         }
-      };
+      });
       continue;
     }
     const b = nativeButton(label, 20, y, () => adjustOption(1, key), 170);
@@ -845,13 +837,17 @@ function options() {
     slider.setAttribute('aria-label', label);
     slider.className = 'native-slider';
     slider.style.cssText = `left:59.375%;top:${(y - 8) / 2}%;width:35%;height:10%`;
-    slider.onfocus = () => (b.firstChild as BitmapLabel).setColor('yelo');
-    slider.onblur = () => (b.firstChild as BitmapLabel).setColor('grey');
-    slider.oninput = () => {
+    slider.addEventListener('focus', () =>
+      (b.firstChild as BitmapLabel).setColor('yelo'),
+    );
+    slider.addEventListener('blur', () =>
+      (b.firstChild as BitmapLabel).setColor('grey'),
+    );
+    slider.addEventListener('input', () => {
       audio.setOption(key, Number(slider.value));
       sound('chc_minl', 0.6);
       updateOptionSliders();
-    };
+    });
     menu.append(slider);
   }
   updateGraphicsMode();
@@ -1026,7 +1022,9 @@ async function startGame(continuing = false) {
     view.configurePortals(round);
 
     visuals = await Effects.create(view);
-    const models = await Promise.all(RUNNERS.map(modelData));
+    const models = await Promise.all(
+      RUNNERS.map((itemValue) => modelData(itemValue)),
+    );
     const old = continuing ? sim : null;
     sim = new Simulation({
       arena,
@@ -1212,15 +1210,17 @@ function results(win: boolean) {
     `${GAME_TABLES.domains[arena - 1].name}, ${win ? 'round ' + round + ' completed' : 'game over'}. Total score ${activeSim.score}. Press any key or click to continue.`,
   );
   if (!win) {
-    saved.scores = (saved.scores || [])
-      .concat([
-        {
-          name: 'PRISONER',
-          score: activeSim.score,
-          kills: activeSim.runners[runner].kills,
-        },
-      ])
-      .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
+    saved.scores = [
+      ...(saved.scores || []),
+      {
+        name: 'PRISONER',
+        score: activeSim.score,
+        kills: activeSim.runners[runner].kills,
+      },
+    ]
+      .toSorted(
+        (a: { score: number }, b: { score: number }) => b.score - a.score,
+      )
       .slice(0, 10);
     save();
   }
@@ -1332,7 +1332,7 @@ function events() {
       sound('run_disr', 0.3);
       if (e.reason !== 'outsideDomain' && e.reason !== 'keepMoving') {
         message(
-          e.owner != null && e.owner !== e.runner
+          e.owner !== null && e.owner !== undefined && e.owner !== e.runner
             ? `${runnerName(activeSim.runners[e.owner], GAME_TABLES)} KILLED ${runnerName(activeSim.runners[e.runner], GAME_TABLES)} WITH ${e.weapon}`
             : `${runnerName(activeSim.runners[e.runner], GAME_TABLES)} DIED`,
           RUNNER_SHADES[e.owner ?? e.runner],
@@ -1506,20 +1506,20 @@ function frame(now: number) {
       }
     }
     const currentEscape = sim.escape;
-    sim.runners.forEach((r, i) => {
+    for (const [i, r] of sim.runners.entries()) {
       poseRunnerModel(runnerMeshes[i], r, currentEscape);
-    });
-    sim.pickups.forEach((p, i) => {
+    }
+    for (const [i, p] of sim.pickups.entries()) {
       const mesh = pickupMeshes[i];
       mesh.visible = p.cooldown <= 0;
       mesh.rotation.y = pickupYaw(view.camera.position, p);
       mesh.position.y = p.y;
-    });
-    sim.recharge.orbs.forEach((o, i) => {
+    }
+    for (const [i, o] of sim.recharge.orbs.entries()) {
       const mesh = rechargeMeshes[i];
       mesh.visible = o.cooldown <= 0;
       mesh.position.set(o.x, o.y, o.z);
-    });
+    }
     visuals.sync(sim);
     view.enhancements?.sync(sim, dt);
     view.setPlayerSpotlight(sim.runners[runner], sim.escape);
@@ -1725,9 +1725,9 @@ async function toggleFullscreen() {
     // Browsers can reject fullscreen requests after an interrupted gesture.
   }
 }
-$('#fullscreen').onclick = toggleFullscreen;
-$('#sound').onclick = () => audio.setMuted(!audio.muted);
-$('#music').onclick = () => audio.toggleMusic();
+$('#fullscreen').addEventListener('click', toggleFullscreen);
+$('#sound').addEventListener('click', () => audio.setMuted(!audio.muted));
+$('#music').addEventListener('click', () => audio.toggleMusic());
 touchUI = new TouchControls({
   keys,
   bitmapLabel,
@@ -1785,5 +1785,7 @@ export const ready = (async () => {
     bitmapFontsReady(),
     ...Array.from(menu.querySelectorAll<HTMLImageElement>('img'), imageReady),
   ]);
-  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => {
+    requestAnimationFrame(resolve);
+  });
 })();

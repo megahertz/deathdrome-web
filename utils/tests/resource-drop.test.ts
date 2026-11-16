@@ -18,7 +18,10 @@ function target() {
     panel,
     loaded,
     reset,
-    setReady: (value: boolean) => (ready = value),
+    setReady: (value: boolean) => {
+      ready = value;
+      return ready;
+    },
   };
 }
 function drag(

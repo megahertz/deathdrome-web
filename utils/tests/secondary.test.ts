@@ -29,14 +29,14 @@ test('secondary weapon constants are read from the original executable', async (
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    f = (va: number) => exe.readFloatLE(va - 0x480000 + 0x68e00);
-  assert.equal(SECONDARY.shockWave.growth, f(0x480d93));
-  assert.equal(SECONDARY.shockWave.verticalBand, f(0x480d8b));
-  assert.equal(SECONDARY.disruptor.baseSpeed, f(0x485774));
-  assert.equal(SECONDARY.disruptor.growth, f(0x485778));
-  assert.equal(SECONDARY.disruptor.launchDistance, f(0x48577c));
-  assert.equal(SECONDARY.ionSword.damagePerSecond, -f(0x48579c));
-  assert.equal(SECONDARY.ionSword.verticalBand, f(0x485790));
+    f = (va: number) => exe.readFloatLE(va - 0x48_00_00 + 0x6_8e_00);
+  assert.equal(SECONDARY.shockWave.growth, f(0x48_0d_93));
+  assert.equal(SECONDARY.shockWave.verticalBand, f(0x48_0d_8b));
+  assert.equal(SECONDARY.disruptor.baseSpeed, f(0x48_57_74));
+  assert.equal(SECONDARY.disruptor.growth, f(0x48_57_78));
+  assert.equal(SECONDARY.disruptor.launchDistance, f(0x48_57_7c));
+  assert.equal(SECONDARY.ionSword.damagePerSecond, -f(0x48_57_9c));
+  assert.equal(SECONDARY.ionSword.verticalBand, f(0x48_57_90));
 });
 test('shockwave expands over time, rejects vertical separation, and preserves shield contact scoring', () => {
   const s = setup(),

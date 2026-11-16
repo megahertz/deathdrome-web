@@ -21,8 +21,10 @@ const rows = JSON.parse(
       ),
     ).toString(),
   );
-const canonical = (value: { visible: any[]; row: any[] }) =>
-  JSON.parse(JSON.stringify(value));
+const canonical = (value: { visible: any[]; row: any[] }) => {
+  const serialized = JSON.stringify(value);
+  return JSON.parse(serialized);
+};
 test('span depth comparison matches 3,200 original point/line/crossing cases', () => {
   assert.equal(rows.passed, true);
   assert.equal(rows.comparisonCases, 3200);
@@ -69,7 +71,7 @@ test('mixed opaque rendering matches original pixels, texture commands and depth
   assert.equal(draws.solidNativeDraws, 342);
   for (const fixture of draws.fixtures) {
     for (const axis of [0, 1]) {
-      const target = new Uint8Array(64000).fill(255),
+      const target = new Uint8Array(64_000).fill(255),
         buffer = new SpanBuffer(200);
       for (const [i, p] of fixture.polygons.entries()) {
         const [width, height] = p.size,
@@ -90,17 +92,26 @@ test('mixed opaque rendering matches original pixels, texture commands and depth
                   { ...p, spanBuffer: buffer },
                 );
         const raw = Buffer.alloc(commands.length * 36);
-        commands.forEach((c, index) =>
-          ['kind', 'x', 'y', 'count', 'u', 'v', 'du', 'dv', 'color'].forEach(
-            (k, j) =>
-              raw.writeInt32LE(
-                (k === 'kind'
-                  ? Number(p.kind === 'solid')
-                  : (c[k as keyof typeof c] ?? 0)) | 0,
-                index * 36 + j * 4,
-              ),
-          ),
-        );
+        for (const [index, c] of commands.entries()) {
+          for (const [j, k] of [
+            'kind',
+            'x',
+            'y',
+            'count',
+            'u',
+            'v',
+            'du',
+            'dv',
+            'color',
+          ].entries()) {
+            raw.writeInt32LE(
+              (k === 'kind'
+                ? Number(p.kind === 'solid')
+                : (c[k as keyof typeof c] ?? 0)) | 0,
+              index * 36 + j * 4,
+            );
+          }
+        }
         const expected = fixture.native[axis][i];
         assert.equal(
           createHash('sha256').update(target).digest('hex'),

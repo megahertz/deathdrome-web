@@ -9,8 +9,10 @@ export const POPULATION = GAME_TABLES.population;
 // selected by profile 0. Model IDs continue to determine geometry and spawn.
 export function initialActiveModels(
   player: number,
-  count = POPULATION.initialCount,
+  inputCount = POPULATION.initialCount,
 ) {
+  let count = inputCount;
+
   count = Math.max(1, Math.min(POPULATION.modelCount, count));
   const active = Array.from({ length: POPULATION.modelCount }, (_, i) => i);
   for (let i = active.length - 1; active.length > count && i >= 0; i--) {
@@ -80,11 +82,11 @@ export class RunnerPopulation {
               ),
             )
           : nav?.routeIndex;
-    if (releaseRoute && index != null) {
+    if (releaseRoute && index !== null && index !== undefined) {
       this.sim.aiRouteCounts[index]--;
     }
     r.savedGoalColor = saveGoal ? (nav?.goalColor ?? r.savedGoalColor ?? 0) : 0;
-    if (r.respawn?.routeIndex != null) {
+    if (r.respawn?.routeIndex !== null && r.respawn?.routeIndex !== undefined) {
       this.sim.aiRouteCounts[r.respawn.routeIndex]--;
     }
     r.respawn = null;
@@ -154,19 +156,19 @@ export class RunnerPopulation {
       index = limits.findIndex(
         (row, i) => row[sim.round - 1] > sim.aiRouteCounts[i],
       );
-    if (index < 0) {
+    if (index === -1) {
       return null;
     }
     const next = this.nextInactive();
     if (!next) {
       return null;
     }
-    beginRespawn(sim, next, { routeIndex: index >= 0 ? index : null });
+    beginRespawn(sim, next, { routeIndex: index === -1 ? null : index });
     sim.emit('replacement', {
       previous,
       runner: next.id,
       routeColor:
-        index >= 0 ? GAME_TABLES.ai.navigation.routeColors[index] : null,
+        index === -1 ? null : GAME_TABLES.ai.navigation.routeColors[index],
     });
     return next;
   }

@@ -35,7 +35,7 @@ function readPNG(path: PathOrFileDescriptor) {
       width = data.readUInt32BE(0);
       height = data.readUInt32BE(4);
       if (data[8] !== 8 || ![2, 6].includes(data[9])) {
-        throw Error('Expected eight-bit RGB/RGBA PNG');
+        throw new Error('Expected eight-bit RGB/RGBA PNG');
       }
       channels = data[9] === 6 ? 4 : 3;
     } else if (type === 'IDAT') {
@@ -74,7 +74,7 @@ function readPNG(path: PathOrFileDescriptor) {
           predictor = corner;
         }
       } else if (filter !== 0) {
-        throw Error('Invalid PNG row filter');
+        throw new Error('Invalid PNG row filter');
       }
       unpacked[y * stride + x] = (packed[at++] + predictor) & 255;
     }
@@ -133,11 +133,14 @@ function frame() {
     createImageData: (w: number, h: number) => ({
       data: new Uint8ClampedArray(w * h * 4),
     }),
-    putImageData: (v: { data: Uint8ClampedArray }) => (pixels = v.data),
+    putImageData: (v: { data: Uint8ClampedArray }) => {
+      pixels = v.data;
+      return pixels;
+    },
     fillRect(x: any, y: any, w: any, h: any) {
       const c = this.fillStyle
         .match(/[\da-f]{2}/gi)!
-        .map((v: string) => parseInt(v, 16));
+        .map((v: string) => Number.parseInt(v, 16));
       for (let yy = y; yy < y + h; yy++) {
         for (let xx = x; xx < x + w; xx++) {
           pixels.set([...c, 255], (yy * 96 + xx) * 4);

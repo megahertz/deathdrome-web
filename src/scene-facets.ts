@@ -18,7 +18,9 @@ export function facetNormal(vertices: number[][] | [any, any, any]) {
   return mapVec3((_key, i) => f(n[i] * inverse));
 }
 export function prepareFacet(vertices: number[][], twoSided = false) {
-  const v = vertices.map((p: number[]) => p.slice(0, 3).map(f));
+  const v = vertices.map((p: number[]) =>
+    p.slice(0, 3).map((itemValue) => f(itemValue)),
+  );
   return {
     vertices: v,
     normal: facetNormal(v),

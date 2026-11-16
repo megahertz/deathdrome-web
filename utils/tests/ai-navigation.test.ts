@@ -31,7 +31,9 @@ function setup() {
   const sim = new Simulation({ paths: graph, ground: () => 0 }),
     r = sim.runners[1];
   sim.countdown = 0;
-  sim.runners.forEach((q) => (q.dead = Infinity));
+  for (const q of sim.runners) {
+    q.dead = Infinity;
+  }
   Object.assign(r, {
     dead: 0,
     x: 0,
@@ -63,39 +65,39 @@ test('native navigation constants and route capacity table match executable data
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    at = (va: number) => va - 0x480000 + 0x68e00;
+    at = (va: number) => va - 0x48_00_00 + 0x6_8e_00;
   for (const [name, va] of Object.entries({
-    minimumAdvanceFactor: 0x483e1b,
-    turnDegrees: 0x483f46,
-    centralSpeedFactor: 0x483f4a,
-    alignment: 0x483e37,
-    alignSeconds: 0x483e33,
-    retreatSeconds: 0x483dc7,
-    temporaryAdvance: 0x483f62,
+    minimumAdvanceFactor: 0x48_3e_1b,
+    turnDegrees: 0x48_3f_46,
+    centralSpeedFactor: 0x48_3f_4a,
+    alignment: 0x48_3e_37,
+    alignSeconds: 0x48_3e_33,
+    retreatSeconds: 0x48_3d_c7,
+    temporaryAdvance: 0x48_3f_62,
   })) {
     assert.equal(
       AI_NAVIGATION[name as keyof typeof AI_NAVIGATION],
       exe.readFloatLE(at(va)),
     );
   }
-  const code = (va: number) => va - 0x410000 + 0x400;
+  const code = (va: number) => va - 0x41_00_00 + 0x4_00;
   assert.equal(
     AI_NAVIGATION.nodeCapacity,
-    exe.readUInt32LE(code(0x42dc37)) / exe.readUInt8(code(0x42dc35)),
+    exe.readUInt32LE(code(0x42_dc_37)) / exe.readUInt8(code(0x42_dc_35)),
   );
   assert.equal(
     AI_NAVIGATION.segmentCapacity,
-    exe.readUInt32LE(code(0x42dc03)) / exe.readUInt8(code(0x42dc01)),
+    exe.readUInt32LE(code(0x42_dc_03)) / exe.readUInt8(code(0x42_dc_01)),
   );
   for (let i = 0; i < 5; i++) {
     assert.equal(
       AI_NAVIGATION.routeColors[i],
-      exe.readUInt32LE(at(0x48f144) + i * 4),
+      exe.readUInt32LE(at(0x48_f1_44) + i * 4),
     );
     for (let j = 0; j < 3; j++) {
       assert.equal(
         AI_NAVIGATION.routeLimits[i][j],
-        exe.readUInt32LE(at(0x48db78) + i * 12 + j * 4),
+        exe.readUInt32LE(at(0x48_db_78) + i * 12 + j * 4),
       );
     }
   }

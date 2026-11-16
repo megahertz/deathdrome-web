@@ -21,7 +21,7 @@ test('adaptive quality reduces sustained slow frames, recovers slowly, and ignor
     a.sample(0.08, false);
   }
   assert.equal(a.factor, reduced);
-  for (const dt of [0, -1, NaN, Infinity, 0.5]) {
+  for (const dt of [0, -1, Number.NaN, Infinity, 0.5]) {
     a.sample(dt);
   }
   assert.equal(a.factor, reduced);
@@ -72,7 +72,7 @@ test('visual particles have an independent deterministic RNG, bounded storage an
   const { random } = Math;
   try {
     Math.random = () => {
-      throw Error('Visuals must not consume the simulation RNG');
+      throw new Error('Visuals must not consume the simulation RNG');
     };
     a.burst(position, true);
     b.burst(position, true);
@@ -84,7 +84,11 @@ test('visual particles have an independent deterministic RNG, bounded storage an
   const snapshot = { ...position };
   a.step(0.05);
   assert.deepEqual(position, snapshot);
-  assert.ok(a.items.every((p) => [p.x, p.y, p.z].every(Number.isFinite)));
+  assert.ok(
+    a.items.every((p) =>
+      [p.x, p.y, p.z].every((itemValue) => Number.isFinite(itemValue)),
+    ),
+  );
   for (let i = 0; i < 40; i++) {
     a.step(0.1);
   }
@@ -96,7 +100,7 @@ test('MSAA follows hardware limits and selective glow restores scene state even 
     setRenderTarget() {},
     clear() {},
     render() {
-      throw Error('synthetic render failure');
+      throw new Error('synthetic render failure');
     },
   };
   const pipeline = new EnhancedPipeline(
@@ -110,7 +114,7 @@ test('MSAA follows hardware limits and selective glow restores scene state even 
     fog = new THREE.FogExp2(0, 0.001);
   scene.background = background;
   scene.fog = fog;
-  const material = new THREE.MeshBasicMaterial({ color: 0x774411 }),
+  const material = new THREE.MeshBasicMaterial({ color: 0x77_44_11 }),
     mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
   scene.add(mesh);
   const shadow = new THREE.Mesh(mesh.geometry, material);
@@ -205,11 +209,14 @@ test('paused enhanced scenes reuse the last frame but redraw after a resolution 
 test('glow replacements are released with disposed source materials and detached on cache clear', () => {
   const pipeline = new EnhancedPipeline({} as THREE.WebGLRenderer);
   let disposed = 0;
+  const countDisposal = () => {
+    return disposed++;
+  };
   for (let i = 0; i < 1000; i++) {
     const source = new THREE.MeshBasicMaterial();
     const black = pipeline.blackMaterial(source);
     assert.equal(pipeline.blackMaterial(source), black);
-    black.addEventListener('dispose', () => disposed++);
+    black.addEventListener('dispose', countDisposal);
     source.dispose();
   }
   assert.equal(disposed, 1000);

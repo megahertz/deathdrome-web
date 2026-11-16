@@ -1,3 +1,8 @@
+import { GAME_TABLES } from './game-tables.ts';
+import type { Runner } from './game-types.ts';
+import { hotSpotMarkers, hotSpotBox } from './hot-spot-geometry.ts';
+import { intersectBox } from './scene-boxes.ts';
+import { segmentInWorldPartition } from './world-partition.ts';
 interface HotSpot {
   id: number;
   x: number;
@@ -12,11 +17,7 @@ interface HotSpot {
   color: number[];
   owner: number | null;
 }
-import { GAME_TABLES } from './game-tables.ts';
-import type { Runner } from './game-types.ts';
-import { hotSpotMarkers, hotSpotBox } from './hot-spot-geometry.ts';
-import { intersectBox } from './scene-boxes.ts';
-import { segmentInWorldPartition } from './world-partition.ts';
+
 export const HOT_SPOT = GAME_TABLES.hotSpots;
 export class HotSpots {
   declare onChange: (spot: HotSpot) => void;

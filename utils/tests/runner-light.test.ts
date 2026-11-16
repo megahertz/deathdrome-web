@@ -59,16 +59,16 @@ test('gameplay light follows the pose and hides with the original exit/body stat
   assert.equal(view.playerSpotDirection.value.y, 1);
   r.inactive = true;
   view.setPlayerSpotlight(r);
-  assert.equal(view.playerSpot.y, -10000);
+  assert.equal(view.playerSpot.y, -10_000);
   r.inactive = false;
   (r as typeof r & { id: number }).id = 0;
   view.setPlayerSpotlight(r, { runner: 0, phase: 'fold' });
-  assert.equal(view.playerSpot.y, -10000);
+  assert.equal(view.playerSpot.y, -10_000);
   view.setPlayerSpotlight(r, { runner: 0, phase: 'center' });
   assert.equal(view.playerSpot.y, 2);
   r.dead = Infinity;
   view.setPlayerSpotlight(r);
-  assert.equal(view.playerSpot.y, -10000);
+  assert.equal(view.playerSpot.y, -10_000);
 });
 test('coverage matches the original polygon predicate across all eight runners and five headings', () => {
   const audit = JSON.parse(

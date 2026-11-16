@@ -14,12 +14,12 @@ const audit = JSON.parse(
 function signature(uv: number[][]) {
   const pairs = uv
     .map((p) => p.map((x) => (x === 0 ? 0 : x)))
-    .sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    .toSorted((a, b) => a[0] - b[0] || a[1] - b[1]);
   const bytes = Buffer.alloc(pairs.length * 8);
-  pairs.forEach((p, i) => {
+  for (const [i, p] of pairs.entries()) {
     bytes.writeFloatLE(p[0], i * 8);
     bytes.writeFloatLE(p[1], i * 8 + 4);
-  });
+  }
   return createHash('sha256').update(bytes).digest('hex');
 }
 test('exported render UV sets are present in independently loaded native models', () => {
@@ -89,7 +89,7 @@ test('renderer retains independent UV origins at subdivision boundaries', () => 
       import('#three').MeshBasicMaterial
     >;
   assert.deepEqual(
-    Array.from(mesh.geometry.attributes.uv.array),
+    [...mesh.geometry.attributes.uv.array],
     [0, 0, 1, 0, 1, 1, 1, 0, 2, 1, 1, 1],
   );
   assert.equal(mesh.geometry.attributes.position.count, 6);

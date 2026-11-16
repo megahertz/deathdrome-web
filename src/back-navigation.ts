@@ -277,8 +277,8 @@ export function nextMenuButton<T extends { disabled: boolean }>(
   direction: 1 | -1,
 ): T | undefined {
   const enabled = buttons.filter((button) => !button.disabled);
-  const index = enabled.findIndex((button) => button === active);
-  if (index < 0) {
+  const index = enabled.indexOf(active as T);
+  if (index === -1) {
     return direction === 1 ? enabled[0] : enabled.at(-1);
   }
   return enabled[(index + direction + enabled.length) % enabled.length];

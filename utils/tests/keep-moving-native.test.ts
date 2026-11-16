@@ -33,7 +33,7 @@ test('576 original keep-moving traces match gates, history, protected/lethal hea
       health: f.health,
       shield: f.shielded ? 10 : 0,
       lastHitWeaponCode: 99,
-      killedByRunner: 0xffffffff,
+      killedByRunner: 0xff_ff_ff_ff,
       profileName: 'PRISONER',
     });
     sim.keepMovingState.timers[f.model] = f.timer;
@@ -83,13 +83,15 @@ test('576 original keep-moving traces match gates, history, protected/lethal hea
               enabled: 1,
             },
           ];
-        } else if (e.type === 'selfKill') {
-          return [{ type: 'message', text: e.text }];
-        } else if (e.type === 'paletteFlash') {
-          return [{ type: e.type, frames: e.frames }];
-        } else {
-          return [];
         }
+        if (e.type === 'selfKill') {
+          return [{ type: 'message', text: e.text }];
+        }
+        if (e.type === 'paletteFlash') {
+          return [{ type: e.type, frames: e.frames }];
+        }
+
+        return [];
       });
       assert.deepEqual(
         {
@@ -98,7 +100,8 @@ test('576 original keep-moving traces match gates, history, protected/lethal hea
           health: r.health,
           voice: sim.keepMovingState.impactVoice,
           velocity: [r.lateralSpeed, r.localVerticalSpeed, -r.speed],
-          killer: r.killedByRunner === 0xffffffff ? 0xffffffff : f.profile,
+          killer:
+            r.killedByRunner === 0xff_ff_ff_ff ? 0xff_ff_ff_ff : f.profile,
           weapon: r.lastHitWeaponCode,
           events,
         },
@@ -119,7 +122,7 @@ test('palette flash requests and all 61440 uploaded bytes match real original ca
   );
   assert.equal(audit.passed, true);
   assert.equal(audit.callbacks, 60);
-  assert.equal(audit.uploadedBytesCompared, 61440);
+  assert.equal(audit.uploadedBytesCompared, 61_440);
   for (const [i, f] of audit.fixtures.entries()) {
     const flash = new PaletteFlash();
     for (const [j, step] of f.steps.entries()) {

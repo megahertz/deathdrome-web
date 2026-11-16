@@ -4,11 +4,10 @@ import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 import { RecordedDemo } from '../../src/recorded-demo.ts';
 const manifest = JSON.parse(
-  (
-    await readFile(
-      new URL('../../private/assets/recordings/manifest.json', import.meta.url),
-    )
-  ).toString(),
+  await readFile(
+    new URL('../../private/assets/recordings/manifest.json', import.meta.url),
+    'utf8',
+  ),
 );
 test('all nine original recordings decode without dropped state packets or byte changes', async () => {
   let count = 0;
@@ -53,7 +52,7 @@ test('all nine original recordings decode without dropped state packets or byte 
     }
     count += entry.runnerStateRecords;
   }
-  assert.equal(count, 22024);
+  assert.equal(count, 22_024);
 });
 test('recorded pose interpolation crosses the short angle and clamps at recording bounds', async () => {
   const bytes = await readFile(

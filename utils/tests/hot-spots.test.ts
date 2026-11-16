@@ -16,22 +16,18 @@ test('hot spot constants and marker counts match the supplied source', async () 
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    f = (va: number) => exe.readFloatLE(va - 0x480000 + 0x68e00);
-  assert.equal(HOT_SPOT.damage, -f(0x48442c));
-  assert.equal(HOT_SPOT.maximumScale, f(0x484b16));
-  assert.equal(HOT_SPOT.growthDistance, f(0x484b1a));
+    f = (va: number) => exe.readFloatLE(va - 0x48_00_00 + 0x6_8e_00);
+  assert.equal(HOT_SPOT.damage, -f(0x48_44_2c));
+  assert.equal(HOT_SPOT.maximumScale, f(0x48_4b_16));
+  assert.equal(HOT_SPOT.growthDistance, f(0x48_4b_1a));
   const counts = [];
   for (let i = 1; i <= 8; i++) {
     // oxlint-disable no-await-in-loop -- Keep each reference fixture and its assertions together, bounding live scene memory.
     const model = JSON.parse(
-      (
-        await readFile(
-          new URL(
-            `../../private/assets/models/arena${i}.json`,
-            import.meta.url,
-          ),
-        )
-      ).toString(),
+      await readFile(
+        new URL(`../../private/assets/models/arena${i}.json`, import.meta.url),
+        'utf8',
+      ),
     );
     // oxlint-enable no-await-in-loop
     counts.push(new HotSpots(model.markers).spots.length);
@@ -76,9 +72,9 @@ test('hot spot force obeys its ground-height band, shields and owner kill scorin
   const sim: Simulation = new Simulation({ markers: [marker(true)] });
   sim.countdown = 0;
   sim.ai = () => ({});
-  sim.runners.forEach((r) =>
-    Object.assign(r, { x: 300 + r.id * 20, y: 0, z: 300, shield: 0 }),
-  );
+  for (const r of sim.runners) {
+    Object.assign(r, { x: 300 + r.id * 20, y: 0, z: 300, shield: 0 });
+  }
   const s = sim.hotSpots.spots[0];
   Object.assign(s, { phase: 3, seconds: 0.5, scale: 60, owner: 0 });
   Object.assign(sim.runners[1], { x: 10, y: 0, z: 0 });
@@ -94,14 +90,13 @@ test('hot spot force obeys its ground-height band, shields and owner kill scorin
 
 test('all 131 native hot-spot startup boxes, IDs, timers and 100 trigger/pool actions agree', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hot-spots-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hot-spots-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(audit.passed, true);
   assert.deepEqual(audit.mismatches, []);
@@ -110,14 +105,13 @@ test('all 131 native hot-spot startup boxes, IDs, timers and 100 trigger/pool ac
   for (const row of audit.results) {
     // oxlint-disable no-await-in-loop -- Keep each reference fixture and its assertions together, bounding live scene memory.
     const data = JSON.parse(
-        (
-          await readFile(
-            new URL(
-              `../../private/assets/models/arena${row.arena}.json`,
-              import.meta.url,
-            ),
-          )
-        ).toString(),
+        await readFile(
+          new URL(
+            `../../private/assets/models/arena${row.arena}.json`,
+            import.meta.url,
+          ),
+          'utf8',
+        ),
       ),
       h = new HotSpots(data.markers);
     // oxlint-enable no-await-in-loop
@@ -157,27 +151,25 @@ test('all 131 native hot-spot startup boxes, IDs, timers and 100 trigger/pool ac
 
 test('1834 native marker rays include one-sided entries, inside exits and grid-boundary eligibility', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hot-spots-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hot-spots-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   let count = 0;
   for (const row of audit.results) {
     // oxlint-disable no-await-in-loop -- Keep each reference fixture and its assertions together, bounding live scene memory.
     const data = JSON.parse(
-        (
-          await readFile(
-            new URL(
-              `../../private/assets/models/arena${row.arena}.json`,
-              import.meta.url,
-            ),
-          )
-        ).toString(),
+        await readFile(
+          new URL(
+            `../../private/assets/models/arena${row.arena}.json`,
+            import.meta.url,
+          ),
+          'utf8',
+        ),
       ),
       h = new HotSpots(data.markers),
       results = await queryScene({ arena: row.arena, fixtures: row.fixtures });
@@ -222,73 +214,70 @@ test('1834 native marker rays include one-sided entries, inside exits and grid-b
 
 test('896 native dispatches retain hot-spot trigger, response and subsequent wall response order', async () => {
   const audit = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/hot-spot-dispatch-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/hot-spot-dispatch-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(audit.passed, true);
   assert.equal(audit.fixtures.length, 896);
-  audit.fixtures.forEach(
-    (f: { r: any; dt: number; withWall: any; contact: any }, i: number) => {
-      const r = structuredClone(f.r),
-        trace: {
-          kind: any;
-          position?: any[];
-          world?: unknown[];
-          local?: any[];
-          turn?: number;
-          minimum?: any;
-          probe?: unknown[];
-        }[] = [];
-      let count = 0;
-      const snapshot = () => ({
-        position: [r.x, r.y, r.z],
-        world: Object.values(r.worldVelocity),
-        local: [r.lateralSpeed, r.localVerticalSpeed, -r.speed],
-        turn: (r.turn * 180) / Math.PI,
-        minimum: r.collisionMinimumSpeed,
-        probe: Object.values(r.collisionProbe),
-      });
-      const result = stepCollisionSweep(
-        r,
-        f.dt,
-        () =>
-          ++count === 1
-            ? ['HotSpot_parent_0', ...(f.withWall ? ['wall'] : [])].map(
-                (name) => ({ ...f.contact, node: { name } }),
-              )
-            : [],
-        {
-          onContact: (kind: any) => trace.push({ kind }),
-          onResponse: (_response: any, kind: string) =>
-            trace.push({ kind: kind + 'Response', ...snapshot() }),
-        },
-      );
-      assert.equal(result.responses.length, f.withWall ? 2 : 1);
-      assert.equal(trace.length, audit.native[i].length);
-      trace.forEach((event, j) => {
-        const n = audit.native[i][j];
-        assert.equal(event.kind, n.kind);
-        for (const key of Object.keys(n).filter((k) => k !== 'kind')) {
-          const a = Array.isArray(event[key as keyof typeof event])
-              ? event[key as keyof typeof event]
-              : [event[key as keyof typeof event]],
-            b = Array.isArray(n[key]) ? n[key] : [n[key]];
-          a.forEach((v: number, k: number) =>
-            assert.ok(
-              Math.abs(v - b[k]) <= audit.tolerance,
-              `fixture ${i}, response ${j}, ${key}[${k}]`,
-            ),
+  for (const [i, f] of audit.fixtures.entries()) {
+    const r = structuredClone(f.r),
+      trace: {
+        kind: any;
+        position?: any[];
+        world?: unknown[];
+        local?: any[];
+        turn?: number;
+        minimum?: any;
+        probe?: unknown[];
+      }[] = [];
+    let count = 0;
+    const snapshot = () => ({
+      position: [r.x, r.y, r.z],
+      world: Object.values(r.worldVelocity),
+      local: [r.lateralSpeed, r.localVerticalSpeed, -r.speed],
+      turn: (r.turn * 180) / Math.PI,
+      minimum: r.collisionMinimumSpeed,
+      probe: Object.values(r.collisionProbe),
+    });
+    const result = stepCollisionSweep(
+      r,
+      f.dt,
+      () =>
+        ++count === 1
+          ? ['HotSpot_parent_0', ...(f.withWall ? ['wall'] : [])].map(
+              (name) => ({ ...f.contact, node: { name } }),
+            )
+          : [],
+      {
+        onContact: (kind: any) => trace.push({ kind }),
+        onResponse: (_response: any, kind: string) =>
+          trace.push({ kind: kind + 'Response', ...snapshot() }),
+      },
+    );
+    assert.equal(result.responses.length, f.withWall ? 2 : 1);
+    assert.equal(trace.length, audit.native[i].length);
+    for (const [j, event] of trace.entries()) {
+      const n = audit.native[i][j];
+      assert.equal(event.kind, n.kind);
+      for (const key of Object.keys(n).filter((k) => k !== 'kind')) {
+        const a = Array.isArray(event[key as keyof typeof event])
+            ? event[key as keyof typeof event]
+            : [event[key as keyof typeof event]],
+          b = Array.isArray(n[key]) ? n[key] : [n[key]];
+        for (const [k, v] of a.entries()) {
+          assert.ok(
+            Math.abs(v - b[k]) <= audit.tolerance,
+            `fixture ${i}, response ${j}, ${key}[${k}]`,
           );
         }
-      });
-    },
-  );
+      }
+    }
+  }
 });
 
 test('the front probe arms a hot spot outside the centre radius, then eruption disables its collider immediately', () => {
@@ -313,7 +302,9 @@ test('the front probe arms a hot spot outside the centre radius, then eruption d
   });
   sim.countdown = 0;
   sim.ai = () => ({});
-  sim.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of sim.runners) {
+    r.dead = Infinity;
+  }
   const r = sim.runners[sim.player],
     spot = sim.hotSpots.spots[0];
   function approach() {

@@ -14,14 +14,14 @@ test('respawn thresholds and original shroud scale/scroll match executable and s
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    code = (va: number) => va - 0x410000 + 0x400,
+    code = (va: number) => va - 0x41_00_00 + 0x4_00,
     script = await readFile(
       new URL('../../private/original/game/RUN/SHROUD.GW', import.meta.url),
       'utf8',
     );
-  assert.equal(RESPAWN.delaySeconds, exe.readFloatLE(code(0x42b307)));
-  assert.equal(RESPAWN.energizeSeconds, exe.readFloatLE(code(0x42b1b6)));
-  assert.equal(RESPAWN.bodyAtSeconds, exe.readFloatLE(code(0x42b20b)));
+  assert.equal(RESPAWN.delaySeconds, exe.readFloatLE(code(0x42_b3_07)));
+  assert.equal(RESPAWN.energizeSeconds, exe.readFloatLE(code(0x42_b1_b6)));
+  assert.equal(RESPAWN.bodyAtSeconds, exe.readFloatLE(code(0x42_b2_0b)));
   const scale = script.match(/^Object3DScale\s+([.\d]+)/m),
     scroll = script.match(/^Object3DSetScroll on\s+([.\d-]+)\s+([.\d-]+)/m);
   assert.equal(RESPAWN.shroudScale, Math.fround(Number(scale![1])));
@@ -30,11 +30,10 @@ test('respawn thresholds and original shroud scale/scroll match executable and s
     scroll!.slice(1).map((x) => Math.fround(Number(x))),
   );
   const model = JSON.parse(
-    (
-      await readFile(
-        new URL('../../private/assets/models/plas_hit.json', import.meta.url),
-      )
-    ).toString(),
+    await readFile(
+      new URL('../../private/assets/models/plas_hit.json', import.meta.url),
+      'utf8',
+    ),
   );
   assert.ok(model.meshes.length > 0);
   assert.ok(
@@ -47,7 +46,9 @@ test('respawn thresholds and original shroud scale/scroll match executable and s
 function setup() {
   const sim = new Simulation({ ground: () => 10 });
   sim.countdown = 0;
-  sim.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of sim.runners) {
+    r.dead = Infinity;
+  }
   const r = sim.runners[0];
   r.health = 0;
   beginRespawn(sim, r);
@@ -105,11 +106,10 @@ test('respawn freezes movement, weapons and jump until normal runner setup compl
 });
 test('AI replacement route reservations transfer once to the normal controller and cancellation releases them', async () => {
   const paths = JSON.parse(
-    (
-      await readFile(
-        new URL('../../private/assets/ai-paths.json', import.meta.url),
-      )
-    ).toString(),
+    await readFile(
+      new URL('../../private/assets/ai-paths.json', import.meta.url),
+      'utf8',
+    ),
   );
   const sim = new Simulation({ round: 3, paths: paths[0] });
   let next = sim.population.replace(sim.runners[1]);
@@ -136,7 +136,7 @@ test('life loss and final game-over wait for the destruction callback rather tha
   sim.ai = () => ({});
   sim.lives = 1;
   const r = sim.runners[0];
-  sim.damage(r, 10000, 1);
+  sim.damage(r, 10_000, 1);
   assert.equal(sim.phase, 'running');
   assert.equal(sim.lives, 1);
   assert.equal(r.dead, 0);

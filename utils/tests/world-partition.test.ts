@@ -20,7 +20,10 @@ test('world cell assignment matches 2315 original-code shape and boundary cases'
   assert.equal(audit.fixtures.length, 2315);
   for (const [i, c] of audit.fixtures.entries()) {
     assert.deepEqual(
-      worldPartition(c.min.map(Math.fround), c.max.map(Math.fround)),
+      worldPartition(
+        c.min.map((itemValue: number) => Math.fround(itemValue)),
+        c.max.map((itemValue: number) => Math.fround(itemValue)),
+      ),
       audit.native[i],
       `cell ${i}`,
     );
@@ -68,7 +71,7 @@ test('all 640 THE WALL query hit sets match the independently loaded native aren
           (r.fixtures[i].kind === 'sweep' ||
             Math.abs(h.height - hit.height) < 1e-4),
       );
-      assert.ok(j >= 0, `native hit ${hit.name}, fixture ${i}`);
+      assert.ok(j !== -1, `native hit ${hit.name}, fixture ${i}`);
       actual.splice(j, 1);
     }
   }

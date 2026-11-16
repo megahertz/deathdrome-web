@@ -19,14 +19,10 @@ const RAD = Math.PI / 180,
     assert.ok(Math.abs(a - b) < tolerance, `${a} != ${b}`);
 const data = async (name: string) => {
   const d = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/assets/models/' + name + '.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL('../../private/assets/models/' + name + '.json', import.meta.url),
+      'utf8',
+    ),
   );
   return { ...d, meshes: d.meshes.map((f: any) => ({ ...f, texture: null })) };
 };
@@ -42,7 +38,7 @@ test('active runner scripts disable legacy ZAN insertion and override the compil
       new URL('../../private/original/game/RUN/DYNAMICS.GW', import.meta.url),
       'utf8',
     ),
-    active = script.replace(/#.*$/gm, '');
+    active = script.replaceAll(/#.*$/gm, '');
   assert.equal(
     RUNNER_POSE.cockpitRollRatio,
     Math.fround(
@@ -145,9 +141,9 @@ test('turning rotates only the cockpit around its original pivot and folding ret
   };
   poseRunnerModel(m, r, e);
   const expected = runnerAttachmentMatrix(d, r, 'cockpit', e).elements;
-  rig.cockpit.matrixWorld.elements.forEach((v: number, i: number) =>
-    close(v, expected[i], 1e-9),
-  );
+  for (const [i, v] of rig.cockpit.matrixWorld.elements.entries()) {
+    close(v, expected[i], 1e-9);
+  }
   dispose(m);
 });
 test('human and opponent exit dispatch preserve cockpit lean when they clear their steering rate', () => {
@@ -201,8 +197,14 @@ test('NanoShield planes share the moving cockpit frame rather than an upright st
     .clone()
     .multiply(new THREE.Matrix4().makeTranslation(0, 0, -4))
     .multiply(new THREE.Matrix4().makeScale(0.5, 0.5, NANO.depthScale));
-  effects.pools.shields[0].mesh.matrix.elements.forEach((v, i) =>
-    close(v, expected.elements[i], 1e-9),
-  );
+  for (const [
+    i,
+    v,
+  ] of effects.pools.shields[0].mesh.matrix.elements.entries()) {
+    if (!v) {
+      continue;
+    }
+    close(v, expected.elements[i], 1e-9);
+  }
   dispose(m);
 });

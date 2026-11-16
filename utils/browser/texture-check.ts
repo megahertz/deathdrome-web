@@ -86,9 +86,7 @@ try {
   for (let i = 0; i < cases.length; i++) {
     const x = (i % 20) * 8 + 4,
       y = 159 - (Math.floor(i / 20) * 8 + 4),
-      actual = Array.from(
-        pixels.slice((y * 160 + x) * 4, (y * 160 + x) * 4 + 4),
-      ),
+      actual = pixels.slice((y * 160 + x) * 4, (y * 160 + x) * 4 + 4),
       expected = [...cases[i].native, 97, 255];
     if (actual.some((v, index) => v !== expected[index])) {
       mismatches.push({ case: i, actual, expected });

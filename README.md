@@ -16,7 +16,8 @@ The demo and data-only ISO have no music; use the full CD for music.
 
 ## Run
 
-Requires Python 3 and Node.js 26+.
+Requires Node.js 26+. Python 3 is needed only for converter tests and native
+reference tools.
 
 ```sh
 npm ci
@@ -48,7 +49,7 @@ npm run build
 npm run check:dist
 ```
 
-Publish `dist/`.
+Publish `dist/`. tsdown builds ESM bundles; TypeScript checks the sources.
 
 ## Development
 
@@ -57,7 +58,9 @@ npm run check   # types, formatting, lint, tests, build and publication checks
 npm run format  # apply shared oxconfig formatting and safe lint fixes
 ```
 
-`npm run test:portable` runs tests without private reference files.
+`npm run test:portable` runs tests without private reference files. Builds, ZIP
+packaging, the web server and publication checks run on Node.js. Python handles
+the original-media converter and its binary-format tests.
 
 ## Layout
 

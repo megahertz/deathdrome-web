@@ -29,7 +29,7 @@ test('native convex edge collection and perspective span commands match 120 orig
 test('opaque span writes match all 15,360,000 native indexed pixel bytes', () => {
   for (const fixture of audit.fixtures) {
     for (const axis of [0, 1]) {
-      const target = new Uint8Array(64000).fill(255),
+      const target = new Uint8Array(64_000).fill(255),
         [width, height] = fixture.size,
         pixels = Uint8Array.from({ length: width * height }, (_, i) =>
           axis ? Math.floor(i / width) % 256 : (i % width) % 256,

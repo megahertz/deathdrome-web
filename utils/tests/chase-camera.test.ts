@@ -7,11 +7,11 @@ test('chase camera source constants match native data', async () => {
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    f = (va: number) => exe.readFloatLE(va - 0x480000 + 0x68e00);
-  assert.equal(CAMERA.restDistance, f(0x483fd0));
-  assert.equal(CAMERA.distanceDamping, f(0x483fd4));
-  assert.equal(CAMERA.lookStep, f(0x484069));
-  assert.equal(CAMERA.lookHeight, f(0x484004));
+    f = (va: number) => exe.readFloatLE(va - 0x48_00_00 + 0x6_8e_00);
+  assert.equal(CAMERA.restDistance, f(0x48_3f_d0));
+  assert.equal(CAMERA.distanceDamping, f(0x48_3f_d4));
+  assert.equal(CAMERA.lookStep, f(0x48_40_69));
+  assert.equal(CAMERA.lookHeight, f(0x48_40_04));
 });
 test('look controls saturate at 120 degrees and return through native 14-degree steps', () => {
   const r = stateFixture<import('../../src/game-types.ts').Runner>({});

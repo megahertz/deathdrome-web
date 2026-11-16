@@ -9,32 +9,31 @@ test('wreck constants and all debris attachments come from the supplied original
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    data = (va: number) => va - 0x480000 + 0x68e00,
-    code = (va: number) => va - 0x410000 + 0x400;
-  assert.equal(WRECK.respawnSeconds, exe.readFloatLE(code(0x42b0a7)));
-  assert.equal(WRECK.horizontalVelocity, exe.readFloatLE(code(0x43f082)));
-  assert.equal(WRECK.verticalVelocity, exe.readFloatLE(code(0x43f090)));
-  assert.equal(WRECK.bodyDelay, exe.readFloatLE(data(0x48573c)));
+    data = (va: number) => va - 0x48_00_00 + 0x6_8e_00,
+    code = (va: number) => va - 0x41_00_00 + 0x4_00;
+  assert.equal(WRECK.respawnSeconds, exe.readFloatLE(code(0x42_b0_a7)));
+  assert.equal(WRECK.horizontalVelocity, exe.readFloatLE(code(0x43_f0_82)));
+  assert.equal(WRECK.verticalVelocity, exe.readFloatLE(code(0x43_f0_90)));
+  assert.equal(WRECK.bodyDelay, exe.readFloatLE(data(0x48_57_3c)));
   assert.equal(
     WRECK.horizontalDeceleration,
-    -exe.readDoubleLE(data(0x485744)) * 0.5,
+    -exe.readDoubleLE(data(0x48_57_44)) * 0.5,
   );
   assert.equal(
     WRECK.verticalDeceleration,
-    -exe.readDoubleLE(data(0x485750)) * 0.5,
+    -exe.readDoubleLE(data(0x48_57_50)) * 0.5,
   );
-  assert.equal(WRECK.bodyHitScore, exe.readUInt32LE(code(0x435f8a)));
+  assert.equal(WRECK.bodyHitScore, exe.readUInt32LE(code(0x43_5f_8a)));
   for (let i = 0; i < 8; i++) {
     // oxlint-disable no-await-in-loop -- Keep each reference fixture and its assertions together, bounding live scene memory.
     const model = JSON.parse(
-      (
-        await readFile(
-          new URL(
-            `../../private/assets/models/runrex_${i}.json`,
-            import.meta.url,
-          ),
-        )
-      ).toString(),
+      await readFile(
+        new URL(
+          `../../private/assets/models/runrex_${i}.json`,
+          import.meta.url,
+        ),
+        'utf8',
+      ),
     );
     // oxlint-enable no-await-in-loop
     assert.ok(WRECK.runners[i].parts.length >= 6);
@@ -80,10 +79,12 @@ test('respawning a live runner leaves the wreck at the death position', () => {
   const s = new Simulation();
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[0];
   Object.assign(r, { dead: 0, x: 100, y: 0, z: 100 });
-  s.damage(r, 10000, 1);
+  s.damage(r, 10_000, 1);
   s.checkRunnerHealth(r);
   const w = s.wrecks.states[0];
   for (let i = 0; i < 151; i++) {
@@ -100,7 +101,7 @@ test('respawning a live runner leaves the wreck at the death position', () => {
   assert.equal(w.z, 100);
   assert.notEqual(r.x, w.x);
   Object.assign(r, { x: 200, z: 200 });
-  s.damage(r, 10000, 1);
+  s.damage(r, 10_000, 1);
   s.checkRunnerHealth(r);
   assert.notEqual(s.wrecks.states[0], w);
   assert.equal(s.wrecks.states[0].x, 200);
@@ -110,11 +111,13 @@ test('body appears on one random outcome and a projectile earns its bonus once',
   const s = new Simulation();
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   Object.assign(s.runners[0], { dead: 0, x: 200, y: 10, z: 200 });
   const q = s.runners[1];
   Object.assign(q, { dead: 0, x: 100, y: 0, z: 100 });
-  s.damage(q, 10000, 0);
+  s.damage(q, 10_000, 0);
   s.checkRunnerHealth(q);
   const w = s.wrecks.states[1];
   for (let i = 0; i < 91; i++) {

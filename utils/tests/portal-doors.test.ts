@@ -6,7 +6,7 @@ test('quadrant portal locks match the original round table', async () => {
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    offset = 0x48db3c - 0x480000 + 0x68e00;
+    offset = 0x48_db_3c - 0x48_00_00 + 0x6_8e_00;
   for (let region = 0; region < 5; region++) {
     for (let round = 1; round <= 3; round++) {
       assert.equal(

@@ -8,12 +8,12 @@ test('NanoShield timer and oscillator speed match the executable activation rout
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    code = (va: number) => va - 0x410000 + 0x400;
-  assert.equal(NANO.timer, exe.readFloatLE(code(0x440643)));
-  assert.equal(NANO.speed, exe.readFloatLE(code(0x4405a8)));
-  assert.equal(NANO.minimumZ, exe.readFloatLE(code(0x4405d5)));
-  assert.equal(exe.readUInt32LE(code(0x42f92a)), 0x158);
-  assert.equal(exe.readUInt32LE(code(0x44073d)), 0x158);
+    code = (va: number) => va - 0x41_00_00 + 0x4_00;
+  assert.equal(NANO.timer, exe.readFloatLE(code(0x44_06_43)));
+  assert.equal(NANO.speed, exe.readFloatLE(code(0x44_05_a8)));
+  assert.equal(NANO.minimumZ, exe.readFloatLE(code(0x44_05_d5)));
+  assert.equal(exe.readUInt32LE(code(0x42_f9_2a)), 0x1_58);
+  assert.equal(exe.readUInt32LE(code(0x44_07_3d)), 0x1_58);
 });
 test('NanoShield oscillates between native bounds and its two timer updates give 7.5 seconds', () => {
   const r = stateFixture<import('../../src/game-types.ts').Runner>({});
@@ -38,18 +38,21 @@ test('NanoShield mounts use exported cockpit transforms for all original runners
   for (const name of RUNNERS) {
     // oxlint-disable no-await-in-loop -- Keep each reference fixture and its assertions together, bounding live scene memory.
     const model = JSON.parse(
-      (
-        await readFile(
-          new URL(
-            '../../private/assets/models/' + name + '.json',
-            import.meta.url,
-          ),
-        )
-      ).toString(),
+      await readFile(
+        new URL(
+          '../../private/assets/models/' + name + '.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
     );
     // oxlint-enable no-await-in-loop
     assert.equal(model.attachments.cockpit.matrix.length, 16);
-    assert.ok(model.attachments.cockpit.matrix.every(Number.isFinite));
+    assert.ok(
+      model.attachments.cockpit.matrix.every((itemValue: unknown) =>
+        Number.isFinite(itemValue),
+      ),
+    );
   }
 });
 test('runners spawn without an invented shield; a shield pickup blocks damage until expiry', () => {

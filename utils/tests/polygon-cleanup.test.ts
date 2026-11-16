@@ -15,7 +15,7 @@ test('exported cleaned polygons preserve original 46247c vertex/UV output and fl
     ).toString(),
   );
   assert.equal(audit.passed, true);
-  assert.equal(audit.cases, 13737);
+  assert.equal(audit.cases, 13_737);
   assert.deepEqual(audit.mismatches, []);
   const models = new Map();
   let checked = 0;
@@ -122,7 +122,7 @@ test('all eight initialized arena query samples match independent native hit set
             (r.fixtures[i].kind === 'sweep' ||
               Math.abs(a.height - h.height) < 1e-4),
         );
-        assert.ok(j >= 0, `arena ${arena}, fixture ${i}, native ${h.name}`);
+        assert.ok(j !== -1, `arena ${arena}, fixture ${i}, native ${h.name}`);
         actual.splice(j, 1);
       }
     }

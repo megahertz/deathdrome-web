@@ -31,7 +31,9 @@ dropHint.innerHTML =
 panel.append(dropHint);
 const clearDropHint = resourceDropTarget(panel, {
   canLoad: () => !busy,
-  onFile: (file: File) => void fromFile(file),
+  onFile: (file: File) => {
+    fromFile(file);
+  },
 });
 panel.dataset.state = 'loading';
 document.body.append(panel);
@@ -80,9 +82,9 @@ function controls(disabled: boolean) {
   panel.dataset.state = disabled ? 'loading' : 'choose';
   panel.setAttribute('aria-busy', String(disabled));
   busy = disabled;
-  panel
-    .querySelectorAll<HTMLInputElement>('button,input')
-    .forEach((e) => (e.disabled = disabled));
+  for (const e of panel.querySelectorAll<HTMLInputElement>('button,input')) {
+    e.disabled = disabled;
+  }
   if (disabled) {
     status.classList.remove('resource-error');
   }
@@ -93,7 +95,7 @@ async function launch(profile: import('./resource-types.ts').Installation) {
   phase('Starting DeathDrome');
   const regions = await fetch(resourceURL('assets/region-data.json'));
   if (!regions.ok) {
-    throw Error('Could not load installed game regions');
+    throw new Error('Could not load installed game regions');
   }
   configureRegionData(await regions.json());
   window.deathdromeInstallation = profile;
@@ -102,9 +104,9 @@ async function launch(profile: import('./resource-types.ts').Installation) {
     await game.ready;
     loading.ready();
     renderProgress();
-    await new Promise((resolve) =>
-      requestAnimationFrame(() => requestAnimationFrame(resolve)),
-    );
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
     panel.remove();
     document.documentElement.classList.remove('resource-loading');
     // Hidden menu controls cannot receive focus while the loader is visible.
@@ -114,7 +116,7 @@ async function launch(profile: import('./resource-types.ts').Installation) {
       ?.focus({ preventScroll: true });
   } catch (error) {
     document.documentElement.classList.add('resource-loading');
-    showError(Error('Could not start the game: ' + errorMessage(error)));
+    showError(new Error('Could not start the game: ' + errorMessage(error)));
     throw error;
   }
 }
@@ -134,40 +136,41 @@ async function install(bytes: ArrayBuffer, source: string) {
       return;
     }
   }
-  worker = new Worker(new URL('./resource-worker.js', import.meta.url), {
+  worker = new Worker(new URL('resource-worker.js', import.meta.url), {
     type: 'module',
   });
   const result = await new Promise<WorkerResult>((resolve, reject) => {
-    worker!.onmessage = ({ data }) => {
+    worker!.addEventListener('message', ({ data }) => {
       if (data.type === 'progress') {
         phase(data.phase, { completed: data.completed, total: data.total });
       } else if (data.type === 'error') {
-        reject(Error(data.message));
+        reject(new Error(data.message));
       } else if (data.type === 'complete' || data.type === 'reuse') {
         resolve(data);
       }
-    };
-    worker!.onerror = (e) =>
-      reject(Error(e.message || 'Resource extraction failed'));
+    });
+    worker!.addEventListener('error', (e) =>
+      reject(new Error(e.message || 'Resource extraction failed')),
+    );
     worker!.postMessage(
-      { bytes, cachedDigest: !request.noCache ? active?.sourceSha256 : null },
+      { bytes, cachedDigest: request.noCache ? null : active?.sourceSha256 },
       [bytes],
     );
   }).finally(() => {
     worker!.terminate();
     worker = null;
   });
-  if (result.type !== 'reuse') {
+  if (result.type === 'reuse') {
+    if (!active) {
+      throw new Error('The saved installation is no longer available');
+    }
+    active = await rememberResourceSource(active, source);
+  } else {
     phase('Saving game resources');
     active = await saveResources(result.files, result.profile, source, {
       onProgress: ({ loaded, total }) =>
         phase('Saving game resources', { completed: loaded, total }),
     });
-  } else {
-    if (!active) {
-      throw Error('The saved installation is no longer available');
-    }
-    active = await rememberResourceSource(active, source);
   }
   await launch(active);
 }
@@ -190,7 +193,7 @@ async function fromURL(value: string) {
     }
     await install(image.bytes, image.url);
   } catch (error) {
-    showError(Error('Could not open the image. ' + errorMessage(error)));
+    showError(new Error('Could not open the image. ' + errorMessage(error)));
   } finally {
     controls(false);
   }
@@ -198,14 +201,20 @@ async function fromURL(value: string) {
 function readFile(file: File) {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onprogress = (e) =>
+    reader.addEventListener('progress', (e) =>
       downloadProgress({
         loaded: e.loaded,
         total: e.lengthComputable ? e.total : 0,
-      });
-    reader.onload = () => resolve(reader.result as ArrayBuffer);
-    reader.onerror = () => reject(reader.error);
-    reader.onabort = () => reject(Error('File reading was cancelled'));
+      }),
+    );
+    reader.addEventListener('load', () =>
+      resolve(reader.result as ArrayBuffer),
+    );
+    reader.addEventListener('error', () => reject(reader.error));
+    reader.addEventListener('abort', () =>
+      reject(new Error('File reading was cancelled')),
+    );
+    // oxlint-disable-next-line unicorn/prefer-blob-reading-methods -- Progress events update the download portion of the loader.
     reader.readAsArrayBuffer(file);
   });
 }
@@ -224,16 +233,16 @@ async function fromFile(file: File) {
     controls(false);
   }
 }
-panel.querySelector<HTMLInputElement>('#image-file')!.onchange = async (
-  event,
-) => {
-  const input = event.currentTarget as HTMLInputElement;
-  const file = input.files?.[0];
-  if (file) {
-    await fromFile(file);
-  }
-  input.value = '';
-};
+panel
+  .querySelector<HTMLInputElement>('#image-file')!
+  .addEventListener('change', async (event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      await fromFile(file);
+    }
+    input.value = '';
+  });
 document.documentElement.classList.add('resource-loading');
 phase('Looking for the game image');
 try {

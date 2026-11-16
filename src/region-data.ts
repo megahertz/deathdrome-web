@@ -19,7 +19,7 @@ export function configureRegionData(data: {
     !data?.partition ||
     !Array.isArray(data.arenas)
   ) {
-    throw Error('Invalid game region data');
+    throw new Error('Invalid game region data');
   }
   Object.assign(REGION_DATA, data);
 }

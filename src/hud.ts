@@ -192,7 +192,7 @@ export function hudCommands(sim: Simulation, player: number) {
     ['#08220a', '#10b51f'],
     ['#060e25', '#1835b6'],
   ];
-  (['x', 'y', 'z'] as const).forEach((key, i) =>
+  for (const [i, key] of (['x', 'y', 'z'] as const).entries()) {
     commands.push({
       kind: 'rect',
       x: 50 + i * 6,
@@ -200,8 +200,8 @@ export function hudCommands(sim: Simulation, player: number) {
       width: 6,
       height: 7,
       color: keyColors[i][r.keyring?.[key] ? 1 : 0],
-    }),
-  );
+    });
+  }
   return commands;
 }
 export function inAreaCount(sim: Simulation, player: number) {
@@ -276,16 +276,16 @@ export function drawHud(
   ctx.fillRect(51, 188, 74, 2);
   ctx.fillStyle = radarColors[player];
   ctx.fillRect(51, 188, barrierGauge(sim.barrierTrails?.states[player]), 2);
-  sim.runners
-    .filter((q) => q.id !== player)
-    .forEach((q, i) => {
-      if (q.dead || q.inactive || q.respawn || q.escaped || q.opponentExit) {
-        return;
-      }
-      const bar = opponentHealthBar(q.health);
-      ctx.fillStyle = radarColors[q.id];
-      ctx.fillRect(bar.x, 171 + i * 2, bar.width, 1);
-    });
+  for (const [i, q] of sim.runners
+    .filter((candidate) => candidate.id !== player)
+    .entries()) {
+    if (q.dead || q.inactive || q.respawn || q.escaped || q.opponentExit) {
+      continue;
+    }
+    const bar = opponentHealthBar(q.health);
+    ctx.fillStyle = radarColors[q.id];
+    ctx.fillRect(bar.x, 171 + i * 2, bar.width, 1);
+  }
   if (warning?.active) {
     const im = picture('hud/big/hudwrn_' + warning.shade);
     if (im.complete && im.naturalWidth) {

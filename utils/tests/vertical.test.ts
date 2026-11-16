@@ -6,9 +6,9 @@ test('jump impulse and gravity match native data; position advances before gravi
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    f = (va: number) => exe.readFloatLE(va - 0x480000 + 0x68e00);
-  assert.equal(VERTICAL.jumpImpulse, f(0x48416c));
-  assert.equal(VERTICAL.gravity, f(0x48f13c));
+    f = (va: number) => exe.readFloatLE(va - 0x48_00_00 + 0x6_8e_00);
+  assert.equal(VERTICAL.jumpImpulse, f(0x48_41_6c));
+  assert.equal(VERTICAL.gravity, f(0x48_f1_3c));
   const r = { y: 0, vy: 0 };
   assert.equal(updateVertical(r, 0, 0.04, true), true);
   assert.equal(r.y, VERTICAL.jumpImpulse * 0.04);

@@ -29,7 +29,7 @@ function compare(actual: unknown, expected: unknown, path = '') {
     const actualRecord = actual as Record<string, unknown>,
       expectedRecord = expected as Record<string, unknown>;
     assert.deepEqual(Object.keys(actual), Object.keys(expected), path);
-    for (const k in expected) {
+    for (const k of Object.keys(expected)) {
       compare(actualRecord[k], expectedRecord[k], `${path}.${k}`);
     }
     return;
@@ -98,77 +98,62 @@ function terrainQuery(
   };
 }
 test('three-point support action matches 312 original flat, slope, step and layered-floor fixtures', () => {
-  audit.fixtures.forEach(
-    (
-      f: {
-        r: any;
-        dt: number;
-        terrain: { kind: string; base: number; sx: number; sz: number };
+  for (const [i, f] of audit.fixtures.entries()) {
+    const r = { ...f.r },
+      queries: never[] | undefined = [],
+      result = stepSuspension(r, f.dt, terrainQuery(f.terrain, queries), {
+        x: r.lateralSpeed,
+        y: r.vy,
+        z: -r.localSpeed,
+      });
+    compare(
+      {
+        position: [r.x, r.y, r.z],
+        pitch: r.chassisPitchDegrees,
+        roll: r.chassisRollDegrees,
+        frontVelocity: r.frontVelocity,
+        sideVelocity: r.sideVelocity,
+        worldVelocity: Object.values(result.world),
+        localVelocity: Object.values(result.local),
+        grounded: r.grounded,
+        supportContact: r.supportContact,
+        mode: r.actionMode,
+        slopeImpulse: r.slopeImpulse,
+        brake: r.supportBrake,
+        queries,
+        sounds: r.human
+          ? Array.from({ length: result.landingCalls }, () => 1)
+          : [],
       },
-      i: number,
-    ) => {
-      const r = { ...f.r },
-        queries: never[] | undefined = [],
-        result = stepSuspension(r, f.dt, terrainQuery(f.terrain, queries), {
-          x: r.lateralSpeed,
-          y: r.vy,
-          z: -r.localSpeed,
-        });
-      compare(
-        {
-          position: [r.x, r.y, r.z],
-          pitch: r.chassisPitchDegrees,
-          roll: r.chassisRollDegrees,
-          frontVelocity: r.frontVelocity,
-          sideVelocity: r.sideVelocity,
-          worldVelocity: Object.values(result.world),
-          localVelocity: Object.values(result.local),
-          grounded: r.grounded,
-          supportContact: r.supportContact,
-          mode: r.actionMode,
-          slopeImpulse: r.slopeImpulse,
-          brake: r.supportBrake,
-          queries,
-          sounds: r.human ? Array(result.landingCalls).fill(1) : [],
-        },
-        audit.native[i],
-        `fixture ${i}`,
-      );
-    },
-  );
+      audit.native[i],
+      `fixture ${i}`,
+    );
+  }
 });
 test('jump eligibility, impulse and local projection match 312 original actions', () => {
-  audit.jumpFixtures.forEach(
-    (
-      f: {
-        r: { localSpeed: number; lateralSpeed: any; vy: any };
-        supportContact: any;
+  for (const [i, f] of audit.jumpFixtures.entries()) {
+    const r = stateFixture<import('../../src/game-types.ts').Runner>({
+      ...f.r,
+      supportContact: f.supportContact,
+      speed: f.r.localSpeed,
+      lateralSpeed: f.r.lateralSpeed,
+      localVerticalSpeed: f.r.vy,
+      worldVelocity: { x: f.r.lateralSpeed, y: f.r.vy, z: -f.r.localSpeed },
+    });
+    beginJump(r);
+    compare(
+      {
+        mode: r.actionMode,
+        previous: r.previousActionMode,
+        front: r.frontVelocity,
+        side: r.sideVelocity,
+        world: Object.values(r.worldVelocity!),
+        local: [r.lateralSpeed, r.localVerticalSpeed, -r.speed],
       },
-      i: number,
-    ) => {
-      const r = stateFixture<import('../../src/game-types.ts').Runner>({
-        ...f.r,
-        supportContact: f.supportContact,
-        speed: f.r.localSpeed,
-        lateralSpeed: f.r.lateralSpeed,
-        localVerticalSpeed: f.r.vy,
-        worldVelocity: { x: f.r.lateralSpeed, y: f.r.vy, z: -f.r.localSpeed },
-      });
-      beginJump(r);
-      compare(
-        {
-          mode: r.actionMode,
-          previous: r.previousActionMode,
-          front: r.frontVelocity,
-          side: r.sideVelocity,
-          world: Object.values(r.worldVelocity!),
-          local: [r.lateralSpeed, r.localVerticalSpeed, -r.speed],
-        },
-        audit.jumpNative[i],
-        `jump ${i}`,
-      );
-    },
-  );
+      audit.jumpNative[i],
+      `jump ${i}`,
+    );
+  }
 });
 test('production driving uses support pitch and roll for motion, emitters and jumping', () => {
   const query = terrainQuery({ kind: 'plane', base: 20, sx: 0.15, sz: -0.2 }),
@@ -183,7 +168,9 @@ test('production driving uses support pitch and roll for motion, emitters and ju
     });
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[0];
   Object.assign(r, {
     dead: 0,

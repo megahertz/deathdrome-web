@@ -37,7 +37,7 @@ for (const [density, x, y] of sizes) {
   let left = x;
   for (const c of label) {
     const index = GLYPHS.indexOf(c);
-    if (index >= 0) {
+    if (index !== -1) {
       const isolated = document.createElement('canvas');
       isolated.height = 10;
       isolated.width = isolated.height;

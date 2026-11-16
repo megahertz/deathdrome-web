@@ -5,9 +5,9 @@ export function transformNativePoints(
   matrix: number[],
   { identity = false } = {},
 ) {
-  const m = matrix.map(f);
+  const m = matrix.map((itemValue) => f(itemValue));
   return vertices.map((vertex: number[]) => {
-    const p = vertex.map(f);
+    const p = vertex.map((itemValue) => f(itemValue));
     if (identity) {
       return p.slice(0, 3);
     }
@@ -22,7 +22,7 @@ export function nativePolygonFacing(vertices: number[][], twoSided = false) {
   // The first X/Z cross products also retain the unrounded C-minus-B term.
   const [a, b, c] = vertices
     .slice(0, 3)
-    .map((p: number[]) => p.slice(0, 3).map(f));
+    .map((p: number[]) => p.slice(0, 3).map((itemValue) => f(itemValue)));
   const u = a.map((x: number, i: number) => f(x - b[i])),
     v = c.map((x: number, i: number) => f(x - b[i]));
   const y = v[2] * u[0] - v[0] * u[2];

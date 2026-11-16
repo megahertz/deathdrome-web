@@ -3,8 +3,8 @@ import { type PerspectiveCamera, type Vector3 } from '#three';
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 export function responsiveHudLayout(
-  width: number,
-  height: number,
+  inputWidth: number,
+  inputHeight: number,
   {
     safe = {},
   }: {
@@ -12,6 +12,9 @@ export function responsiveHudLayout(
     safe?: { left?: number; right?: number; top?: number; bottom?: number };
   } = {},
 ) {
+  let width = inputWidth;
+  let height = inputHeight;
+
   width = Math.max(1, width);
   height = Math.max(1, height);
   const inset = {
@@ -59,11 +62,14 @@ export function responsiveHudLayout(
   };
 }
 export function responsiveRenderSize(
-  width: number,
-  height: number,
+  inputWidth: number,
+  inputHeight: number,
   pixelRatio = 1,
   quality = 1,
 ) {
+  let width = inputWidth;
+  let height = inputHeight;
+
   width = Math.max(1, width);
   height = Math.max(1, height);
   const density = clamp(pixelRatio || 1, 1, 2),

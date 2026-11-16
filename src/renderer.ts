@@ -45,7 +45,7 @@ export async function modelData(name: string) {
       name,
       fetch(resourceURL(`assets/models/${name}.json?schema=8`)).then((r) => {
         if (!r.ok) {
-          throw Error(`Model ${name}: ${r.status}`);
+          throw new Error(`Model ${name}: ${r.status}`);
         }
         return r.json();
       }),
@@ -54,7 +54,7 @@ export async function modelData(name: string) {
   return jsonCache.get(name)!;
 }
 export async function texturesReady() {
-  while (pendingTextures.size) {
+  while (pendingTextures.size > 0) {
     // oxlint-disable-next-line no-await-in-loop -- Texture callbacks can queue more textures; drain each generation before rechecking.
     await Promise.all(pendingTextures);
   }
@@ -63,7 +63,9 @@ function texture(path: string, keyed = false) {
   const key = path + (keyed ? '?palette-zero=1' : '');
   if (!textureCache.has(key)) {
     let complete!: () => void;
-    const ready = new Promise<void>((resolve) => (complete = resolve));
+    const ready = new Promise<void>((resolve) => {
+      complete = resolve;
+    });
     pendingTextures.add(ready);
     const finish = () => {
       pendingTextures.delete(ready);
@@ -148,7 +150,7 @@ export function makeModel(
     }
     const batch = batches.get(key);
     let contactObject;
-    if (face.contactObject != null) {
+    if (face.contactObject !== null && face.contactObject !== undefined) {
       if (!contactObjects.has(face.contactObject)) {
         contactObjects.set(face.contactObject, {
           min: [Infinity, Infinity, Infinity],
@@ -166,7 +168,9 @@ export function makeModel(
     }
     batch.facets.push({
       name: face.name,
-      vertices: face.v.map((v) => v.slice(0, 3).map(Math.fround)),
+      vertices: face.v.map((v) =>
+        v.slice(0, 3).map((itemValue) => Math.fround(itemValue)),
+      ),
       twoSided: !!((face.drawType ?? 0) & 1),
       contactObject,
       contactOrder: face.contactOrder,
@@ -195,12 +199,12 @@ export function makeModel(
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
     geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     geometry.computeVertexNormals();
-    const opacity = 1 - (face.transparency || 0) / 65535;
+    const opacity = 1 - (face.transparency || 0) / 65_535;
     const keyed = face.cycle?.source === 'enhcycle.gw';
     const material = new THREE.MeshBasicMaterial({
       map: face.texture ? texture(face.texture, keyed) : null,
       color: face.texture
-        ? 0xffffff
+        ? 0xff_ff_ff
         : new THREE.Color().setRGB(
             (face.color || [0.5, 0.5, 0.5])[0],
             (face.color || [0.5, 0.5, 0.5])[1],
@@ -267,19 +271,24 @@ export function transformModelGeometry(
   matrix: THREE.Matrix4,
 ) {
   const transform = (p: any) =>
-    new THREE.Vector3(...p).applyMatrix4(matrix).toArray().map(Math.fround);
+    new THREE.Vector3(...p)
+      .applyMatrix4(matrix)
+      .toArray()
+      .map((itemValue) => Math.fround(itemValue));
   root.traverse((node: import('./model-types.ts').RenderNode) => {
     node.geometry?.applyMatrix4(matrix);
     if (node.userData.facets) {
       node.userData.facets = node.userData.facets.map(
         (f: { vertices: number[][] }) => ({
           ...f,
-          vertices: f.vertices.map(transform),
+          vertices: f.vertices.map((itemValue) => transform(itemValue)),
         }),
       );
     }
     if (node.userData.collisionBox) {
-      node.userData.collisionBox = node.userData.collisionBox.map(transform);
+      node.userData.collisionBox = node.userData.collisionBox.map(
+        (itemValue: number[]) => transform(itemValue),
+      );
     }
   });
   // Source object bounds also follow this local change, including parts split
@@ -323,7 +332,7 @@ export function makeRunnerModel(
   for (const name of ['yaw', 'chassis', 'cockpit']) {
     const attachment = data.attachments?.[name];
     if (!attachment) {
-      throw Error('Missing runner attachment: ' + name);
+      throw new Error('Missing runner attachment: ' + name);
     }
     world[name] = new THREE.Matrix4().fromArray(attachment.matrix);
     const node = new THREE.Group(),
@@ -337,13 +346,15 @@ export function makeRunnerModel(
   const part = (face: { name: string }) => {
     if (/\/cockpit\//i.test(face.name)) {
       return 'cockpit';
-    } else if (/\/chassis\//i.test(face.name)) {
-      return 'chassis';
-    } else if (/\/yaw\//i.test(face.name)) {
-      return 'yaw';
-    } else {
-      return null;
     }
+    if (/\/chassis\//i.test(face.name)) {
+      return 'chassis';
+    }
+    if (/\/yaw\//i.test(face.name)) {
+      return 'yaw';
+    }
+
+    return null;
   };
   for (const name of ['yaw', 'chassis', 'cockpit', null]) {
     const inverse = name ? world[name].clone().invert() : new THREE.Matrix4(),
@@ -537,7 +548,9 @@ export function runnerRigState(model: THREE.Group<THREE.Object3DEventMap>) {
     cockpitPitchDegrees: (rig.cockpit.rotation.x * 180) / Math.PI,
     meshes,
     finite: [rig.yaw, rig.chassis, rig.cockpit].every((n) =>
-      n.matrixWorld.elements.every(Number.isFinite),
+      n.matrixWorld.elements.every((itemValue: unknown) =>
+        Number.isFinite(itemValue),
+      ),
     ),
   };
 }
@@ -657,7 +670,7 @@ export class View {
     this.renderer.setPixelRatio(1);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x000000);
+    this.scene.background = new THREE.Color(0x00_00_00);
     this.camera = new THREE.PerspectiveCamera(35, 1.6, 0.75, 1200);
     this.ray = new THREE.Raycaster();
     this.stage = new THREE.Group();
@@ -665,7 +678,9 @@ export class View {
     this.objects = new THREE.Group();
     this.scene.add(this.objects);
   }
-  setEnhancedGraphics(enabled: boolean) {
+  setEnhancedGraphics(inputEnabled: boolean) {
+    let enabled = inputEnabled;
+
     enabled = !!enabled;
     if (this.enhancedGraphics === enabled) {
       return;
@@ -820,7 +835,7 @@ export class View {
     if (this.scene.background instanceof THREE.Texture) {
       this.scene.background.dispose();
     }
-    this.scene.background = new THREE.Color(0x000000);
+    this.scene.background = new THREE.Color(0x00_00_00);
     this.contactNodes = new Map();
     this.chaseCamera = new ChaseCamera();
     for (const root of [this.stage, this.objects]) {
@@ -837,7 +852,7 @@ export class View {
   }
   enablePlayerSpotlight(data: any, { gain = 1.65, legacyRadius = 0 } = {}) {
     const contour = runnerLightContour(data);
-    this.playerSpot = new THREE.Vector3(0, -10000, 0);
+    this.playerSpot = new THREE.Vector3(0, -10_000, 0);
     this.playerSpotDirection = { value: new THREE.Vector2(1, 0) };
     this.playerSpotRadius = { value: legacyRadius };
     this.playerSpotGain = { value: gain };
@@ -896,7 +911,7 @@ diffuseColor.rgb*=mix(1.0,playerSpotGain,spotStrength);`,
       !runnerBodyVisible(r) ||
       (exit && exit.phase !== 'delay' && exit.phase !== 'center')
     ) {
-      this.playerSpot.y = -10000;
+      this.playerSpot.y = -10_000;
     }
   }
 
@@ -1029,18 +1044,16 @@ diffuseColor.rgb*=mix(1.0,playerSpotGain,spotStrength);`,
         );
       }
     });
-    if (!points.length) {
+    if (points.length === 0) {
       return null;
     }
     // Use the complete panel's horizontal principal axis. On barred gates the
     // largest individual face can be the end cap, parallel to the passage.
-    const mean = points.reduce(
-      (p, v) => ({
-        x: p.x + v.x / points.length,
-        z: p.z + v.z / points.length,
-      }),
-      { x: 0, z: 0 },
-    );
+    const mean = { x: 0, z: 0 };
+    for (const point of points) {
+      mean.x += point.x / points.length;
+      mean.z += point.z / points.length;
+    }
     let xx = 0,
       xz = 0,
       zz = 0;
@@ -1063,7 +1076,7 @@ diffuseColor.rgb*=mix(1.0,playerSpotGain,spotStrength);`,
         yaw: Math.atan2(normal.x * sign, normal.z * sign),
       };
     });
-    return approaches.sort(
+    return approaches.toSorted(
       (a, b) => Math.abs(a.y - box.min.y) - Math.abs(b.y - box.min.y),
     )[0];
   }
@@ -1117,7 +1130,8 @@ diffuseColor.rgb*=mix(1.0,playerSpotGain,spotStrength);`,
         }
         if (
           p.userData.portal &&
-          a.id != null &&
+          a.id !== null &&
+          a.id !== undefined &&
           !touched.has(p.userData.portal)
         ) {
           touched.add(p.userData.portal);
@@ -1227,7 +1241,7 @@ diffuseColor.rgb*=mix(1.0,playerSpotGain,spotStrength);`,
         contacts.push({ kind: 'runner', runner: r.id, distance: hit.distance });
       }
     }
-    return contacts.sort((x, y) => x.distance - y.distance);
+    return contacts.toSorted((x, y) => x.distance - y.distance);
   }
 
   setEntrance(e: { yawDegrees: any; height: any } | null) {
@@ -1364,7 +1378,7 @@ diffuseColor.rgb*=mix(1.0,playerSpotGain,spotStrength);`,
       } else if (cycle.enabled) {
         let born = 0;
         for (let p: THREE.Object3D | null = mesh; p; p = p.parent) {
-          if (p.userData.born != null) {
+          if (p.userData.born !== null && p.userData.born !== undefined) {
             born = p.userData.born;
             break;
           }
@@ -1385,7 +1399,7 @@ diffuseColor.rgb*=mix(1.0,playerSpotGain,spotStrength);`,
       this.responsiveViewport ? this.renderHeight : 200 * scale,
     );
     if (this.preview) {
-      this.renderer.setClearColor(0x000000, 1);
+      this.renderer.setClearColor(0x00_00_00, 1);
     }
     this.renderer.clear();
     if (this.camera.view?.enabled) {

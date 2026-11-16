@@ -23,9 +23,12 @@ export function worldPartition(min: number[], max: number[]) {
 }
 export function groundInWorldPartition(
   bounds: { min: any; max: any },
-  x: number,
-  z: number,
+  inputX: number,
+  inputZ: number,
 ) {
+  let x = inputX;
+  let z = inputZ;
+
   x = f(x);
   z = f(z);
   if (x < -896 || x >= 896 || z > 896 || z <= -896) {

@@ -18,7 +18,8 @@ test('unsteered projectile trajectories and expiry match original x86 action sam
       )
       .toString(),
   );
-  a.fixtures.forEach(({ r, missile, dt }: any, i: number) => {
+  for (const [i, { r: inputRunner, missile, dt }] of a.fixtures.entries()) {
+    let r = inputRunner;
     r = { ...r };
     const sim = stateFixture<import('../../src/simulation.ts').Simulation>({
       player: 0,
@@ -46,7 +47,7 @@ test('unsteered projectile trajectories and expiry match original x86 action sam
         assert.equal(p!.age, sample.age);
       }
     }
-  });
+  }
 });
 test('native float age keeps a 60 Hz laser alive for sixty updates and expires on update sixty-one', () => {
   const p = stateFixture<import('../../src/game-types.ts').Projectile>({
@@ -113,7 +114,9 @@ test('the launch update preserves missile direction and later updates begin stee
   });
   s.countdown = 0;
   s.ai = () => ({});
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[s.player],
     q = s.runners[(s.player + 1) % 8];
   Object.assign(r, {

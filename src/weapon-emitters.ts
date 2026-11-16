@@ -13,7 +13,7 @@ function rotate(m: number[], axis: string, degrees: number) {
   const a = (f(degrees) * EMITTER.rotationPi) / 180,
     c = f(Math.cos(a)),
     s = f(Math.sin(a)),
-    old = m.slice();
+    old = [...m];
   let u: number, v: number;
   if (axis === 'x') {
     [u, v] = [1, 2];

@@ -88,15 +88,17 @@ test('IN AREA matches 256 native single-player counts across arena masks and act
   );
   assert.equal(audit.passed, true);
   assert.equal(audit.cases, 256);
-  audit.fixtures.forEach((f: Simulation, i: number) =>
-    assert.equal(inAreaCount(f, f.player), audit.native[i]),
-  );
+  for (const [i, f] of audit.fixtures.entries()) {
+    assert.equal(inAreaCount(f, f.player), audit.native[i]);
+  }
 });
 test('zone sampling precedes each active model controller and remains at the pre-motion pose', () => {
   const sim = new Simulation();
   sim.countdown = 0;
   sim.ai = () => ({});
-  sim.runners.forEach((r) => (r.inactive = r.id > 1));
+  for (const r of sim.runners) {
+    r.inactive = r.id > 1;
+  }
   const a = sim.runners[0],
     b = sim.runners[1];
   Object.assign(a, {
@@ -107,14 +109,14 @@ test('zone sampling precedes each active model controller and remains at the pre
     speed: 50,
     movementEnabled: true,
   });
-  Object.assign(b, { x: -300, y: 0, z: -300, zoneMask: 123456 });
+  Object.assign(b, { x: -300, y: 0, z: -300, zoneMask: 123_456 });
   const previous = sim.regions.maskAt(a.x, a.z),
     observations: unknown[] = [];
   sim.stepRunnerWeapons = (r) =>
     observations.push([r.id, a.zoneMask, b.zoneMask]);
   sim.step(1 / 60, { throttle: 1 });
   assert.deepEqual(observations, [
-    [0, previous, 123456],
+    [0, previous, 123_456],
     [1, previous, sim.regions.maskAt(-300, -300)],
   ]);
   assert.equal(a.zoneMask, previous);

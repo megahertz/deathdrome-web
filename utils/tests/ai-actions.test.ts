@@ -24,27 +24,29 @@ test('native random generator reproduces the executable multiply, add and 15-bit
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    at = (va: number) => va - 0x410000 + 0x400;
-  assert.equal(GAME_TABLES.random.multiplier, exe.readUInt32LE(at(0x45a8f2)));
-  assert.equal(GAME_TABLES.random.increment, exe.readUInt32LE(at(0x45a8f8)));
-  assert.equal(GAME_TABLES.random.mask, exe.readUInt32LE(at(0x45a904)));
+    at = (va: number) => va - 0x41_00_00 + 0x4_00;
+  assert.equal(GAME_TABLES.random.multiplier, exe.readUInt32LE(at(0x45_a8_f2)));
+  assert.equal(GAME_TABLES.random.increment, exe.readUInt32LE(at(0x45_a8_f8)));
+  assert.equal(GAME_TABLES.random.mask, exe.readUInt32LE(at(0x45_a9_04)));
   const s = new Simulation();
   s.seed = 1996;
   assert.deepEqual(
     Array.from({ length: 5 }, () => s.randomInt()),
-    [22059, 24488, 31583, 12555, 15145],
+    [22_059, 24_488, 31_583, 12_555, 15_145],
   );
 });
 
 test('AI target acquisition follows ID order, height, radius, visibility and the native x/y exclusion', () => {
   const s = new Simulation();
-  s.runners.forEach((r) => Object.assign(r, { dead: 0, x: 500, y: 0, z: 500 }));
+  for (const r of s.runners) {
+    Object.assign(r, { dead: 0, x: 500, y: 0, z: 500 });
+  }
   const r = s.runners[3];
   Object.assign(r, { x: 100, y: 0, z: 0 });
   Object.assign(s.runners[0], { x: 0, y: 0, z: 0 });
   Object.assign(s.runners[1], { x: 200, y: 0, z: 0 });
   Object.assign(s.runners[2], { x: 105, y: 0, z: 0 });
-  const level = { radiusSquared: 10000 };
+  const level = { radiusSquared: 10_000 };
   assert.equal(acquireAITarget(s, r, level)!.id, 1);
   s.runners[1].y = 5.01;
   assert.equal(acquireAITarget(s, r, level)!.id, 2);
@@ -62,7 +64,9 @@ test('AI attack windows expire and recover before acquiring another target', () 
   const s = new Simulation();
   s.countdown = 0;
   s.elapsed = 14;
-  s.runners.forEach((r) => (r.dead = Infinity));
+  for (const r of s.runners) {
+    r.dead = Infinity;
+  }
   const r = s.runners[1],
     q = s.runners[0];
   Object.assign(r, { dead: 0, x: 100, y: 0, z: 0 });
@@ -103,10 +107,16 @@ test('AI initial action delays include the entrance and periodic actions use sou
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    at = (va: number) => va - 0x480000 + 0x68e00;
-  assert.equal(AI_ACTIONS.initialEnhancerDelay, exe.readFloatLE(at(0x483e1f)));
-  assert.equal(AI_ACTIONS.initialActionDelay, exe.readFloatLE(at(0x483e23)));
-  assert.equal(AI_ACTIONS.barrierWindowSeconds, exe.readDoubleLE(at(0x483dd3)));
+    at = (va: number) => va - 0x48_00_00 + 0x6_8e_00;
+  assert.equal(
+    AI_ACTIONS.initialEnhancerDelay,
+    exe.readFloatLE(at(0x48_3e_1f)),
+  );
+  assert.equal(AI_ACTIONS.initialActionDelay, exe.readFloatLE(at(0x48_3e_23)));
+  assert.equal(
+    AI_ACTIONS.barrierWindowSeconds,
+    exe.readDoubleLE(at(0x48_3d_d3)),
+  );
   const s = new Simulation(),
     r = s.runners[1],
     level = GAME_TABLES.ai.levels[0];
@@ -136,26 +146,26 @@ test('AI shooting switches and attack thresholds match executable data', async (
   const exe = await readFile(
       new URL('../../private/original/game/RUN/ddrome.exe', import.meta.url),
     ),
-    at = (va: number) => va - 0x480000 + 0x68e00;
+    at = (va: number) => va - 0x48_00_00 + 0x6_8e_00;
   assert.deepEqual(
     GAME_TABLES.ai.levels.map((l) => l.shootEnabled),
-    Array(8).fill(exe.readUInt32LE(at(0x48f00c)) !== 0),
+    Array.from({ length: 8 }, () => exe.readUInt32LE(at(0x48_f0_0c)) !== 0),
   );
   assert.deepEqual(
     GAME_TABLES.ai.levels.map((l) => l.barrierJumpEnabled),
     Array.from(
       { length: 8 },
-      (_, i) => exe.readFloatLE(at(0x48f0c0) + i * 4) > 0,
+      (_, i) => exe.readFloatLE(at(0x48_f0_c0) + i * 4) > 0,
     ),
   );
   for (const [name, va] of Object.entries({
-    slowTargetSpeed: 0x483de7,
-    maximumShotDistanceSquared: 0x483def,
-    minimumShotDistanceSquared: 0x483e03,
-    shotAlignment: 0x483dff,
-    brakeAlignmentCross: 0x483df3,
-    reverseDistanceSquared: 0x483df7,
-    missileDelay: 0x483dfb,
+    slowTargetSpeed: 0x48_3d_e7,
+    maximumShotDistanceSquared: 0x48_3d_ef,
+    minimumShotDistanceSquared: 0x48_3e_03,
+    shotAlignment: 0x48_3d_ff,
+    brakeAlignmentCross: 0x48_3d_f3,
+    reverseDistanceSquared: 0x48_3d_f7,
+    missileDelay: 0x48_3d_fb,
   })) {
     assert.equal(
       AI_ATTACK[name as keyof typeof AI_ATTACK],
@@ -281,14 +291,13 @@ test('AI cycles after each shot and missile delay follows the newly selected inv
 
 test('all aggression levels, weapon slots, firing toggle and range gates match 336 original attack actions', async () => {
   const report = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/ai-firing-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/ai-firing-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(report.passed, true);
   assert.equal(report.cases, 336);
@@ -318,11 +327,11 @@ test('all aggression levels, weapon slots, firing toggle and range gates match 3
 
 test('first-domain bots select collected missiles, lock the player, trigger the HUD warning and launch the missile', () => {
   const { s, r, q } = attackSetup();
-  s.runners.forEach((other) => {
+  for (const other of s.runners) {
     if (other !== r && other !== q) {
       other.dead = Infinity;
     }
-  });
+  }
   const pickup = { type: 'enh_lock.gam' };
   assert.equal(s.collect(r, pickup), true);
   assert.deepEqual(r.weapons, [null, 'Missile']);
@@ -391,14 +400,13 @@ test('bots use each collected non-missile enhancer after their laser shot', () =
 
 test('retained, lost and reacquired locks match 1,568 consecutive original attack actions', async () => {
   const report = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/ai-lock-timing-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/ai-lock-timing-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(report.passed, true);
   assert.equal(report.attackActions, 1568);
@@ -440,14 +448,13 @@ test('retained, lost and reacquired locks match 1,568 consecutive original attac
 
 test('target scanning and lifted ray endpoints match 1,000 original typed-hit cases', async () => {
   const report = JSON.parse(
-    (
-      await readFile(
-        new URL(
-          '../../private/verification/ai-targeting-native.json',
-          import.meta.url,
-        ),
-      )
-    ).toString(),
+    await readFile(
+      new URL(
+        '../../private/verification/ai-targeting-native.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.equal(report.passed, true);
   assert.equal(report.cases, 1000);
@@ -480,11 +487,11 @@ test('target scanning and lifted ray endpoints match 1,000 original typed-hit ca
 
 test('an opponent stops attacking a retired target while zero health alone does not mark a model inactive', () => {
   const { s, r, q } = attackSetup();
-  s.runners.forEach((other) => {
+  for (const other of s.runners) {
     if (other !== r && other !== q) {
       other.dead = Infinity;
     }
-  });
+  }
   Object.assign(r.aiState, {
     mode: 'attack',
     target: q.id,

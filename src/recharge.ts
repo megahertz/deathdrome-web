@@ -38,17 +38,18 @@ export class RechargeOrbs {
     this.settings = GAME_TABLES.recharge.rounds[arena - 1][round - 1];
     this.nextPath = 0;
     this.nextVertex = 0;
-    this.orbs = paths.length
-      ? Array.from({ length: this.settings.count }, (_, id) => ({
-          id,
-          cooldown: 0,
-          path: -1,
-          vertex: 0,
-          x: 0,
-          y: 0,
-          z: 0,
-        }))
-      : [];
+    this.orbs =
+      paths.length > 0
+        ? Array.from({ length: this.settings.count }, (_, id) => ({
+            id,
+            cooldown: 0,
+            path: -1,
+            vertex: 0,
+            x: 0,
+            y: 0,
+            z: 0,
+          }))
+        : [];
     for (const orb of this.orbs) {
       this.place(orb);
     }

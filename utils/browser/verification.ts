@@ -29,7 +29,7 @@ const canvas = document.querySelector<HTMLCanvasElement>('#world')!;
 const $ = <T extends HTMLElement = HTMLElement>(selector: string): T => {
     const element = document.querySelector<T>(selector);
     if (!element) {
-      throw Error('Missing diagnostic element: ' + selector);
+      throw new Error('Missing diagnostic element: ' + selector);
     }
     return element;
   },
@@ -81,19 +81,21 @@ window.addEventListener('error', (event) => {
 });
 function resetTransition() {
   clearSupportSurface();
-  sim.barrierTrails.states.forEach((s) => sim.barrierTrails.reset(s.owner));
+  for (const s of sim.barrierTrails.states) {
+    sim.barrierTrails.reset(s.owner);
+  }
   sim.barriers = [];
   delete sim.entrance;
   view.setEntrance(null);
   resetExitHangar(sim);
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     r.lateralSpeed = 0;
     r.inactive = false;
     r.controlsEnabled = true;
     r.opponentExit = null;
     r.escaped = false;
     cancelRespawn(sim, r);
-  });
+  }
   sim.wrecks.states.fill(null);
   Reflect.deleteProperty(sim, 'escape');
   Reflect.deleteProperty(sim, 'roundBonus');
@@ -112,22 +114,22 @@ const [paths, rechargePaths] = await Promise.all(
 const recordings = await fetch('assets/recordings/manifest.json').then((r) =>
   r.json(),
 );
-recordings.forEach((entry: { name: string }, i: number) => {
+for (const [i, entry] of recordings.entries()) {
   const o = document.createElement('option');
   o.value = String(i);
   o.textContent = entry.name;
   $<HTMLSelectElement>('#demo').append(o);
-});
+}
 for (const [selector, rows] of [
   ['#arena', GAME_TABLES.domains],
   ['#runner', GAME_TABLES.runners],
 ] as const) {
-  rows.forEach((r, i) => {
+  for (const [i, r] of rows.entries()) {
     const option = document.createElement('option');
     option.value = String(i);
     option.textContent = r.name;
     $(selector).append(option);
-  });
+  }
 }
 async function load() {
   if (busy) {
@@ -194,14 +196,14 @@ async function load() {
     sim.countdown = 0;
     sim.time -= GAME_TABLES.entrance.seconds;
     $<HTMLSelectElement>('#portal').replaceChildren();
-    for (const id of Object.keys(view.portals).sort()) {
+    for (const id of Object.keys(view.portals).toSorted()) {
       const o = document.createElement('option');
       o.value = id;
       o.textContent = id;
       $<HTMLSelectElement>('#portal').append(o);
     }
     $<HTMLSelectElement>('#secret-door').replaceChildren();
-    for (const key of Object.keys(view.doors).sort()) {
+    for (const key of Object.keys(view.doors).toSorted()) {
       const o = document.createElement('option');
       o.value = key;
       o.textContent = key.toUpperCase();
@@ -249,7 +251,7 @@ async function load() {
     busy = false;
   }
 }
-$<HTMLSelectElement>('#light-radius').onchange = () => {
+$<HTMLSelectElement>('#light-radius').addEventListener('change', () => {
   if (!sim || busy) {
     return;
   }
@@ -260,19 +262,19 @@ $<HTMLSelectElement>('#light-radius').onchange = () => {
     'Player light ' +
       $<HTMLSelectElement>('#light-radius').selectedOptions[0].textContent,
   );
-};
+});
 function present(action: string, events: unknown[] = []) {
-  sim.runners.forEach((r, i) => {
+  for (const [i, r] of sim.runners.entries()) {
     poseRunnerModel(models[i], r, sim.escape);
-  });
-  sim.pickups.forEach((p, i) => {
+  }
+  for (const [i, p] of sim.pickups.entries()) {
     pickups[i]!.visible = p.cooldown <= 0;
     pickups[i]!.position.set(p.x, p.y, p.z);
-  });
-  sim.recharge.orbs.forEach((o, i) => {
+  }
+  for (const [i, o] of sim.recharge.orbs.entries()) {
     orbs[i].visible = o.cooldown <= 0;
     orbs[i].position.set(o.x, o.y, o.z);
-  });
+  }
   view.setPlayerSpotlight(sim.runners[sim.player], sim.escape);
   view.follow(
     sim.runners[sim.player],
@@ -302,12 +304,18 @@ function present(action: string, events: unknown[] = []) {
     hudInArea: inAreaCount(sim, sim.player),
     shieldMeshes: effects.pools.shields
       .filter((e) => e.mesh.visible)
-      .map((e) => ({ finite: e.mesh.matrix.elements.every(Number.isFinite) })),
+      .map((e) => ({
+        finite: e.mesh.matrix.elements.every((itemValue) =>
+          Number.isFinite(itemValue),
+        ),
+      })),
     respawnMeshes: effects.pools.respawns
       .filter((e) => e.mesh.visible)
       .map((e) => ({
         model: e.name,
-        finite: e.mesh.matrix.elements.every(Number.isFinite),
+        finite: e.mesh.matrix.elements.every((itemValue) =>
+          Number.isFinite(itemValue),
+        ),
       })),
     aiRouteCounts: sim.aiRouteCounts,
     aiRoutePool: routePoolState(sim),
@@ -321,7 +329,9 @@ function present(action: string, events: unknown[] = []) {
           .map((p) => ({
             name: p.userData.wreckPart,
             visible: p.visible,
-            finite: p.matrix.elements.every(Number.isFinite),
+            finite: p.matrix.elements.every((itemValue) =>
+              Number.isFinite(itemValue),
+            ),
             meshes: p.children.length,
           })),
       })),
@@ -461,7 +471,9 @@ function present(action: string, events: unknown[] = []) {
     .filter((e) => e.mesh.visible)
     .map((e) => ({
       model: e.name,
-      finite: e.mesh.matrixWorld.elements.every(Number.isFinite),
+      finite: e.mesh.matrixWorld.elements.every((itemValue) =>
+        Number.isFinite(itemValue),
+      ),
       angles: [e.mesh.rotation.x, e.mesh.rotation.y, e.mesh.rotation.z],
       order: e.mesh.rotation.order,
     }));
@@ -477,14 +489,16 @@ function present(action: string, events: unknown[] = []) {
     .filter((e) => e.mesh.visible)
     .map((e) => ({
       finite:
-        e.mesh.matrix.elements.every(Number.isFinite) &&
+        e.mesh.matrix.elements.every((itemValue) =>
+          Number.isFinite(itemValue),
+        ) &&
         [...e.mesh.children].every(
           (c) =>
             !(c as import('../../src/model-types.ts').RenderNode).geometry ||
-            Array.from(
-              (c as import('../../src/model-types.ts').RenderNode).geometry!
+            [
+              ...(c as import('../../src/model-types.ts').RenderNode).geometry!
                 .attributes.position.array,
-            ).every(Number.isFinite),
+            ].every((itemValue) => Number.isFinite(itemValue)),
         ),
     }));
   $('#state').textContent = JSON.stringify(state, null, 2);
@@ -555,7 +569,9 @@ async function advance(action: string, frames: number, input = {}) {
         $('#status').textContent =
           action + ': ' + (i + 1) + ' / ' + frames + ' frames';
         // oxlint-disable-next-line no-await-in-loop -- Advance one rendered frame at a time for the recorded control trace.
-        await new Promise((resolve) => requestAnimationFrame(resolve));
+        await new Promise((resolve) => {
+          requestAnimationFrame(resolve);
+        });
       }
     }
     present(action, events);
@@ -580,16 +596,16 @@ const controls = {
   fire: [120, { fire: true }],
   jump: [1, { jump: true }],
 };
-document.querySelectorAll<HTMLElement>('[data-drive]').forEach(
-  (b) =>
-    (b.onclick = () => {
-      const [n, input] = controls[
-        b.dataset.drive! as keyof typeof controls
-      ] as [number, import('../../src/game-types.ts').Controls];
-      advance(b.textContent, n, input);
-    }),
-);
-$<HTMLButtonElement>('#advance-frames').onclick = () => {
+for (const b of document.querySelectorAll<HTMLElement>('[data-drive]')) {
+  b.addEventListener('click', () => {
+    const [n, input] = controls[b.dataset.drive! as keyof typeof controls] as [
+      number,
+      import('../../src/game-types.ts').Controls,
+    ];
+    advance(b.textContent, n, input);
+  });
+}
+$<HTMLButtonElement>('#advance-frames').addEventListener('click', () => {
   const frames = Math.max(
     1,
     Math.min(
@@ -598,9 +614,9 @@ $<HTMLButtonElement>('#advance-frames').onclick = () => {
     ),
   );
   advance('Advance ' + frames + ' frames', frames);
-};
-$<HTMLButtonElement>('#load').onclick = load;
-$<HTMLButtonElement>('#fire-once').onclick = () => {
+});
+$<HTMLButtonElement>('#load').addEventListener('click', load);
+$<HTMLButtonElement>('#fire-once').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -617,8 +633,8 @@ $<HTMLButtonElement>('#fire-once').onclick = () => {
       : 'Single weapon press',
     sim.events,
   );
-};
-$<HTMLButtonElement>('#ai-weapon-attack').onclick = () => {
+});
+$<HTMLButtonElement>('#ai-weapon-attack').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -707,8 +723,8 @@ $<HTMLButtonElement>('#ai-weapon-attack').onclick = () => {
       'Supplied stationary target and flat clear ground; production AI, pickups, inventory, locks and weapon updates run.',
   };
   present('AI ' + weapon + ' attack ready', sim.events);
-};
-$<HTMLButtonElement>('#projectile-flight').onclick = () => {
+});
+$<HTMLButtonElement>('#projectile-flight').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -725,10 +741,10 @@ $<HTMLButtonElement>('#projectile-flight').onclick = () => {
   sim.projectiles = [];
   sim.scrub.active = false;
   sim.scrubbing = false;
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   Object.assign(sim.runners[sim.player], {
     dead: 0,
     x: 100,
@@ -751,8 +767,8 @@ $<HTMLButtonElement>('#projectile-flight').onclick = () => {
     otherRunners: false,
   };
   present('Projectile flight arranged');
-};
-$<HTMLButtonElement>('#missile-guidance').onclick = () => {
+});
+$<HTMLButtonElement>('#missile-guidance').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -769,10 +785,10 @@ $<HTMLButtonElement>('#missile-guidance').onclick = () => {
   sim.projectiles = [];
   sim.scrub.active = false;
   sim.scrubbing = false;
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   const p = sim.runners[sim.player],
     a = sim.runners[(sim.player + 1) % 8],
     b = sim.runners[(sim.player + 2) % 8];
@@ -818,8 +834,8 @@ $<HTMLButtonElement>('#missile-guidance').onclick = () => {
     walls: false,
   };
   present('Missile guidance arranged', sim.events);
-};
-$<HTMLButtonElement>('#missile-retarget').onclick = () => {
+});
+$<HTMLButtonElement>('#missile-retarget').addEventListener('click', () => {
   if (!sim || busy || scenario?.kind !== 'missile guidance diagnostic') {
     return;
   }
@@ -827,8 +843,8 @@ $<HTMLButtonElement>('#missile-retarget').onclick = () => {
     a = sim.runners[scenario.initialTarget!];
   Object.assign(a, { x: p.x + 80, z: p.z + 80 });
   present('Initial missile target moved behind');
-};
-$<HTMLButtonElement>('#slot-reuse').onclick = () => {
+});
+$<HTMLButtonElement>('#slot-reuse').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -845,10 +861,10 @@ $<HTMLButtonElement>('#slot-reuse').onclick = () => {
   sim.projectiles = [];
   sim.scrub.active = false;
   sim.scrubbing = false;
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   const r = sim.runners[sim.player];
   Object.assign(r, {
     dead: 0,
@@ -880,8 +896,8 @@ $<HTMLButtonElement>('#slot-reuse').onclick = () => {
     ground: 'flat diagnostic plane',
   };
   present('Projectile slots reused', sim.events);
-};
-$<HTMLButtonElement>('#runner-order').onclick = () => {
+});
+$<HTMLButtonElement>('#runner-order').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -898,10 +914,10 @@ $<HTMLButtonElement>('#runner-order').onclick = () => {
   sim.scrub.active = false;
   sim.scrubbing = false;
   sim.events = [];
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   const p = sim.runners[sim.player],
     q = sim.runners[(sim.player + 1) % 8];
   Object.assign(p, {
@@ -944,8 +960,8 @@ $<HTMLButtonElement>('#runner-order').onclick = () => {
     walls: false,
   };
   present('Runner update order arranged', sim.events);
-};
-$<HTMLButtonElement>('#damage-timing').onclick = () => {
+});
+$<HTMLButtonElement>('#damage-timing').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -965,11 +981,11 @@ $<HTMLButtonElement>('#damage-timing').onclick = () => {
   sim.score = 0;
   sim.lives = GAME_TABLES.lives.initial;
   sim.events = [];
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
     r.kills = 0;
-  });
+  }
   const p = sim.runners[sim.player],
     q = sim.runners[(sim.player + 1) % 8];
   Object.assign(p, {
@@ -1011,8 +1027,8 @@ $<HTMLButtonElement>('#damage-timing').onclick = () => {
     walls: false,
   };
   present('Lethal hit timing arranged', sim.events);
-};
-$<HTMLButtonElement>('#lethal-hit').onclick = () => {
+});
+$<HTMLButtonElement>('#lethal-hit').addEventListener('click', () => {
   if (!sim || busy || scenario?.kind !== 'damage and death timing diagnostic') {
     return;
   }
@@ -1022,7 +1038,7 @@ $<HTMLButtonElement>('#lethal-hit').onclick = () => {
     power: false,
   });
   present('Lethal hit applied; actor health check is pending', sim.events);
-};
+});
 function prepareExitHandoff(opponent = false) {
   if (!sim || busy) {
     return;
@@ -1043,11 +1059,11 @@ function prepareExitHandoff(opponent = false) {
   sim.score = 0;
   sim.lives = GAME_TABLES.lives.initial;
   sim.events = [];
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
     r.kills = 0;
-  });
+  }
   const actor = opponent ? (sim.player + 1) % 8 : sim.player,
     attacker = opponent ? sim.player : (sim.player + 1) % 8,
     p = sim.runners[actor],
@@ -1105,10 +1121,13 @@ function prepareExitHandoff(opponent = false) {
     sim.events,
   );
 }
-$<HTMLButtonElement>('#exit-handoff').onclick = () => prepareExitHandoff(false);
-$<HTMLButtonElement>('#opponent-handoff').onclick = () =>
-  prepareExitHandoff(true);
-$<HTMLButtonElement>('#exit-world').onclick = () => {
+$<HTMLButtonElement>('#exit-handoff').addEventListener('click', () =>
+  prepareExitHandoff(false),
+);
+$<HTMLButtonElement>('#opponent-handoff').addEventListener('click', () =>
+  prepareExitHandoff(true),
+);
+$<HTMLButtonElement>('#exit-world').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1131,8 +1150,8 @@ $<HTMLButtonElement>('#exit-world').onclick = () => {
       'Advance one frame to enter the exit. Other controllers disable, while held movement, queued primary shots and the independent ShockWave continue. The retired human primary pool stays frozen.',
   };
   present('Exit world continuation arranged', sim.events);
-};
-$<HTMLButtonElement>('#suspension').onclick = () => {
+});
+$<HTMLButtonElement>('#suspension').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1170,10 +1189,10 @@ $<HTMLButtonElement>('#suspension').onclick = () => {
           },
         ]
       : height(x, z)) as import('../../src/game-types.ts').GroundQuery;
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   const r = sim.runners[sim.player];
   Object.assign(r, {
     dead: 0,
@@ -1203,7 +1222,7 @@ $<HTMLButtonElement>('#suspension').onclick = () => {
   geometry.computeVertexNormals();
   supportSurface = new THREE.Mesh(
     geometry,
-    new THREE.MeshBasicMaterial({ color: 0x5f7d83, side: THREE.DoubleSide }),
+    new THREE.MeshBasicMaterial({ color: 0x5f_7d_83, side: THREE.DoubleSide }),
   );
   view.objects.add(supportSurface);
   poseReference = null;
@@ -1218,7 +1237,7 @@ $<HTMLButtonElement>('#suspension').onclick = () => {
     walls: false,
   };
   present('Suspension slope arranged', sim.events);
-};
+});
 function preparePhysicalAction(variant: string) {
   if (!sim || busy) {
     return;
@@ -1237,10 +1256,10 @@ function preparePhysicalAction(variant: string) {
   sim.scrub.active = false;
   sim.scrubbing = false;
   sim.events = [];
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   const r = sim.runners[sim.player];
   Object.assign(r, {
     dead: 0,
@@ -1285,11 +1304,13 @@ function preparePhysicalAction(variant: string) {
     sim.events,
   );
 }
-$<HTMLButtonElement>('#control-disable').onclick = () =>
-  preparePhysicalAction('disable');
-$<HTMLButtonElement>('#nitro-coast').onclick = () =>
-  preparePhysicalAction('nitro');
-$<HTMLButtonElement>('#wall-sweep').onclick = () => {
+$<HTMLButtonElement>('#control-disable').addEventListener('click', () =>
+  preparePhysicalAction('disable'),
+);
+$<HTMLButtonElement>('#nitro-coast').addEventListener('click', () =>
+  preparePhysicalAction('nitro'),
+);
+$<HTMLButtonElement>('#wall-sweep').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1306,10 +1327,10 @@ $<HTMLButtonElement>('#wall-sweep').onclick = () => {
   sim.scrub.active = false;
   sim.scrubbing = false;
   sim.events = [];
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   const r = sim.runners[sim.player];
   Object.assign(r, {
     dead: 0,
@@ -1354,7 +1375,7 @@ $<HTMLButtonElement>('#wall-sweep').onclick = () => {
   supportSurface = new THREE.Mesh(
     geometry,
     new THREE.MeshBasicMaterial({
-      color: 0x38a6ff,
+      color: 0x38_a6_ff,
       side: THREE.DoubleSide,
       wireframe: true,
     }),
@@ -1372,8 +1393,8 @@ $<HTMLButtonElement>('#wall-sweep').onclick = () => {
     ai: false,
   };
   present('Native wall sweep arranged', sim.events);
-};
-$<HTMLButtonElement>('#inventory-memory').onclick = () => {
+});
+$<HTMLButtonElement>('#inventory-memory').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1392,10 +1413,10 @@ $<HTMLButtonElement>('#inventory-memory').onclick = () => {
   sim.projectiles = [];
   sim.scrub.active = false;
   sim.scrubbing = false;
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   const r = sim.runners[sim.player];
   Object.assign(r, {
     dead: 0,
@@ -1429,16 +1450,16 @@ $<HTMLButtonElement>('#inventory-memory').onclick = () => {
     note: 'Supplied RNG result compares identical visible inventories with different inactive cells.',
   };
   present('Inventory memory arranged', sim.events);
-};
-$<HTMLButtonElement>('#entrance').onclick = () => {
+});
+$<HTMLButtonElement>('#entrance').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
   resetTransition();
   sim.ai = () => ({});
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
-  });
+  }
   sim.population.initialize();
   sim.phase = 'running';
   sim.elapsed = 0;
@@ -1451,8 +1472,8 @@ $<HTMLButtonElement>('#entrance').onclick = () => {
   scenario = { kind: 'entrance diagnostic', ai: false };
   beginEntrance(sim);
   present('Entrance restarted');
-};
-$<HTMLButtonElement>('#rear').onclick = () => {
+});
+$<HTMLButtonElement>('#rear').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1461,8 +1482,8 @@ $<HTMLButtonElement>('#rear').onclick = () => {
     ? 'View forward'
     : 'View back';
   present(rear ? 'Rear camera' : 'Forward camera');
-};
-$<HTMLButtonElement>('#show-poses').onclick = async () => {
+});
+$<HTMLButtonElement>('#show-poses').addEventListener('click', async () => {
   if (busy || !sim) {
     return;
   }
@@ -1477,7 +1498,7 @@ $<HTMLButtonElement>('#show-poses').onclick = async () => {
       );
     resetTransition();
     const poses = demo.sample(seconds);
-    poses.forEach((p, i) => {
+    for (const [i, p] of poses.entries()) {
       Object.assign(sim.runners[i], {
         x: p.x,
         y: p.y,
@@ -1491,7 +1512,7 @@ $<HTMLButtonElement>('#show-poses').onclick = async () => {
         lateralSpeed: p.velocity[0],
         vy: p.velocity[1],
       });
-    });
+    }
     poseReference = {
       recording: entry.name,
       sha256: entry.sha256,
@@ -1505,8 +1526,8 @@ $<HTMLButtonElement>('#show-poses').onclick = async () => {
   } finally {
     busy = false;
   }
-};
-$<HTMLButtonElement>('#recharge').onclick = () => {
+});
+$<HTMLButtonElement>('#recharge').addEventListener('click', () => {
   if (!sim?.recharge.orbs.length) {
     return;
   }
@@ -1517,8 +1538,8 @@ $<HTMLButtonElement>('#recharge').onclick = () => {
   }
   Object.assign(p, { x: o.x, y: o.y, z: o.z, speed: 0, health: 10 });
   advance('Recharge capture', 1);
-};
-$<HTMLButtonElement>('#inventory').onclick = () => {
+});
+$<HTMLButtonElement>('#inventory').addEventListener('click', () => {
   if (!sim) {
     return;
   }
@@ -1527,16 +1548,16 @@ $<HTMLButtonElement>('#inventory').onclick = () => {
     sim.collect(sim.runners[sim.player], { type: 'enh_lock.gam' });
   }
   present('Three missile pickups', sim.events);
-};
-$<HTMLButtonElement>('#cycle').onclick = () => {
+});
+$<HTMLButtonElement>('#cycle').addEventListener('click', () => {
   if (!sim) {
     return;
   }
   sim.events = [];
   sim.cycleWeapon(sim.runners[sim.player]);
   present('Cycle weapon', sim.events);
-};
-$<HTMLButtonElement>('#escape').onclick = () => {
+});
+$<HTMLButtonElement>('#escape').addEventListener('click', () => {
   if (!sim) {
     return;
   }
@@ -1548,19 +1569,19 @@ $<HTMLButtonElement>('#escape').onclick = () => {
     speed: 0,
   });
   advance('Eligible central escape', 1);
-};
-$<HTMLButtonElement>('#death').onclick = () => {
+});
+$<HTMLButtonElement>('#death').addEventListener('click', () => {
   if (!sim) {
     return;
   }
   sim.events = [];
   const p = sim.runners[sim.player];
   p.shield = 0;
-  sim.damage(p, 10000, (sim.player + 1) % 8);
+  sim.damage(p, 10_000, (sim.player + 1) % 8);
   sim.checkRunnerHealth(p);
   present('Player destruction', sim.events);
-};
-$<HTMLButtonElement>('#opponent-death').onclick = () => {
+});
+$<HTMLButtonElement>('#opponent-death').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1576,11 +1597,11 @@ $<HTMLButtonElement>('#opponent-death').onclick = () => {
     ai: true,
   };
   q.shield = 0;
-  sim.damage(q, 10000, sim.player);
+  sim.damage(q, 10_000, sim.player);
   sim.checkRunnerHealth(q);
   present('Opponent destruction', sim.events);
-};
-$<HTMLButtonElement>('#opponent-exit').onclick = () => {
+});
+$<HTMLButtonElement>('#opponent-exit').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1628,8 +1649,8 @@ $<HTMLButtonElement>('#opponent-exit').onclick = () => {
     initialLives: sim.lives,
   };
   present('Opponent exit arranged');
-};
-$<HTMLButtonElement>('#runner-collision').onclick = () => {
+});
+$<HTMLButtonElement>('#runner-collision').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1647,10 +1668,10 @@ $<HTMLButtonElement>('#runner-collision').onclick = () => {
   sim.score = 0;
   sim.scrub.active = false;
   sim.scrubbing = false;
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.dead = Infinity;
-  });
+  }
   const p = sim.runners[sim.player],
     q = sim.runners[(sim.player + 1) % 8];
   Object.assign(p, { dead: 0, x: 100, y: 0, z: 100, yaw: 0, speed: 60 });
@@ -1666,8 +1687,8 @@ $<HTMLButtonElement>('#runner-collision').onclick = () => {
       'provisional four-unit runner contact; load/reset restores domain geometry',
   };
   present('Runner collision arranged');
-};
-$<HTMLButtonElement>('#wreck').onclick = () => {
+});
+$<HTMLButtonElement>('#wreck').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1683,11 +1704,11 @@ $<HTMLButtonElement>('#wreck').onclick = () => {
   sim.score = 0;
   sim.scrubbing = false;
   sim.scrub.active = false;
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     sim.spawn(r);
     r.kills = 0;
     r.dead = Infinity;
-  });
+  }
   sim.seed = 1996;
   const p = sim.runners[sim.player],
     q = sim.runners[(sim.player + 1) % 8];
@@ -1702,7 +1723,7 @@ $<HTMLButtonElement>('#wreck').onclick = () => {
     weapon: null,
   });
   Object.assign(q, { dead: 0, x: 100, y: 0, z: 60, yaw: Math.PI });
-  sim.damage(q, 10000, sim.player);
+  sim.damage(q, 10_000, sim.player);
   sim.checkRunnerHealth(q);
   poseReference = null;
   scenario = {
@@ -1713,16 +1734,16 @@ $<HTMLButtonElement>('#wreck').onclick = () => {
     ground: 'flat diagnostic ground; reset restores domain ground',
   };
   present('Wreck arranged', sim.events);
-};
-$<HTMLButtonElement>('#scrub').onclick = () => {
+});
+$<HTMLButtonElement>('#scrub').addEventListener('click', () => {
   if (!sim) {
     return;
   }
   sim.time = 0;
   advance('Scrub started', 1);
-};
-$<HTMLButtonElement>('#hot-spot').onclick = () => {
-  if (!sim || busy || !sim.hotSpots.spots.length) {
+});
+$<HTMLButtonElement>('#hot-spot').addEventListener('click', () => {
+  if (!sim || busy || sim.hotSpots.spots.length === 0) {
     return;
   }
   resetTransition();
@@ -1736,10 +1757,10 @@ $<HTMLButtonElement>('#hot-spot').onclick = () => {
   sim.scrub.active = false;
   sim.projectiles = [];
   effects.clearBursts();
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     r.dead = Infinity;
     r.ionSeconds = 0;
-  });
+  }
   const p = sim.runners[sim.player];
   Object.assign(p, {
     x: spot.x,
@@ -1774,16 +1795,16 @@ $<HTMLButtonElement>('#hot-spot').onclick = () => {
   poseReference = null;
   scenario = { kind: 'hot spot diagnostic', spot: spot.id, ai: false };
   present('Hot spot arranged');
-};
-$<HTMLButtonElement>('#hit-hot-spot').onclick = () => {
+});
+$<HTMLButtonElement>('#hit-hot-spot').addEventListener('click', () => {
   if (!sim || busy || scenario?.kind !== 'hot spot diagnostic') {
     return;
   }
   const s = sim.hotSpots.spots[scenario.spot!],
     action = sim.hotSpots.trigger(s, sim.player);
   present('Hot spot ' + (action || 'already erupting'));
-};
-$<HTMLButtonElement>('#approach-portal').onclick = () => {
+});
+$<HTMLButtonElement>('#approach-portal').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1796,9 +1817,9 @@ $<HTMLButtonElement>('#approach-portal').onclick = () => {
   sim.phase = 'running';
   sim.countdown = 0;
   sim.ai = () => ({});
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     r.dead = Infinity;
-  });
+  }
   const p = sim.runners[sim.player];
   Object.assign(p, pose, {
     dead: 0,
@@ -1825,8 +1846,8 @@ $<HTMLButtonElement>('#approach-portal').onclick = () => {
   rear = false;
   $<HTMLButtonElement>('#rear').textContent = 'View back';
   present('Portal ' + id + ' arranged');
-};
-$<HTMLButtonElement>('#approach-secret-door').onclick = () => {
+});
+$<HTMLButtonElement>('#approach-secret-door').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1839,9 +1860,9 @@ $<HTMLButtonElement>('#approach-secret-door').onclick = () => {
   sim.phase = 'running';
   sim.countdown = 0;
   sim.ai = () => ({});
-  sim.runners.forEach((r) => {
+  for (const r of sim.runners) {
     r.dead = Infinity;
-  });
+  }
   const p = sim.runners[sim.player];
   Object.assign(p, pose, {
     dead: 0,
@@ -1869,8 +1890,8 @@ $<HTMLButtonElement>('#approach-secret-door').onclick = () => {
   rear = false;
   $<HTMLButtonElement>('#rear').textContent = 'View back';
   present('Secret door ' + key.toUpperCase() + ' arranged without key');
-};
-$<HTMLButtonElement>('#collect-door-key').onclick = () => {
+});
+$<HTMLButtonElement>('#collect-door-key').addEventListener('click', () => {
   if (!sim || busy) {
     return;
   }
@@ -1881,68 +1902,72 @@ $<HTMLButtonElement>('#collect-door-key').onclick = () => {
   sim.events = [];
   sim.collect(sim.runners[sim.player], { type: 'enhkey' + key + '.gam' });
   present('Key ' + key.toUpperCase() + ' collected', sim.events);
+});
+const activateSecondary = (sourceButton: HTMLElement) => {
+  if (!sim || busy) {
+    return;
+  }
+  resetTransition();
+  const weapon = sourceButton.dataset.secondary;
+  effects.clearBursts();
+  sim.ai = () => ({});
+  sim.ground = () => 0;
+  sim.projectiles = [];
+  for (const s of sim.barrierTrails.states) {
+    sim.barrierTrails.reset(s.owner);
+  }
+  sim.barriers = [];
+  sim.phase = 'running';
+  sim.scrub.active = false;
+  sim.scrubbing = false;
+  sim.time = 300;
+  sim.countdown = 0;
+  sim.score = 0;
+  sim.events = [];
+  for (const r of sim.runners) {
+    Object.assign(r, {
+      health: 100,
+      dead: Infinity,
+      ionSeconds: 0,
+      ionTarget: null,
+      disrupted: 0,
+      speed: 0,
+      turn: 0,
+      shield: 0,
+      vy: 0,
+      kills: 0,
+    });
+  }
+  const p = sim.runners[sim.player],
+    q = sim.runners[(sim.player + 1) % 8];
+  Object.assign(p, {
+    dead: 0,
+    x: 100,
+    y: 0,
+    z: 100,
+    yaw: 0,
+    fire: 0,
+    weapons: [null, weapon],
+    selectedWeapon: 1,
+  });
+  Object.assign(q, { dead: 0, x: 100, y: 0, z: 60, yaw: Math.PI });
+  sim.selectWeapon(p);
+  sim.secondary(p);
+  poseReference = null;
+  scenario = {
+    weapon,
+    target: q.id,
+    ai: false,
+    ground: 'flat diagnostic plane; reset to restore domain ground',
+  };
+  present('Activated ' + weapon, sim.events);
 };
-document.querySelectorAll<HTMLElement>('[data-secondary]').forEach(
-  (button) =>
-    (button.onclick = () => {
-      if (!sim || busy) {
-        return;
-      }
-      resetTransition();
-      const weapon = button.dataset.secondary;
-      effects.clearBursts();
-      sim.ai = () => ({});
-      sim.ground = () => 0;
-      sim.projectiles = [];
-      sim.barrierTrails.states.forEach((s) => sim.barrierTrails.reset(s.owner));
-      sim.barriers = [];
-      sim.phase = 'running';
-      sim.scrub.active = false;
-      sim.scrubbing = false;
-      sim.time = 300;
-      sim.countdown = 0;
-      sim.score = 0;
-      sim.events = [];
-      sim.runners.forEach((r) =>
-        Object.assign(r, {
-          health: 100,
-          dead: Infinity,
-          ionSeconds: 0,
-          ionTarget: null,
-          disrupted: 0,
-          speed: 0,
-          turn: 0,
-          shield: 0,
-          vy: 0,
-          kills: 0,
-        }),
-      );
-      const p = sim.runners[sim.player],
-        q = sim.runners[(sim.player + 1) % 8];
-      Object.assign(p, {
-        dead: 0,
-        x: 100,
-        y: 0,
-        z: 100,
-        yaw: 0,
-        fire: 0,
-        weapons: [null, weapon],
-        selectedWeapon: 1,
-      });
-      Object.assign(q, { dead: 0, x: 100, y: 0, z: 60, yaw: Math.PI });
-      sim.selectWeapon(p);
-      sim.secondary(p);
-      poseReference = null;
-      scenario = {
-        weapon,
-        target: q.id,
-        ai: false,
-        ground: 'flat diagnostic plane; reset to restore domain ground',
-      };
-      present('Activated ' + weapon, sim.events);
-    }),
-);
-$<HTMLButtonElement>('#download').onclick = () => {
+for (const button of document.querySelectorAll<HTMLElement>(
+  '[data-secondary]',
+)) {
+  button.addEventListener('click', () => activateSecondary(button));
+}
+$<HTMLButtonElement>('#download').addEventListener('click', () => {
   const blob = new Blob(
       [
         JSON.stringify(
@@ -1958,5 +1983,5 @@ $<HTMLButtonElement>('#download').onclick = () => {
   a.download = 'deathdrome-verification.json';
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-};
+});
 await load();

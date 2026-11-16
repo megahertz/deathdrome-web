@@ -20,93 +20,80 @@ test('allocation, selection changes and first slot actions match 64 original exe
       )
       .toString(),
   );
-  a.fixtures.forEach(
-    (
-      f: {
-        missile: boolean | undefined;
-        side: any;
-        behind: any;
-        human: any;
-        presses: number;
-        selected: any;
-        dt: number;
-      },
-      i: number,
-    ) => {
-      const events: any[] = [],
-        r = stateFixture<import('../../src/game-types.ts').Runner>({
-          id: 0,
-          x: 0,
-          y: 0,
-          z: 0,
-          yaw: 0,
-          speed: 0,
-          weaponCells: [4, 1, 5, 6],
-          weapons: [null, 'Missile', 'Ion Sword', 'NanoShield'],
-          selectedWeapon: f.missile ? 1 : 0,
-          muzzleSide: f.side,
-          missileLockTarget: 1,
-        }),
-        q = stateFixture<import('../../src/game-types.ts').Runner>({
-          id: 1,
-          x: f.behind ? 100 : -20,
-          y: 10,
-          z: f.behind ? 140 : -20,
-        }),
-        sim = stateFixture<import('../../src/simulation.ts').Simulation>({
-          player: f.human ? 0 : 1,
-          runners: [r, q],
-          projectiles: [],
-          emit(type: any, data: any) {
-            events.push({ type, ...data });
-          },
-        });
-      selectInventoryWeapon(r);
-      for (let j = 0; j < f.presses; j++) {
-        queueProjectiles(sim, r, f.missile);
-      }
-      const sounds = () =>
-          events.filter((e) => e.type === 'shot').map((e) => e.soundId),
-        before = {
-          count: sim.projectiles.length,
-          cells: [...inventoryCells(r)],
-          selected: r.selectedWeapon,
-          side: r.muzzleSide,
-          sounds: sounds(),
-        };
-      assert.ok(sim.projectiles.every((p) => p.pending && p.x === undefined));
-      Object.assign(r, {
-        selectedWeapon: f.selected,
-        x: 40,
+  for (const [i, f] of a.fixtures.entries()) {
+    const events: any[] = [],
+      r = stateFixture<import('../../src/game-types.ts').Runner>({
+        id: 0,
+        x: 0,
+        y: 0,
+        z: 0,
+        yaw: 0,
+        speed: 0,
+        weaponCells: [4, 1, 5, 6],
+        weapons: [null, 'Missile', 'Ion Sword', 'NanoShield'],
+        selectedWeapon: f.missile ? 1 : 0,
+        muzzleSide: f.side,
+        missileLockTarget: 1,
+      }),
+      q = stateFixture<import('../../src/game-types.ts').Runner>({
+        id: 1,
+        x: f.behind ? 100 : -20,
         y: 10,
-        z: 60,
-        yaw: (36.86989764584402 * Math.PI) / 180,
-        speed: 75,
-        forwardVector: { x: Math.fround(-0.6), y: 0, z: Math.fround(-0.8) },
-        planarForwardVector: { x: Math.fround(-0.6), z: Math.fround(-0.8) },
-      });
-      selectInventoryWeapon(r);
-      stepRunnerProjectiles(sim, r, f.dt);
-      assert.deepEqual(
-        {
-          before,
-          slots: sim.projectiles.map((p) => ({
-            slot: p.slot,
-            position: [p.x, p.y, p.z],
-            velocity: [p.vx, p.vy, p.vz],
-            age: p.age,
-          })),
-          cells: [...inventoryCells(r)],
-          count: r.weapons.length,
-          selected: r.selectedWeapon,
-          side: r.muzzleSide,
-          target: r.missileLockTarget,
-          sounds: sounds(),
+        z: f.behind ? 140 : -20,
+      }),
+      sim = stateFixture<import('../../src/simulation.ts').Simulation>({
+        player: f.human ? 0 : 1,
+        runners: [r, q],
+        projectiles: [],
+        emit(type: any, data: any) {
+          events.push({ type, ...data });
         },
-        a.native[i],
-      );
-    },
-  );
+      });
+    selectInventoryWeapon(r);
+    for (let j = 0; j < f.presses; j++) {
+      queueProjectiles(sim, r, f.missile);
+    }
+    const sounds = () =>
+        events.filter((e) => e.type === 'shot').map((e) => e.soundId),
+      before = {
+        count: sim.projectiles.length,
+        cells: [...inventoryCells(r)],
+        selected: r.selectedWeapon,
+        side: r.muzzleSide,
+        sounds: sounds(),
+      };
+    assert.ok(sim.projectiles.every((p) => p.pending && p.x === undefined));
+    Object.assign(r, {
+      selectedWeapon: f.selected,
+      x: 40,
+      y: 10,
+      z: 60,
+      yaw: (36.86989764584402 * Math.PI) / 180,
+      speed: 75,
+      forwardVector: { x: Math.fround(-0.6), y: 0, z: Math.fround(-0.8) },
+      planarForwardVector: { x: Math.fround(-0.6), z: Math.fround(-0.8) },
+    });
+    selectInventoryWeapon(r);
+    stepRunnerProjectiles(sim, r, f.dt);
+    assert.deepEqual(
+      {
+        before,
+        slots: sim.projectiles.map((p) => ({
+          slot: p.slot,
+          position: [p.x, p.y, p.z],
+          velocity: [p.vx, p.vy, p.vz],
+          age: p.age,
+        })),
+        cells: [...inventoryCells(r)],
+        count: r.weapons.length,
+        selected: r.selectedWeapon,
+        side: r.muzzleSide,
+        target: r.missileLockTarget,
+        sounds: sounds(),
+      },
+      a.native[i],
+    );
+  }
 });
 test('a single free laser slot delays its alternating sound until the next muzzle', () => {
   const r = stateFixture<import('../../src/game-types.ts').Runner>({

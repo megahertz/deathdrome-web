@@ -150,7 +150,7 @@ function fixture(
       slots: sim.runners.map((r) =>
         sim.projectiles
           .filter((p) => p.owner === r.id && p.life > 0)
-          .sort((a, b) => a.slot! - b.slot!)
+          .toSorted((a, b) => a.slot! - b.slot!)
           .map((p) => ({ slot: p.slot, age: p.age })),
       ),
     });
@@ -209,10 +209,10 @@ test('human exit advances surrounding physics, effects and replacement while pre
   s.countdown = 0;
   s.time = 70;
   s.ai = () => ({});
-  s.runners.forEach((r) => {
+  for (const r of s.runners) {
     r.dead = Infinity;
     r.inactive = true;
-  });
+  }
   const p = s.runners[4],
     before = s.runners[2],
     after = s.runners[6],
@@ -233,7 +233,7 @@ test('human exit advances surrounding physics, effects and replacement while pre
   s.fire(p);
   s.fire(before);
   s.fire(after);
-  s.damage(dying, 10000, 2);
+  s.damage(dying, 10_000, 2);
   s.collect(before, { type: 'enh_shok.gam' });
   s.cycleWeapon(before);
   s.secondary(before);

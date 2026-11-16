@@ -25,12 +25,12 @@ function box(
   view.objects.add(mesh);
   return mesh;
 }
-box(0, -0.25, 0, 60, 0.5, 60, 0x34414a);
-box(0, 4, -10, 30, 8, 0.5, 0x3d4550);
-box(-10, 4, 0, 0.5, 8, 20, 0x354353);
-const car = box(0, 0.8, 0, 3, 1.6, 5, 0x9e2830);
-box(-5, 1, -4, 0.4, 2, 0.4, 0x00ddff, true);
-box(5, 1, -4, 0.4, 2, 0.4, 0xff6418, true);
+box(0, -0.25, 0, 60, 0.5, 60, 0x34_41_4a);
+box(0, 4, -10, 30, 8, 0.5, 0x3d_45_50);
+box(-10, 4, 0, 0.5, 8, 20, 0x35_43_53);
+const car = box(0, 0.8, 0, 3, 1.6, 5, 0x9e_28_30);
+box(-5, 1, -4, 0.4, 2, 0.4, 0x00_dd_ff, true);
+box(5, 1, -4, 0.4, 2, 0.4, 0xff_64_18, true);
 const runner = { id: 0, x: 0, y: 0, z: 0, yaw: 0, dead: 0 },
   sim = { runners: [runner], projectiles: [], player: 0 };
 let fps = 60,
@@ -38,17 +38,40 @@ let fps = 60,
   jump = 0,
   _frame = 0;
 view.setEnhancedGraphics(true);
-document.querySelector<HTMLButtonElement>('#enhanced')!.onclick = () =>
-  view.setEnhancedGraphics(true);
-document.querySelector<HTMLButtonElement>('#native')!.onclick = () =>
-  view.setEnhancedGraphics(false);
-document.querySelector<HTMLButtonElement>('#fire')!.onclick = () =>
-  view.enhancements?.event({ type: 'shot', runner: 0 }, sim);
-document.querySelector<HTMLButtonElement>('#explode')!.onclick = () =>
-  view.enhancements?.event({ type: 'destroyed', runner: 0 }, sim);
-document.querySelector<HTMLButtonElement>('#jump')!.onclick = () => (jump = 1);
-document.querySelector<HTMLButtonElement>('#slow')!.onclick = () => (fps = 30);
-document.querySelector<HTMLButtonElement>('#fast')!.onclick = () => (fps = 60);
+document
+  .querySelector<HTMLButtonElement>('#enhanced')!
+  .addEventListener('click', () => view.setEnhancedGraphics(true));
+document
+  .querySelector<HTMLButtonElement>('#native')!
+  .addEventListener('click', () => view.setEnhancedGraphics(false));
+document
+  .querySelector<HTMLButtonElement>('#fire')!
+  .addEventListener('click', () =>
+    view.enhancements?.event({ type: 'shot', runner: 0 }, sim),
+  );
+document
+  .querySelector<HTMLButtonElement>('#explode')!
+  .addEventListener('click', () =>
+    view.enhancements?.event({ type: 'destroyed', runner: 0 }, sim),
+  );
+document
+  .querySelector<HTMLButtonElement>('#jump')!
+  .addEventListener('click', () => {
+    jump = 1;
+    return jump;
+  });
+document
+  .querySelector<HTMLButtonElement>('#slow')!
+  .addEventListener('click', () => {
+    fps = 30;
+    return fps;
+  });
+document
+  .querySelector<HTMLButtonElement>('#fast')!
+  .addEventListener('click', () => {
+    fps = 60;
+    return fps;
+  });
 function animate(now: number) {
   requestAnimationFrame(animate);
   if (last && now - last < 1000 / fps - 2) {

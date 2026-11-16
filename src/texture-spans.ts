@@ -1,6 +1,6 @@
 // Opaque perspective texture spans from 45304c/44361b, reimplemented in JS.
 const f = Math.fround,
-  FIXED = 1048576;
+  FIXED = 1_048_576;
 export function textureDelta(requested = 128) {
   return 2 ** Math.floor(Math.log2(Math.max(8, Math.trunc(requested))));
 }
@@ -9,11 +9,11 @@ export function nearestEven(value: number) {
     fraction = value - low;
   if (fraction < 0.5) {
     return low;
-  } else if (fraction > 0.5) {
-    return low + 1;
-  } else {
-    return low + (Math.abs(low) % 2);
   }
+  if (fraction > 0.5) {
+    return low + 1;
+  }
+  return low + (Math.abs(low) % 2);
 }
 export function magicInteger(value: number) {
   // The x87 "magic double" conversion first adds 3*2^51 at 64-bit
@@ -46,7 +46,7 @@ export function prepareTexturePlane(
   size: any[],
   { weightedUV = false } = {},
 ) {
-  const p = vertices.map((v: number[]) => v.map(f)),
+  const p = vertices.map((v: number[]) => v.map((itemValue) => f(itemValue))),
     points = p.slice(0, 3).map((v: number[]) => v.slice(0, 2));
   const values = [
     p.map((v: any[]) => v[2]),
@@ -68,12 +68,12 @@ export function prepareTexturePlane(
 export function textureSpanCommands(
   plane: { origin: any; firstQ: any; size?: any; values: any; slopes: any },
   { x, y, count }: { x: any; y: number; count: number },
-  { delta = 128, far = 350 } = {},
+  { delta: inputDelta = 128, far = 350 } = {},
 ) {
   if (count <= 0) {
     return [];
   }
-  delta = textureDelta(delta);
+  const delta = textureDelta(inputDelta);
   const dy = y - plane.origin[1];
   // Z retains the x87 Y subtraction; U/V reload its stored float copy.
   const rows = plane.values.map((v: number, i: number) =>

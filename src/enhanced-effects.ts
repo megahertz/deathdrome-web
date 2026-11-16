@@ -205,7 +205,7 @@ if(enhancedEffects){for(int i=0;i<4;i++){float falloff=max(0.0,1.0-distance(enha
     this.flashTotal++;
     this.flashes.push({
       position: { ...position },
-      color: color.slice(),
+      color: [...color],
       radius,
       life,
       age: 0,
@@ -253,7 +253,9 @@ if(enhancedEffects){for(int i=0;i<4;i++){float falloff=max(0.0,1.0-distance(enha
       });
     }
   }
-  sync(sim: import('./simulation.ts').Simulation, dt: number) {
+  sync(sim: import('./simulation.ts').Simulation, inputDt: number) {
+    let dt = inputDt;
+
     if (!this.enabled) {
       return;
     }
@@ -266,7 +268,7 @@ if(enhancedEffects){for(int i=0;i<4;i++){float falloff=max(0.0,1.0-distance(enha
     });
     const camera = this.view.camera.position,
       nearest = [...this.flashes]
-        .sort(
+        .toSorted(
           (a, b) =>
             camera.distanceToSquared(a.position) -
             camera.distanceToSquared(b.position),
@@ -291,7 +293,9 @@ if(enhancedEffects){for(int i=0;i<4;i++){float falloff=max(0.0,1.0-distance(enha
           p.life > 0 &&
           (!p.kind || p.kind === 'Laser' || p.kind === 'Missile'),
       )
-      .sort((a, b) => camera.distanceToSquared(a) - camera.distanceToSquared(b))
+      .toSorted(
+        (a, b) => camera.distanceToSquared(a) - camera.distanceToSquared(b),
+      )
       .slice(0, 16);
     for (const p of live) {
       const old = this.trails.get(p),
@@ -326,17 +330,17 @@ if(enhancedEffects){for(int i=0;i<4;i++){float falloff=max(0.0,1.0-distance(enha
     const active = sim.runners.filter(
       (r) => !r.dead && !r.inactive && runnerBodyVisible(r),
     );
-    const ordered = active.length
-      ? [
-          active.find((r) => r.id === sim.player),
-          ...active.slice(this.shadowCursor),
-          ...active.slice(0, this.shadowCursor),
-        ].filter(Boolean)
-      : [];
+    const ordered =
+      active.length > 0
+        ? [
+            active.find((r) => r.id === sim.player),
+            ...active.slice(this.shadowCursor),
+            ...active.slice(0, this.shadowCursor),
+          ].filter(Boolean)
+        : [];
     let budget = 2;
-    this.shadowCursor = active.length
-      ? (this.shadowCursor + 1) % active.length
-      : 0;
+    this.shadowCursor =
+      active.length > 0 ? (this.shadowCursor + 1) % active.length : 0;
     for (const r of ordered) {
       const old = this.supports.get(r.id);
       if (
@@ -424,14 +428,14 @@ if(enhancedEffects){for(int i=0;i<4;i++){float falloff=max(0.0,1.0-distance(enha
   }
   uploadParticles() {
     const { attributes } = this.particleGeometry;
-    this.particles.items.forEach((p, i) => {
+    for (const [i, p] of this.particles.items.entries()) {
       const fade = 1 - p.age / p.life;
       attributes.position.setXYZ(i, p.x, p.y, p.z);
       attributes.particleColor.setXYZ(i, ...p.color);
       attributes.particleSize.setX(i, p.size * (p.smoke ? 1 + p.age * 1.4 : 1));
       attributes.particleAlpha.setX(i, (p.smoke ? 0.32 : 1) * fade);
       attributes.particleGlow.setX(i, p.smoke ? 0 : 1);
-    });
+    }
     for (const attribute of Object.values(attributes)) {
       (attribute as THREE.BufferAttribute).needsUpdate = true;
     }

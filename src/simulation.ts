@@ -90,7 +90,7 @@ export const DYNAMICS = Object.freeze({
   brakes: [0.2, 2, 10],
 }); // RUN/DYNAMICS.GW
 export const MAX_LIVES = 7,
-  EXTRA_LIFE_SCORE = 20000,
+  EXTRA_LIFE_SCORE = 20_000,
   DISRUPTOR_SECONDS = 8,
   SHIELD_SECONDS = NANO.effectiveSeconds;
 export const RUNNERS = [
@@ -104,8 +104,8 @@ export const RUNNERS = [
   'orgrunr',
 ];
 export const COLORS = [
-  0xe83425, 0x347df5, 0xf4df26, 0xd8e2e4, 0x9243cb, 0x38d655, 0xe255b0,
-  0xf49230,
+  0xe8_34_25, 0x34_7d_f5, 0xf4_df_26, 0xd8_e2_e4, 0x92_43_cb, 0x38_d6_55,
+  0xe2_55_b0, 0xf4_92_30,
 ];
 export const AGGRESSION = GAME_TABLES.ai.aggression;
 
@@ -291,39 +291,14 @@ export class Simulation {
           stuck: 0,
         }) as Runner,
     );
-    this.runners.forEach(
-      (
-        r: Pick<
-          Runner,
-          | 'acceleration'
-          | 'aiState'
-          | 'ammo'
-          | 'id'
-          | 'missileLockTarget'
-          | 'muzzleSide'
-          | 'navigation'
-          | 'nitro'
-          | 'nitroTarget'
-          | 'respawn'
-          | 'selectedWeapon'
-          | 'speed'
-          | 'targetNode'
-          | 'weapon'
-          | 'weaponCells'
-          | 'weapons'
-          | 'x'
-          | 'y'
-          | 'z'
-        > &
-          Partial<Runner>,
-      ) => this.spawn(r),
-    );
+    for (const r of this.runners) {
+      this.spawn(r);
+    }
     // Bootstrap the visible state; active actors sample again in model order
     // before their controller, as in 42efac / 444bd8.
-    this.runners.forEach(
-      (r: Pick<Runner, 'x' | 'z' | 'zoneMask'> & Partial<Runner>) =>
-        (r.zoneMask = this.regions.maskAt(r.x, r.z)),
-    );
+    for (const r of this.runners) {
+      r.zoneMask = this.regions.maskAt(r.x, r.z);
+    }
     // 43445a / 444bd8 samples the selected runner's entrance region once.
     // This stays fixed as the runner moves; 42d109 uses it for path jumps.
     this.entranceZoneMask = this.runners[player].zoneMask;
@@ -359,7 +334,7 @@ export class Simulation {
     return (this.seed >>> t.shift) & t.mask;
   }
   random() {
-    return this.randomInt() / 32768;
+    return this.randomInt() / 32_768;
   }
   emit(type: string, data = {}) {
     this.events.push({ type, ...data });
@@ -395,7 +370,7 @@ export class Simulation {
     options: NavigationOptions | undefined = {},
   ) {
     const [x, z, yaw] = SPAWNS[r.id];
-    if (r.respawn?.routeIndex != null) {
+    if (r.respawn?.routeIndex !== null && r.respawn?.routeIndex !== undefined) {
       this.aiRouteCounts[r.respawn.routeIndex]--;
     }
     Object.assign(r, {
@@ -481,13 +456,13 @@ export class Simulation {
   nearestNode(r: Pick<Runner, 'x' | 'z'> & Partial<Runner>) {
     let best = Infinity,
       index = 0;
-    this.paths.forEach((n: { position: number[] }, i: number) => {
+    for (const [i, n] of this.paths.entries()) {
       const d = Math.hypot(r.x - n.position[0], r.z - n.position[2]);
       if (d < best) {
         best = d;
         index = i;
       }
-    });
+    }
     return index;
   }
   addScore(points: number) {
@@ -529,7 +504,9 @@ export class Simulation {
       damageDelta(
         amount,
         armor ? GAME_TABLES.runners[target.id].armorFactor : 1,
-        power && owner != null ? GAME_TABLES.runners[owner].weaponFactor : 1,
+        power && owner !== null && owner !== undefined
+          ? GAME_TABLES.runners[owner].weaponFactor
+          : 1,
       ),
       { profileType: target.id === this.player ? 0 : 1, shielded },
     );
@@ -540,7 +517,7 @@ export class Simulation {
       // Hit handlers award the kill now. The active scene actor still completes
       // its physical/weapon action before 43360c enters destruction.
       target.pendingDeath = { owner, weapon };
-      if (owner !== target.id && owner != null) {
+      if (owner !== target.id && owner !== null && owner !== undefined) {
         this.runners[owner].kills++;
       }
     }
@@ -666,21 +643,21 @@ export class Simulation {
     }
     if (w === 'Missile') {
       return this.fire(r, true);
-    } else {
-      r.fire = 0.5;
-      if (w === 'Nitro Ram') {
-        r.nitro = Math.fround(DYNAMICS.nitroDuration);
-        r.nitroTarget = updateMissileLock(this, r);
-      }
-      if (w === 'NanoShield') {
-        activateShield(r);
-      }
-      if (!launchSecondary(this, r, w)) {
-        r.fire = 0;
-        return;
-      }
-      this.emit('secondary', { runner: r.id, weapon: w });
     }
+    r.fire = 0.5;
+    if (w === 'Nitro Ram') {
+      r.nitro = Math.fround(DYNAMICS.nitroDuration);
+      r.nitroTarget = updateMissileLock(this, r);
+    }
+    if (w === 'NanoShield') {
+      activateShield(r);
+    }
+    if (!launchSecondary(this, r, w)) {
+      r.fire = 0;
+      return;
+    }
+    this.emit('secondary', { runner: r.id, weapon: w });
+
     consumeWeapon(r);
   }
   ai(
