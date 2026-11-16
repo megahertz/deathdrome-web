@@ -57,8 +57,8 @@ def main():
         n.reset();states=[]
         for s in incoming:states.append(n.insert(s))
         sequences.append({'incoming':incoming,'native':states})
-    js="""import {compareSpanDepth,SpanBuffer} from './src/span-buffer.js';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s);console.log(JSON.stringify({comparisons:q.comparisons.map(f=>compareSpanDepth(f.a,f.b)),sequences:q.sequences.map(f=>{const buffer=new SpanBuffer(1);return f.incoming.map(span=>{const visible=buffer.insert(0,span);return structuredClone({visible,row:buffer.rows[0]})})})}));"""
-    rebuilt=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],cwd=ROOT,input=json.dumps({'comparisons':comparisons,'sequences':sequences}),text=True,capture_output=True,check=True).stdout)
+    js="""import {compareSpanDepth,SpanBuffer} from './src/span-buffer.ts';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s);console.log(JSON.stringify({comparisons:q.comparisons.map(f=>compareSpanDepth(f.a,f.b)),sequences:q.sequences.map(f=>{const buffer=new SpanBuffer(1);return f.incoming.map(span=>{const visible=buffer.insert(0,span);return structuredClone({visible,row:buffer.rows[0]})})})}));"""
+    rebuilt=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],cwd=ROOT,input=json.dumps({'comparisons':comparisons,'sequences':sequences}),text=True,capture_output=True,check=True).stdout)
     errors=[]
     for i,(f,v) in enumerate(zip(comparisons,rebuilt['comparisons'])):
         if f['native']!=v:errors.append({'kind':'depth','case':i,'fixture':f,'actual':v})

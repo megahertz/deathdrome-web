@@ -27,12 +27,12 @@ for laser_slot,missile_slots in [(0,[3,11]),(8,[0,11]),(11,[0,8]),(4,[2,7])]:
   i=p['slot'];active=bool(n.read(RUNNER+0x4bc+i,'B')[0]);result.append(dict(slot=i,active=active,position=list(n.read(RUNNER+0x58c+i*12,'fff')),velocity=list(n.read(RUNNER+0x61c+i*12,'fff')),age=n.read(RUNNER+0x4cc+i*4,'f')[0] if active else None))
  dispatch_fixtures.append(dict(slots=slots,dt=dt));dispatch_native.append(dict(slots=result,count=n.read(RUNNER+0x494,'I')[0],target=1 if n.read(RUNNER+0x6f8,'I')[0] else None))
 js="""
-import {launchProjectiles,projectileSlots,stepRunnerProjectiles} from './src/projectiles.js';let s='';for await(let x of process.stdin)s+=x;let data=JSON.parse(s);
+import {launchProjectiles,projectileSlots,stepRunnerProjectiles} from './src/projectiles.ts';let s='';for await(let x of process.stdin)s+=x;let data=JSON.parse(s);
 const allocation=data.allocation.map(({slots,missile})=>{let r={id:0,x:0,y:10,z:0,yaw:0,speed:0,weapon:missile?'Missile':null},sim={player:0,runners:[r],projectiles:slots.map(p=>({...p,owner:0,life:1})),emit(){}};launchProjectiles(sim,r,missile);let active=projectileSlots(sim,r);return {slots:active.map(({slot,kind})=>({slot,kind})),count:active.length}});
 const dispatch=data.dispatch.map(({slots,dt})=>{let r={id:0,x:0,y:10,z:0,yaw:0,weapon:null,missileLockTarget:1},sim={runners:[r,{id:1,x:100,y:10,z:-100}],projectiles:slots.map(p=>({...p,owner:0,x:0,y:10,z:0,vx:-90,vy:0,vz:-120,dx:-.6,dy:0,dz:-.8,speed:150,lifetime:p.kind==='Missile'?4:1,life:(p.kind==='Missile'?4:1)-p.age}))};stepRunnerProjectiles(sim,r,dt);return {slots:sim.projectiles.map(p=>({slot:p.slot,active:p.life>0,position:[p.x,p.y,p.z],velocity:[p.vx,p.vy,p.vz],age:p.life>0?p.age:null})),count:sim.projectiles.filter(p=>p.life>0).length,target:r.missileLockTarget}});
 console.log(JSON.stringify({allocation,dispatch}));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(dict(allocation=allocation_fixtures,dispatch=dispatch_fixtures)).encode(),cwd=ROOT));mismatches=[];maxerr=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(dict(allocation=allocation_fixtures,dispatch=dispatch_fixtures)).encode(),cwd=ROOT));mismatches=[];maxerr=0
 for i,(a,b) in enumerate(zip(allocation_native,rebuilt['allocation'])):
  if a!=b:mismatches.append(dict(allocation=i,native=a,rebuild=b))
 for i,(a,b) in enumerate(zip(dispatch_native,rebuilt['dispatch'])):

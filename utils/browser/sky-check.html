@@ -1,15 +1,59 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><title>DeathDrome ceiling light check</title>
-<script type="importmap">{"imports":{"#three":"./vendor/three.module.js"}}</script>
-<style>body{margin:20px;background:#182029;color:#eee;font:15px system-ui}label{margin-right:18px}select{font:inherit}canvas{display:block;width:960px;max-width:100%;aspect-ratio:8/5;margin:16px 0;image-rendering:pixelated;background:#000}canvas.enhanced-graphics{image-rendering:auto}output{display:block}</style>
-<h1>Ceiling light comparison</h1><p>Production arena and textures at a fixed camera pose. Compare the light texture's black edges with the scene background.</p>
-<label>Graphics <select id="graphics"><option value="original">Original</option><option value="enhanced">Enhanced</option></select></label>
-<label>Background <select id="background"><option value="black">Original black</option><option value="previous">Previous tinted background</option></select></label>
-<canvas id="world" aria-label="Ceiling light render"></canvas><output id="status">Loading arena…</output>
-<script type="module">
-import './diagnostic-setup.js';
-import {View,texturesReady} from './renderer.js';
-const canvas=document.querySelector('#world'),view=new View(canvas),graphics=document.querySelector('#graphics'),background=document.querySelector('#background'),status=document.querySelector('#status');
-await view.arena(1);await texturesReady();view.hud=true;view.camera.position.set(160,8,300);view.camera.lookAt(185,63,184);
-function render(){view.setEnhancedGraphics(graphics.value==='enhanced');view.scene.background.set(background.value==='previous'?0x090b10:0x000000);view.draw(0);status.textContent=`${graphics.value.toUpperCase()} · background #${view.scene.background.getHexString()} · ${canvas.width} × ${canvas.height}`}
-graphics.onchange=background.onchange=render;render();
-</script></html>
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>DeathDrome ceiling light check</title>
+  <script type="importmap">
+    { "imports": { "#three": "./vendor/three.module.js" } }
+  </script>
+  <style>
+    body {
+      margin: 20px;
+      background: #182029;
+      color: #eee;
+      font: 15px system-ui;
+    }
+    label {
+      margin-right: 18px;
+    }
+    select {
+      font: inherit;
+    }
+    canvas {
+      display: block;
+      width: 960px;
+      max-width: 100%;
+      aspect-ratio: 8/5;
+      margin: 16px 0;
+      image-rendering: pixelated;
+      background: #000;
+    }
+    canvas.enhanced-graphics {
+      image-rendering: auto;
+    }
+    output {
+      display: block;
+    }
+  </style>
+  <h1>Ceiling light comparison</h1>
+  <p>
+    Production arena and textures at a fixed camera pose. Compare the light
+    texture's black edges with the scene background.
+  </p>
+  <label
+    >Graphics
+    <select id="graphics">
+      <option value="original">Original</option>
+      <option value="enhanced">Enhanced</option>
+    </select></label
+  >
+  <label
+    >Background
+    <select id="background">
+      <option value="black">Original black</option>
+      <option value="previous">Previous tinted background</option>
+    </select></label
+  >
+  <canvas id="world" aria-label="Ceiling light render"></canvas
+  ><output id="status">Loading arena…</output>
+  <script type="module" src="sky-check.js"></script>
+</html>

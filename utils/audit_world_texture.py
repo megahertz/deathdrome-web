@@ -75,8 +75,8 @@ def main():
             n.image(size,axis)
             for i,uv in enumerate(coords):actual[i].append(n.sample(uv))
         for uv,result in zip(coords,actual):samples.append({'size':size,'uv':uv,'native':result})
-    script="""import {registeredTextureCoordinates,nativeTextureTexel} from './src/native-texture.js';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s);console.log(JSON.stringify({world:q.world.map(x=>registeredTextureCoordinates(x.vertices,x).uv),samples:q.samples.map(x=>nativeTextureTexel(x.uv,x.size))}));"""
-    rebuilt=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',script],cwd=ROOT,
+    script="""import {registeredTextureCoordinates,nativeTextureTexel} from './src/native-texture.ts';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s);console.log(JSON.stringify({world:q.world.map(x=>registeredTextureCoordinates(x.vertices,x).uv),samples:q.samples.map(x=>nativeTextureTexel(x.uv,x.size))}));"""
+    rebuilt=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',script],cwd=ROOT,
         input=json.dumps({'world':world,'samples':samples}),text=True,capture_output=True,check=True).stdout)
     errors=[{'kind':'world','case':i} for i,(a,b) in enumerate(zip(world,rebuilt['world'])) if a['native']!=b]
     errors += [{'kind':'sample','case':i,'fixture':a,'rebuilt':b} for i,(a,b) in enumerate(zip(samples,rebuilt['samples'])) if a['native']!=b]
@@ -89,7 +89,7 @@ def main():
             'Raster fixtures have constant UV and reciprocal depth 1. Perspective gradients, edges and clipping are compared separately in texture-spans-native.json and polygon-clipping-native.json. Shaded/keyed spans and whole-scene rasterization are not compared here.',
             'The production change applies to the menu world-registered light floor. Model UV import is verified separately. Complete scene rendering, native transforms, lighting and occlusion remain open.']}
     (ROOT/'private/verification/world-texture-native.json').write_text(json.dumps(report,separators=(',',':'))+'\n')
-    (ROOT/'src/texture-check-fixtures.json').write_text(json.dumps(samples,separators=(',',':'))+'\n')
+    (ROOT/'private/texture-check-fixtures.json').write_text(json.dumps(samples,separators=(',',':'))+'\n')
     print(json.dumps({k:report[k] for k in ['worldCases','worldVertices','texelCases','nativeRasterDraws','mismatches','passed']},indent=2))
     if errors:raise SystemExit(1)
 

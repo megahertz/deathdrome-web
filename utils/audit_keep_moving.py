@@ -69,10 +69,10 @@ def main():
       f['steps'].append(step)
      fixtures.append(f);n.reset(f);native.append([n.step(step) for step in f['steps']])
  js=r"""
-import {Simulation} from './src/simulation.js';import {stepKeepMoving} from './src/keep-moving.js';let input='';for await(const c of process.stdin)input+=c;
+import {Simulation} from './src/simulation.ts';import {stepKeepMoving} from './src/keep-moving.ts';let input='';for await(const c of process.stdin)input+=c;
 console.log(JSON.stringify(JSON.parse(input).map(f=>{const sim=new Simulation({player:f.variant==='unselected'?(f.model+1)%8:f.model,maximumRunners:8}),r=sim.runners[f.model];Object.assign(sim,{multiplayer:f.variant==='multiplayer',invulnerableHuman:f.invulnerable});Object.assign(r,{health:f.health,shield:f.shielded?10:0,lastHitWeaponCode:99,killedByRunner:0xffffffff,profileName:'PRISONER'});sim.keepMovingState.timers[f.model]=f.timer;sim.keepMovingState.positions[f.model]={x:f.previous[0],y:f.previous[1],z:f.previous[2]};sim.keepMovingState.impactVoice=f.voice;return f.steps.map(step=>{sim.events=[];Object.assign(sim,{keepMovingEnabled:step.enabled});Object.assign(r,{x:step.position[0],y:step.position[1],z:step.position[2],collisionProbe:{x:step.probe[0],y:step.probe[1],z:step.probe[2]},yaw:step.yaw*Math.PI/180,lateralSpeed:step.velocity[0],localVerticalSpeed:step.velocity[1],speed:-step.velocity[2],dead:step.active?0:Infinity,inactive:false,movementEnabled:step.movement});stepKeepMoving(sim,r,step.dt);const events=sim.events.flatMap(e=>e.type==='keepMoving'?[{type:'sound',id:74},{type:'message',text:e.text},{type:'sound',id:e.soundId},{type:'impact',point:[e.point.x,e.point.y,e.point.z],enabled:1}]:e.type==='selfKill'?[{type:'message',text:e.text}]:e.type==='paletteFlash'?[{type:e.type,frames:e.frames}]:[]);return {timer:sim.keepMovingState.timers[f.model],previous:Object.values(sim.keepMovingState.positions[f.model]),health:r.health,voice:sim.keepMovingState.impactVoice,velocity:[r.lateralSpeed,r.localVerticalSpeed,-r.speed],killer:r.killedByRunner===0xffffffff?0xffffffff:f.profile,weapon:r.lastHitWeaponCode,events}})})));
 """
- rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures).encode()))
+ rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures).encode()))
  mismatches=[];maxerror=0
  for i,(a,b) in enumerate(zip(native,rebuilt)):
   for j,(x,y) in enumerate(zip(a,b)):

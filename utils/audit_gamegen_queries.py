@@ -53,7 +53,7 @@ def compare(probes,native,rebuild):
 
 
 def rebuild_queries(arena,probes,**options):
-    return json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','utils/scene_query_batch.mjs'],cwd=ROOT,
+    return json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','utils/scene_query_batch.ts'],cwd=ROOT,
         input=json.dumps({'arena':arena,'fixtures':probes,**options}).encode()))
 
 

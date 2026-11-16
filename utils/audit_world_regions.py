@@ -42,8 +42,8 @@ for number,faces in enumerate(data['arenas'],1):
             n.call(0x444bd8,[x,z,bits(output)],eax=world)
             probes.append({'x':x,'z':z,'mask':n.read(output,'I')[0]})
     arenas.append({'arena':number,'colors':colors,'masks':masks,'probes':probes})
-script="""import {WorldRegions} from './src/world-regions.js';let text='';for await(const c of process.stdin)text+=c;console.log(JSON.stringify(JSON.parse(text).map(a=>{const grid=new WorldRegions(a.arena);return {colors:grid.colors,masks:[...grid.masks],probes:a.probes.map(p=>grid.maskAt(p.x,p.z))}})));"""
-rebuilt=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(arenas),text=True,capture_output=True,check=True).stdout)
+script="""import {WorldRegions} from './src/world-regions.ts';let text='';for await(const c of process.stdin)text+=c;console.log(JSON.stringify(JSON.parse(text).map(a=>{const grid=new WorldRegions(a.arena);return {colors:grid.colors,masks:[...grid.masks],probes:a.probes.map(p=>grid.maskAt(p.x,p.z))}})));"""
+rebuilt=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(arenas),text=True,capture_output=True,check=True).stdout)
 mismatches=[]
 for arena,rebuild in zip(arenas,rebuilt):
     if arena['colors']!=rebuild['colors']:mismatches.append({'arena':arena['arena'],'kind':'colors'})

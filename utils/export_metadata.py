@@ -83,5 +83,5 @@ result['secondary']={
 result['recharge']={'rounds':recharge,'respawnSeconds':5,'health':100,'score':500,'sourceFunctions':['0x43d8b8','0x43de04','0x43df44','0x43e014','0x43e324','0x4324e4'],'tableRVA':'0x48f62c'}
 result['scrub']={'initialHeightScale':.05,'heightGrowth':unpack(0x484a56,'f',1)[0],'heightThreshold':unpack(0x484a46,'d',1)[0],'contractionRate':unpack(0x484a4e,'f',1)[0],'finishScale':unpack(0x484a62,'d',1)[0],'farClipFactor':unpack(0x484a52,'f',1)[0],'innerRadius':952.08959,'segments':32,'maximumHeight':82.28,'sourceFunctions':['0x439744','0x439510','0x432550'],'triggerNote':'Ring intersection is currently approximated by its inner regular polygon; verify against the native collider.'}
 (ROOT/'private/assets/game-tables.json').write_text(json.dumps(result,indent=2))
-(ROOT/'src/game-tables.js').write_text('// Generated from the supplied executable by utils/export_metadata.py\nexport const GAME_TABLES = '+json.dumps(result,separators=(',',':'))+';\n')
+(ROOT/'src/game-tables.ts').write_text('// Generated from the supplied executable by utils/export_metadata.py\nexport const GAME_TABLES = '+json.dumps(result,separators=(',',':'))+';\n')
 print('Exported original runner and domain tables')

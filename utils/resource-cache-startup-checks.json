@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-15",
+  "change": "A healthy compatible installation launches from IndexedDB before requesting an original image.",
+  "sourcePolicy": {
+    "default": "Reuse the last installation, including one imported from a local file.",
+    "explicitImage": "Reuse only the same resolved URL; other sources use image import.",
+    "nocache": "Skip cache reads and import the image again.",
+    "missingOrIncomplete": "Use the normal image/chooser path.",
+    "matchingImageBytes": "Keep resources and remember the new source URL."
+  },
+  "validation": {
+    "javascriptTests": 406,
+    "browserLegacyDefaultCache": true,
+    "browserForcedDemoImport": true,
+    "browserSavedDemoCache": true,
+    "browserNewUrlImport": true,
+    "browserNewUrlRepeatCache": true,
+    "browserErrors": 0,
+    "checksWithoutReadingBlobs": true
+  },
+  "limits": [
+    "Browser storage can still be removed by the browser or user; this change does not request persistent-storage permission.",
+    "Browser installation check used the local demo ZIP."
+  ],
+  "evidence": "private/verification/resource-cache-startup/"
+}

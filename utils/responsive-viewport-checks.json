@@ -11,18 +11,9 @@
     "liveBrowser": {
       "source": "local demo ZIP",
       "enhancedViewports": [
-        [
-          1280,
-          720
-        ],
-        [
-          1720,
-          720
-        ],
-        [
-          844,
-          390
-        ]
+        [1280, 720],
+        [1720, 720],
+        [844, 390]
       ],
       "stageFilledEachViewport": true,
       "geometryAspectUnitChecks": true,
@@ -30,37 +21,19 @@
       "hudAndNoticesRetainPixelArt": true,
       "webGLErrors": 0,
       "originalRestored": {
-        "viewport": [
-          844,
-          390
-        ],
-        "stage": [
-          624,
-          390
-        ],
+        "viewport": [844, 390],
+        "stage": [624, 390],
         "stageLeft": 110,
-        "worldCanvas": [
-          320,
-          200
-        ],
-        "hudCanvas": [
-          640,
-          400
-        ]
+        "worldCanvas": [320, 200],
+        "hudCanvas": [640, 400]
       }
     },
     "touchFixture": {
-      "landscape": [
-        844,
-        390
-      ],
+      "landscape": [844, 390],
       "topScale": 1.625,
       "bottomScale": 1.5015625,
       "controlClearancePixels": 4,
-      "portrait": [
-        390,
-        844
-      ],
+      "portrait": [390, 844],
       "portraitDashboardRaisedAbovePads": true
     },
     "unitCoverage": [

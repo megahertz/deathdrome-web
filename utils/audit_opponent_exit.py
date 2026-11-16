@@ -34,7 +34,7 @@ for f in fixtures:
  n.call(0x434e9c,args=[0.,0.,0.],eax=RUNNER,ebx=SCRATCH)
  native.append(dict(started='visual' in events,events=events,mode=n.read(RUNNER+8,'B')[0],savedGoalColor=n.read(RUNNER+0x440,'I')[0],counts=list(n.read(0x518a78,'IIIII'))))
 js=r"""
-import {Simulation} from './src/simulation.js';import {beginOpponentExit} from './src/escape.js';
+import {Simulation} from './src/simulation.ts';import {beginOpponentExit} from './src/escape.ts';
 let fixtures=JSON.parse(await new Promise(resolve=>{let s='';process.stdin.on('data',x=>s+=x);process.stdin.on('end',()=>resolve(s))}));
 console.log(JSON.stringify(fixtures.map(f=>{let sim=new Simulation(),r=sim.runners[1],events=[];sim.time=f.time;sim.aiRouteCounts=[0,2,2,0,0];
  Object.assign(r,{x:f.x,y:f.y,z:0,kills:f.kills,navigation:{goalColor:40,routeIndex:1,segment:{startNode:0}}});
@@ -43,7 +43,7 @@ console.log(JSON.stringify(fixtures.map(f=>{let sim=new Simulation(),r=sim.runne
  if(started){if(f.replacement)events.push('materialize');events.push('visual')}
  return {started,events,mode:started?4:1,savedGoalColor:r.savedGoalColor??r.navigation.goalColor,counts:sim.aiRouteCounts};
 })));"""
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT))
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT))
 mismatches=[dict(fixture=i,native=a,rebuild=b) for i,(a,b) in enumerate(zip(native,rebuilt)) if a!=b]
 budget_fixtures=[dict(goal=goal,counts=counts,round=round,replacement=replacement) for goal,counts,round,replacement in [
  (40,[0,2,2,0,0],1,True),(12,[0,2,2,0,0],1,True),(0,[0,2,2,0,0],1,True),
@@ -62,12 +62,12 @@ for f in budget_fixtures:
  n.call(0x433b2c,eax=RUNNER)
  native_budgets.append(dict(counts=list(n.read(0x518a78,'iiiii')),nextGoal=n.read(NEXT+0x440,'I')[0] if 'materialize' in calls else None,calls=calls))
 budget_js=r"""
-import {Simulation} from './src/simulation.js';import {GAME_TABLES} from './src/game-tables.js';
+import {Simulation} from './src/simulation.ts';import {GAME_TABLES} from './src/game-tables.ts';
 let fixtures=JSON.parse(await new Promise(resolve=>{let s='';process.stdin.on('data',x=>s+=x);process.stdin.on('end',()=>resolve(s))}));
 console.log(JSON.stringify(fixtures.map(f=>{let sim=new Simulation({round:f.round}),r=sim.runners[1],calls=[];sim.aiRouteCounts=[...f.counts];r.navigation={goalColor:f.goal,routeIndex:1,segment:{startNode:0}};
  sim.population.nextInactive=()=>{calls.push('scan');return f.replacement?sim.runners[5]:null};let next=sim.population.replace(r);if(next)calls.push('materialize');
  return {counts:sim.aiRouteCounts,nextGoal:next?GAME_TABLES.ai.navigation.routeColors[next.respawn.routeIndex]:null,calls};})));"""
-rebuilt_budgets=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',budget_js],input=json.dumps(budget_fixtures).encode(),cwd=ROOT))
+rebuilt_budgets=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',budget_js],input=json.dumps(budget_fixtures).encode(),cwd=ROOT))
 budget_mismatches=[dict(fixture=i,native=a,rebuild=b) for i,(a,b) in enumerate(zip(native_budgets,rebuilt_budgets)) if a!=b]
 report=dict(scope='Controlled single-player AI exit eligibility and dispatch comparison against original x86. Synthetic profile/exitspot and visual/cleanup stubs; not a native rendered exit.',
  emulator='Unicorn '+unicorn_version,executable=str(EXE.relative_to(ROOT)),sha256=hashlib.sha256(EXE.read_bytes()).hexdigest(),

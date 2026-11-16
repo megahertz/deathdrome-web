@@ -19,14 +19,14 @@ for fixture in fixtures:
         if label['x']==225 and label['y']==125)
     native.append({'score':result['score'],'lives':result['lives'],'credits':int(credit)})
 js="""
-import {Simulation} from './src/simulation.js';
+import {Simulation} from './src/simulation.ts';
 let input='';for await(const b of process.stdin)input+=b;
 console.log(JSON.stringify(JSON.parse(input).map(f=>{const sim=new Simulation();sim.score=f.score;sim.lives=f.lives;
  const before=sim.lives;sim.addScore(f.kills*1000);sim.addScore(Math.max(0,Math.trunc(f.time))*10);
  return {score:sim.score,lives:sim.lives,credits:Math.max(0,sim.lives-before)};
 })));
 """
-rebuild=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures).encode()))
+rebuild=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures).encode()))
 mismatches=[{'fixture':i,'native':a,'rebuild':b} for i,(a,b) in enumerate(zip(native,rebuild)) if a!=b]
 report={'scope':__doc__,'sha256':hashlib.sha256(EXE.read_bytes()).hexdigest(),'fixtures':fixtures,
     'native':native,'rebuild':rebuild,'mismatches':mismatches,'passed':not mismatches}

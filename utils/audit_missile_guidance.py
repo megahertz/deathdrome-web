@@ -18,9 +18,9 @@ undefined_branch=[]
 for seed in [[1,2,3],[4,5,6]]:
  n=Native();target=RUNNER+0x2000;n.write(RUNNER+0x6f8,'I',target);n.write(target+0x2c,'fff',50,10,-100);n.write(RUNNER+0x58c,'fff',0,10,0);n.write(RUNNER+0x61c,'fff',0,0,-150);n.write(0x49064c,'f',f32(1/60));n.write(STACK-112,'fff',*seed);n.cpu.mem_write(0x45a5fc,b'\xc2\x0c\x00');n.call(0x436388,eax=RUNNER,edx=0);undefined_branch.append(dict(localStackSeed=seed,velocity=list(n.read(RUNNER+0x61c,'fff'))))
 js="""
-import {steerMissile} from './src/projectiles.js';let s='';for await(let x of process.stdin)s+=x;console.log(JSON.stringify(JSON.parse(s).map(({p,target,dt})=>{steerMissile(p,target,dt);return {velocity:[p.vx,p.vy,p.vz],...p.steering}})));
+import {steerMissile} from './src/projectiles.ts';let s='';for await(let x of process.stdin)s+=x;console.log(JSON.stringify(JSON.parse(s).map(({p,target,dt})=>{steerMissile(p,target,dt);return {velocity:[p.vx,p.vy,p.vz],...p.steering}})));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));maxerr=0;mismatches=[]
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));maxerr=0;mismatches=[]
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  err=max([abs(x-y) for x,y in zip(a['velocity'],b['velocity'])]+[abs(a[k]-b[k]) for k in ['yawDelta','pitchDelta']]);maxerr=max(maxerr,err)
  if err>0.00004:mismatches.append(dict(fixture=i,error=err,native=a,rebuild=b))

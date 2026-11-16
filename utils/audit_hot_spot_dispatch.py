@@ -69,7 +69,7 @@ for original in source:
         n.call(0x431280, eax=RUNNER)
         native.append(copy.deepcopy(trace))
 js = """
-import {stepCollisionSweep} from './src/collision-sweep.js';
+import {stepCollisionSweep} from './src/collision-sweep.ts';
 let input='';for await(const b of process.stdin)input+=b;
 console.log(JSON.stringify(JSON.parse(input).map(f=>{
  const r=f.r,trace=[];let count=0;
@@ -79,7 +79,7 @@ console.log(JSON.stringify(JSON.parse(input).map(f=>{
  return trace;
 })));
 """
-rebuild = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js', '--input-type=module', '-e', js],
+rebuild = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts', '--input-type=module', '-e', js],
     input=json.dumps(fixtures).encode(), cwd=ROOT))
 mismatches, maximum = [], 0
 for i, (a, b) in enumerate(zip(native, rebuild)):

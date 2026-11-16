@@ -8,8 +8,8 @@ from pathlib import Path
 from PIL import Image,ImageDraw
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'private/verification/video'
-js="""import {hudCommands} from './src/hud.js';const sim={player:6,arena:1,round:1,score:0,lives:3,time:296.2,requiredKills:2,runners:Array.from({length:8},(_,id)=>({id,health:id===6?98:100,kills:0,weapons:[null],selectedWeapon:0,inactive:id>3&&id!==6}))};console.log(JSON.stringify(hudCommands(sim,6)));"""
-commands=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],cwd=ROOT))
+js="""import {hudCommands} from './src/hud.ts';const sim={player:6,arena:1,round:1,score:0,lives:3,time:296.2,requiredKills:2,runners:Array.from({length:8},(_,id)=>({id,health:id===6?98:100,kills:0,weapons:[null],selectedWeapon:0,inactive:id>3&&id!==6}))};console.log(JSON.stringify(hudCommands(sim,6)));"""
+commands=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],cwd=ROOT))
 mask=Image.new('L',(640,400));glyphs='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,-_!?<>/"=| *'
 for c in commands:
  if c['kind']=='image':

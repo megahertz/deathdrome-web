@@ -62,8 +62,8 @@ def main():
             'nativeFrameHashes':[hashlib.sha256(image).hexdigest(),hashlib.sha256(image_y).hexdigest()]}
         fixtures.append(fixture)
         if i in [4,7,44]:browser_fixtures.append({k:v for k,v in fixture.items() if k not in ['native','rows']}|{'nativePixels':[base64.b64encode(image).decode(),base64.b64encode(image_y).decode()]})
-    js="""import {texturePolygonRows,texturePolygonCommands,drawIndexedTexturePolygon} from './src/texture-spans.js';import {createHash} from 'node:crypto';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s);console.log(JSON.stringify(q.map(f=>{const hashes=[0,1].map(axis=>{const target=new Uint8Array(320*200).fill(255),[width,height]=f.size,pixels=Uint8Array.from({length:width*height},(_,i)=>axis?Math.floor(i/width)%256:i%width%256);drawIndexedTexturePolygon(target,320,f.vertices,{width,height,pixels},f);return createHash('sha256').update(target).digest('hex')});return {rows:texturePolygonRows(f.vertices),commands:texturePolygonCommands(f.vertices,f.size,f),hashes}})));"""
-    rebuilt=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures),text=True,capture_output=True,check=True).stdout)
+    js="""import {texturePolygonRows,texturePolygonCommands,drawIndexedTexturePolygon} from './src/texture-spans.ts';import {createHash} from 'node:crypto';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s);console.log(JSON.stringify(q.map(f=>{const hashes=[0,1].map(axis=>{const target=new Uint8Array(320*200).fill(255),[width,height]=f.size,pixels=Uint8Array.from({length:width*height},(_,i)=>axis?Math.floor(i/width)%256:i%width%256);drawIndexedTexturePolygon(target,320,f.vertices,{width,height,pixels},f);return createHash('sha256').update(target).digest('hex')});return {rows:texturePolygonRows(f.vertices),commands:texturePolygonCommands(f.vertices,f.size,f),hashes}})));"""
+    rebuilt=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures),text=True,capture_output=True,check=True).stdout)
     errors=[];edge_errors=[];pixel_errors=[];fields=0
     for i,(fixture,result) in enumerate(zip(fixtures,rebuilt)):
         actual=result['commands']
@@ -80,7 +80,7 @@ def main():
         'comparedFrameBytes':len(fixtures)*2*320*200,'frameMismatchCount':len(pixel_errors),'frameMismatches':pixel_errors[:10],'passed':not errors and not edge_errors and not pixel_errors,
         'limits':['Unclipped convex projected polygons are compared. Depth/priority occlusion, window and near clipping, production scene integration and shaded/keyed writes remain unfinished.']}
     (ROOT/'private/verification/texture-spans-native.json').write_text(json.dumps(report,separators=(',',':'))+'\n')
-    (ROOT/'src/span-check-fixtures.json').write_text(json.dumps(browser_fixtures,separators=(',',':'))+'\n')
+    (ROOT/'private/span-check-fixtures.json').write_text(json.dumps(browser_fixtures,separators=(',',':'))+'\n')
     print(json.dumps({k:report[k] for k in ['cases','commands','mismatchCount','mismatches','edgeMismatchCount','edgeMismatches','comparedFrameBytes','frameMismatchCount','frameMismatches','passed']},indent=2))
     if errors or edge_errors or pixel_errors:raise SystemExit(1)
 

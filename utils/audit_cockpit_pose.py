@@ -15,11 +15,11 @@ for f in fixtures:
  out=SCRATCH+0x400;pointer=struct.unpack('<f',struct.pack('<I',out))[0];n.call(0x457764,[f['fold'],f['yaw'],roll,pointer],ecx=12)
  native.append(dict(roll=roll,angles=angles,basis=list(n.read(out,'9f'))))
 js="""
-import {cockpitRollDegrees} from './src/runner-pose.js';import {runnerAttachmentMatrix} from './src/renderer.js';
+import {cockpitRollDegrees} from './src/runner-pose.ts';import {runnerAttachmentMatrix} from './src/renderer.ts';
 let fixtures=JSON.parse(await new Promise(resolve=>{let s='';process.stdin.on('data',x=>s+=x);process.stdin.on('end',()=>resolve(s))}));
 console.log(JSON.stringify(fixtures.map(f=>{let roll=cockpitRollDegrees(f.turn*Math.PI/180),data={attachments:Object.fromEntries(['yaw','chassis','cockpit'].map(k=>[k,{matrix:[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]}]))},r={id:0,x:0,y:0,z:0,yaw:f.yaw*Math.PI/180,turn:f.turn*Math.PI/180},e={runner:0,foldDegrees:f.fold,cockpitRollDegrees:roll},m=runnerAttachmentMatrix(data,r,'cockpit',e).elements;return {roll,angles:[0,0,roll],basis:[m[0],m[1],m[2],m[4],m[5],m[6],m[8],m[9],m[10]]}})));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  err=max([abs(a['roll']-b['roll'])]+[abs(x-y) for k in ['angles','basis'] for x,y in zip(a[k],b[k])]);maxerr=max(maxerr,err)
  if err>1e-6:mismatches.append(dict(fixture=i,native=a,rebuild=b,error=err))

@@ -58,7 +58,7 @@ def main():
         native.append([n.query(q['kind'], **{k: v for k, v in q.items() if k != 'kind'}) for q in fixture['queries']])
         del n
         gc.collect()
-    rebuilt = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js', 'utils/scene_order_batch.mjs'], cwd=ROOT,
+    rebuilt = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts', 'utils/scene_order_batch.ts'], cwd=ROOT,
         input=json.dumps(cases).encode()))
     mismatches, maximum = [], 0
     def compare(a, b, path):

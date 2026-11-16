@@ -19,8 +19,8 @@ for case in fixtures:
     lo,hi=case['min'],case['max']
     n.call(0x444418,[lo[0],hi[0],lo[2],hi[2],bits(n.output),bits(n.output+4)],eax=n.world,edx=node)
     cell=list(n.read(n.output,'2i'));native.append(None if cell==[-1,-1] else cell)
-script="""import {worldPartition} from './src/world-partition.js';let s='';for await(const c of process.stdin)s+=c;console.log(JSON.stringify(JSON.parse(s).map(c=>worldPartition(c.min.map(Math.fround),c.max.map(Math.fround)))));"""
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(fixtures).encode()))
+script="""import {worldPartition} from './src/world-partition.ts';let s='';for await(const c of process.stdin)s+=c;console.log(JSON.stringify(JSON.parse(s).map(c=>worldPartition(c.min.map(Math.fround),c.max.map(Math.fround)))));"""
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(fixtures).encode()))
 mismatches=[{'case':i,'native':a,'rebuild':b} for i,(a,b) in enumerate(zip(native,rebuilt)) if a!=b]
 report={'scope':'Original 444418 cell selection and three-unit fit margin, original World constructor/SETUP settings; input bounds are supplied from source metadata and synthetic boundary cases. Full node bounds construction is verified separately by native GameGen loading.',
     'sha256':hashlib.sha256(EXE.read_bytes()).hexdigest(),'fixtures':fixtures,'native':native,

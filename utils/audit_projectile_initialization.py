@@ -37,8 +37,8 @@ for fixture in fixtures:
  slots=[dict(slot=i,position=list(n.read(RUNNER+0x58c+i*12,'fff')),velocity=list(n.read(RUNNER+0x61c+i*12,'fff')),age=n.read(RUNNER+0x4cc+i*4,'f')[0]) for i in range(count)]
  native.append(dict(before=before,slots=slots,cells=list(n.read(RUNNER+0x498,'4I')),count=n.read(RUNNER+0x4ac,'I')[0],selected=n.read(RUNNER+0x4a8,'I')[0],side=n.read(RUNNER+0x6dc,'I')[0],target=1 if n.read(RUNNER+0x6f8,'I')[0] else None,sounds=list(sounds)))
 js="""
-import {queueProjectiles,stepRunnerProjectiles} from './src/projectiles.js';
-import {inventoryCells,selectInventoryWeapon} from './src/inventory.js';
+import {queueProjectiles,stepRunnerProjectiles} from './src/projectiles.ts';
+import {inventoryCells,selectInventoryWeapon} from './src/inventory.ts';
 let s='';for await(let x of process.stdin)s+=x;console.log(JSON.stringify(JSON.parse(s).map(f=>{
  let events=[],r={id:0,x:0,y:0,z:0,yaw:0,speed:0,weaponCells:[4,1,5,6],weapons:[null,'Missile','Ion Sword','NanoShield'],selectedWeapon:f.missile?1:0,muzzleSide:f.side,missileLockTarget:1},q={id:1,x:f.behind?100:-20,y:10,z:f.behind?140:-20},sim={player:f.human?0:1,runners:[r,q],projectiles:[],emit(type,data){events.push({type,...data})}};selectInventoryWeapon(r);
  for(let i=0;i<f.presses;i++)queueProjectiles(sim,r,f.missile);
@@ -47,7 +47,7 @@ let s='';for await(let x of process.stdin)s+=x;console.log(JSON.stringify(JSON.p
  return {before,slots:sim.projectiles.map(p=>({slot:p.slot,position:[p.x,p.y,p.z],velocity:[p.vx,p.vy,p.vz],age:p.age})),cells:[...inventoryCells(r)],count:r.weapons.length,selected:r.selectedWeapon,side:r.muzzleSide,target:r.missileLockTarget,sounds:sounds()};
 })));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  for key in ['before','cells','count','selected','side','target','sounds']:
   if a[key]!=b[key]:mismatches.append(dict(fixture=i,field=key,native=a[key],rebuild=b[key]))

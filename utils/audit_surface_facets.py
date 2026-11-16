@@ -26,8 +26,8 @@ for polygon,face in enumerate(faces):
     hit=bool(n.call(0x46bb8c,[bits(len(v)),bits(int(two))],eax=RUNNER+0x800,edx=RUNNER+0x900,ebx=RUNNER+0x920,ecx=RUNNER)&255)
     fixtures.append({'polygon':polygon,'from':dict(zip('xyz',a)),'to':dict(zip('xyz',b)),'twoSided':two})
     native.append({'normal':dict(zip('xyz',n.read(RUNNER+0x800,'fff'))),'point':dict(zip('xyz',n.read(RUNNER+0x80c,'fff')))} if hit else None)
-script="""import {prepareFacet,intersectFacet} from './src/scene-facets.js';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s),facets=q.polygons.map(p=>[prepareFacet(p.vertices,false),prepareFacet(p.vertices,true)]);console.log(JSON.stringify(q.fixtures.map(f=>intersectFacet(facets[f.polygon][+f.twoSided],f.from,f.to))));"""
-rebuild=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',script],cwd=ROOT,input=json.dumps({'polygons':polygons,'fixtures':fixtures}),text=True,capture_output=True,check=True).stdout)
+script="""import {prepareFacet,intersectFacet} from './src/scene-facets.ts';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s),facets=q.polygons.map(p=>[prepareFacet(p.vertices,false),prepareFacet(p.vertices,true)]);console.log(JSON.stringify(q.fixtures.map(f=>intersectFacet(facets[f.polygon][+f.twoSided],f.from,f.to))));"""
+rebuild=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',script],cwd=ROOT,input=json.dumps({'polygons':polygons,'fixtures':fixtures}),text=True,capture_output=True,check=True).stdout)
 mismatches=[];maximum=0
 for i,(a,b) in enumerate(zip(native,rebuild)):
  error=max(abs(a[k][axis]-b[k][axis]) for k in ['normal','point'] for axis in 'xyz') if a and b else 0;maximum=max(maximum,error)

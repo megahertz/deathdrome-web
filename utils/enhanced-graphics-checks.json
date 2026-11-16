@@ -22,14 +22,8 @@
       "checkboxSpace": true,
       "checkboxEnter": true,
       "restoredAfterReload": true,
-      "nativeCanvas": [
-        320,
-        200
-      ],
-      "enhancedCanvas": [
-        1920,
-        1200
-      ],
+      "nativeCanvas": [320, 200],
+      "enhancedCanvas": [1920, 1200],
       "hudImageRendering": "pixelated",
       "runnerPreviewRendered": true,
       "gameplayRendered": true,

@@ -1,11 +1,11 @@
 """Verify the exact file inventory and hashes of a publication build."""
 from pathlib import Path
 import argparse,hashlib,json,zipfile,re
-from build_static import ROOT,public_files
+from build_static import ROOT,public_files,engine_files
 
 def check_dist(directory):
     directory=Path(directory).resolve();manifest=json.loads((directory/'build-manifest.json').read_text())
-    expected={p.name for p in (ROOT/'src').iterdir() if p.is_file()}|set(public_files())
+    expected=set(engine_files())|set(public_files())
     actual={str(p.relative_to(directory)) for p in directory.rglob('*') if p.is_file()}
     assert actual==expected|{'build-manifest.json'},'Unexpected/missing distribution files'
     assert set(manifest['files'])==expected,'Build manifest inventory differs'

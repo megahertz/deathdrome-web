@@ -26,8 +26,8 @@ def main():
         n.write(0x95cb58+1,'B',int(identity));n.write(0x95cb80+48,'12f',*matrix);n.write(points,'f'*(count*3),*(x for p in vertices for x in p))
         n.call(0x458930,eax=points,edx=out,ebx=count)
         transforms.append({'vertices':vertices,'matrix':matrix,'identity':identity,'native':[list(n.read(out+j*12,'3f')) for j in range(count)]})
-    js="""import {nativePolygonFacing,transformNativePoints} from './src/native-geometry.js';let input='';for await(const c of process.stdin)input+=c;const q=JSON.parse(input);console.log(JSON.stringify({facing:q.facing.map(f=>nativePolygonFacing(f.vertices,f.twoSided)),transforms:q.transforms.map(f=>transformNativePoints(f.vertices,f.matrix,f))}));"""
-    actual=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],cwd=ROOT,input=json.dumps({'facing':facing,'transforms':transforms}),text=True,capture_output=True,check=True).stdout)
+    js="""import {nativePolygonFacing,transformNativePoints} from './src/native-geometry.ts';let input='';for await(const c of process.stdin)input+=c;const q=JSON.parse(input);console.log(JSON.stringify({facing:q.facing.map(f=>nativePolygonFacing(f.vertices,f.twoSided)),transforms:q.transforms.map(f=>transformNativePoints(f.vertices,f.matrix,f))}));"""
+    actual=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],cwd=ROOT,input=json.dumps({'facing':facing,'transforms':transforms}),text=True,capture_output=True,check=True).stdout)
     errors=[]
     for kind,fixtures in [('facing',facing),('transforms',transforms)]:
         for i,(fixture,got) in enumerate(zip(fixtures,actual[kind])):

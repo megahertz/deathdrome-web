@@ -37,11 +37,11 @@ for f in fixtures:
   if not active[0]:break
  native.append(samples)
 js="""
-import {beginEntrance,stepEntrance} from './src/entrance.js';
+import {beginEntrance,stepEntrance} from './src/entrance.ts';
 let fixtures=JSON.parse(await new Promise(resolve=>{let s='';process.stdin.on('data',x=>s+=x);process.stdin.on('end',()=>resolve(s))}));
 console.log(JSON.stringify(fixtures.map(f=>{let events=[],s={player:0,runners:[{id:0,x:f.position[0],y:10,z:f.position[2],yaw:f.yaw*Math.PI/180}],time:307.1,emit(type,e){if(type==='countdown')events.push(e.number)}};beginEntrance(s);let out=[];for(let i=0;i<f.frames;i++){stepEntrance(s,f.dt);let e=s.entrance,c=e.active?e.cameraLocal:e.camera;out.push({active:e.active,elapsed:e.elapsed,height:e.height,yaw:e.yawDegrees,cameraStage:e.cameraStage,cameraPosition:[c.x,c.y,c.z],cameraAngles:[e.cameraAngles.pitchDegrees,e.cameraAngles.yawDegrees,e.cameraAngles.rollDegrees],events:[...events]});if(!e.active)break}return out})));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT))
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT))
 mismatches=[];maxerr=0
 for i,(ns,rs) in enumerate(zip(native,rebuilt)):
  if len(ns)!=len(rs):mismatches.append(dict(fixture=i,lengths=[len(ns),len(rs)]))

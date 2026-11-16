@@ -45,8 +45,8 @@ def main():
             hits.append(choices[(case+i)%6])
         runners[actor]={'id':actor,**dict(zip('xyz',origin))};hits[actor]=[]
         fixture={'actor':actor,'radiusSquared':radius,'runners':runners,'hits':hits};fixture['native']=n.run(fixture);fixtures.append(fixture)
-    js="""import {acquireAITarget} from './src/ai-actions.js';let input='';for await(const c of process.stdin)input+=c;console.log(JSON.stringify(JSON.parse(input).map(f=>{const queries=[],sim={runners:f.runners,sceneContacts(a,b,r,q){queries.push({candidate:q.id,ray:[a.x,a.y,a.z,b.x,b.y,b.z]});return f.hits[q.id]}};return {target:acquireAITarget(sim,sim.runners[f.actor],f)?.id??null,queries}})));"""
-    actual=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures),text=True,capture_output=True,check=True).stdout)
+    js="""import {acquireAITarget} from './src/ai-actions.ts';let input='';for await(const c of process.stdin)input+=c;console.log(JSON.stringify(JSON.parse(input).map(f=>{const queries=[],sim={runners:f.runners,sceneContacts(a,b,r,q){queries.push({candidate:q.id,ray:[a.x,a.y,a.z,b.x,b.y,b.z]});return f.hits[q.id]}};return {target:acquireAITarget(sim,sim.runners[f.actor],f)?.id??null,queries}})));"""
+    actual=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures),text=True,capture_output=True,check=True).stdout)
     errors=[{'case':i,'expected':f['native'],'actual':got} for i,(f,got) in enumerate(zip(fixtures,actual)) if f['native']!=got]
     report={'scope':__doc__,'executableSha256':hashlib.sha256(EXE.read_bytes()).hexdigest(),'cases':len(fixtures),'nativeRayQueries':sum(len(f['native']['queries']) for f in fixtures),'mismatchCount':len(errors),'mismatches':errors[:8],'passed':not errors,'fixtures':fixtures}
     (ROOT/'private/verification/ai-targeting-native.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:report[k] for k in ['cases','nativeRayQueries','mismatchCount','mismatches','passed']},indent=2))

@@ -1,0 +1,23 @@
+{
+  "extends": "@megahertz/oxconfig/tsconfig",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2024", "DOM", "DOM.Iterable", "WebWorker"],
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src/**/*.ts", "utils/**/*.ts", "types/**/*.d.ts", "*.config.ts"],
+  "exclude": [
+    "public",
+    "private",
+    "dist",
+    ".build",
+    "node_modules",
+    "utils/unshieldv3-master"
+  ]
+}

@@ -83,10 +83,10 @@ for fixture in fixtures:
         attackCollisions=n.read(RUNNER+0x228,'I')[0],current=n.node_id(node),queries=queries))
 
 js = r"""
-import {Simulation} from './src/simulation.js';
-import {routeSegment,stepNavigation} from './src/ai-navigation.js';
-import {stepAIAttack} from './src/ai-actions.js';
-import {GAME_TABLES} from './src/game-tables.js';
+import {Simulation} from './src/simulation.ts';
+import {routeSegment,stepNavigation} from './src/ai-navigation.ts';
+import {stepAIAttack} from './src/ai-actions.ts';
+import {GAME_TABLES} from './src/game-tables.ts';
 let data=JSON.parse(await new Promise(resolve=>{let s='';process.stdin.on('data',x=>s+=x);process.stdin.on('end',()=>resolve(s))}));
 let results=data.fixtures.map(f=>{
  let sim=new Simulation({paths:data.graph,maximumRunners:1}),r=sim.runners[1],q=sim.runners[0],queries=[],randomCalls=0;sim.countdown=0;
@@ -107,7 +107,7 @@ let results=data.fixtures.map(f=>{
  alignment:r.aiState.mode==='recover'?[r.navigation.alignment.x,r.navigation.alignment.z]:null,recoverUntil:r.aiState.recoverUntil,jumpAt:r.aiState.jumpAt,jumpRequests:r.aiState.pendingJump?1:0,randomCalls,attackCollisions:r.navigation.attackCollisions,current:r.navigation.segment.startNode,queries};
 });console.log(JSON.stringify(results));
 """
-rebuilt = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(dict(graph=GRAPH,fixtures=fixtures)).encode(),cwd=ROOT))
+rebuilt = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(dict(graph=GRAPH,fixtures=fixtures)).encode(),cwd=ROOT))
 discrete, errors = [], []
 for i,(a,b) in enumerate(zip(native_results,rebuilt)):
     for key in a:

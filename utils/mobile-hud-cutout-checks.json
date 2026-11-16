@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-15",
+  "changes": [
+    "HUD panels span the complete viewport width, independently of horizontal cutout insets.",
+    "Vertical system insets and reticle safe areas remain in use.",
+    "FIRE overlaps the visible dashboard top at source row 156 by 8 CSS pixels; its decorative transparent band starts at row 137."
+  ],
+  "validation": {
+    "javascriptTests": 398,
+    "browserViewports": [
+      [772, 360],
+      [740, 340],
+      [360, 772]
+    ],
+    "simulatedCutoutPixels": 32,
+    "cutoutSides": ["left", "right"],
+    "hudX": 0,
+    "hudWidthEqualsViewport": true,
+    "fireVisibleDashboardOverlapPixels": 8,
+    "renderErrors": 0
+  },
+  "evidence": "private/verification/mobile-hud-cutout/",
+  "limits": [
+    "The test browser refused the native fullscreen API request (not granted). Viewport dimension changes and cutout insets were exercised using the production layout.",
+    "Physical-phone fullscreen transitions were not exercised."
+  ]
+}

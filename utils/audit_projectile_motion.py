@@ -22,13 +22,13 @@ for fixture in fixtures:
  else:raise RuntimeError('Projectile never expired')
  native.append(samples)
 js="""
-import {launchProjectiles,stepProjectileMotion} from './src/projectiles.js';let s='';for await(let x of process.stdin)s+=x;
+import {launchProjectiles,stepProjectileMotion} from './src/projectiles.ts';let s='';for await(let x of process.stdin)s+=x;
 console.log(JSON.stringify(JSON.parse(s).map(({r,missile,dt})=>{
  let sim={player:0,runners:[r],projectiles:Array.from({length:11},()=>({owner:0,kind:'Laser',life:1})),emit(){}};launchProjectiles(sim,r,missile);let p=sim.projectiles.at(-1),out=[];
  for(let frame=1;frame<=1000;frame++){stepProjectileMotion(p,dt);let active=p.life>0;out.push({frame,position:[p.x,p.y,p.z],velocity:[p.vx,p.vy,p.vz],age:active?p.age:null,active});if(!active)break;}return out;
 })));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));maxerr=0;mismatches=[];fields=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));maxerr=0;mismatches=[];fields=0
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  if len(a)!=len(b):mismatches.append(dict(fixture=i,nativeFrames=len(a),rebuildFrames=len(b)))
  for j,(x,y) in enumerate(zip(a,b)):

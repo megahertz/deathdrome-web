@@ -1,9 +1,65 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><title>DeathDrome UI verification</title>
-<style>body{background:#13191e;color:#d5dce0;font:14px monospace;margin:24px}canvas{display:block;width:640px;height:400px;image-rendering:pixelated;background:#000;margin:16px 0}button,select{font:inherit;margin:4px;padding:8px}p{max-width:800px}</style>
-<h1>DeathDrome — UI verification</h1><p>Shared production HUD, bitmap fonts and results renderer. Supplied values match the downloaded video at 01:50, 03:15 and 04:39; this is a presentation fixture, not an original gameplay trace.</p>
-<label>Screen <select id="screen"><option value="hud">HUD — 01:50</option><option value="messages">Kill / advance messages</option><option value="inventory">HUD — full inventory and keys</option><option value="warning">Warning HUD — 03:15</option><option value="reticle">HUD — target lock</option><option value="regions">HUD — original room regions</option><option value="results">Round results — 04:39</option></select></label>
-<button id="scale">Toggle display scale</button><button id="reset">Reset keyboard check</button><button id="target">Move lock target</button>
-<button id="region-target">Move opponent between regions</button>
-<canvas id="ui" width="640" height="400" tabindex="0" aria-label="Production HUD fixture"></canvas><p id="status" role="status">Ready.</p>
-<p>Results: any fresh key or click continues once; held-key repeats are ignored. HUD: arrows and WASD drive, Q is rear view.</p>
-<script type="module" src="ui-verification.js"></script></html>
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>DeathDrome UI verification</title>
+  <style>
+    body {
+      background: #13191e;
+      color: #d5dce0;
+      font: 14px monospace;
+      margin: 24px;
+    }
+    canvas {
+      display: block;
+      width: 640px;
+      height: 400px;
+      image-rendering: pixelated;
+      background: #000;
+      margin: 16px 0;
+    }
+    button,
+    select {
+      font: inherit;
+      margin: 4px;
+      padding: 8px;
+    }
+    p {
+      max-width: 800px;
+    }
+  </style>
+  <h1>DeathDrome — UI verification</h1>
+  <p>
+    Shared production HUD, bitmap fonts and results renderer. Supplied values
+    match the downloaded video at 01:50, 03:15 and 04:39; this is a presentation
+    fixture, not an original gameplay trace.
+  </p>
+  <label
+    >Screen
+    <select id="screen">
+      <option value="hud">HUD — 01:50</option>
+      <option value="messages">Kill / advance messages</option>
+      <option value="inventory">HUD — full inventory and keys</option>
+      <option value="warning">Warning HUD — 03:15</option>
+      <option value="reticle">HUD — target lock</option>
+      <option value="regions">HUD — original room regions</option>
+      <option value="results">Round results — 04:39</option>
+    </select></label
+  >
+  <button id="scale">Toggle display scale</button
+  ><button id="reset">Reset keyboard check</button
+  ><button id="target">Move lock target</button>
+  <button id="region-target">Move opponent between regions</button>
+  <canvas
+    id="ui"
+    width="640"
+    height="400"
+    tabindex="0"
+    aria-label="Production HUD fixture"
+  ></canvas>
+  <p id="status" role="status">Ready.</p>
+  <p>
+    Results: any fresh key or click continues once; held-key repeats are
+    ignored. HUD: arrows and WASD drive, Q is rear view.
+  </p>
+  <script type="module" src="ui-verification.js"></script>
+</html>

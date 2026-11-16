@@ -38,11 +38,11 @@ for f in fixtures:
   if phase=='complete':break
  native.append(samples)
 js="""
-import {stepExitPose} from './src/exit-pose.js';
+import {stepExitPose} from './src/exit-pose.ts';
 let fixtures=JSON.parse(await new Promise(resolve=>{let s='';process.stdin.on('data',x=>s+=x);process.stdin.on('end',()=>resolve(s))}));
 console.log(JSON.stringify(fixtures.map(f=>{let r={x:f.position[0],y:Math.fround(f.position[1]),z:f.position[2]},e={phase:'delay',remaining:.25,foldDegrees:0,camera:{x:f.camera[0],y:f.camera[1],z:f.camera[2],pitchDegrees:0,yawDegrees:0,rollDegrees:0}},sim={exitHangar:{}},out=[];for(let i=0;i<f.frames;i++){let done=stepExitPose(sim,r,e,f.dt,f.human);out.push({phase:e.phase,remaining:e.remaining,position:[r.x,r.y,r.z],fold:e.foldDegrees,cameraPosition:[e.camera.x,e.camera.y,e.camera.z],cameraAngles:[e.camera.pitchDegrees,e.camera.yawDegrees,e.camera.rollDegrees]});if(done)break}return out})));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT))
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT))
 mismatches=[];maxerr=0;numeric=0
 for i,(ns,rs) in enumerate(zip(native,rebuilt)):
  if len(ns)!=len(rs):mismatches.append(dict(fixture=i,lengths=[len(ns),len(rs)]))

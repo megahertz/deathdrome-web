@@ -27,8 +27,8 @@ for arena in audited['arenas']:
             ret(0x419008,player);captured.clear();n.call(0x416038)
             assert len(captured)==1
             fixtures.append({'arena':arena['arena'],'player':player,'runners':runners});native.append(captured[0])
-script="""import {inAreaCount} from './src/hud.js';let s='';for await(const c of process.stdin)s+=c;console.log(JSON.stringify(JSON.parse(s).map(f=>inAreaCount(f,f.player))));"""
-rebuild=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(fixtures),text=True,capture_output=True,check=True).stdout)
+script="""import {inAreaCount} from './src/hud.ts';let s='';for await(const c of process.stdin)s+=c;console.log(JSON.stringify(JSON.parse(s).map(f=>inAreaCount(f,f.player))));"""
+rebuild=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(fixtures),text=True,capture_output=True,check=True).stdout)
 mismatches=[{'index':i,'native':a,'rebuild':b} for i,(a,b) in enumerate(zip(native,rebuild)) if a!=b]
 report={'scope':'Original 416038 IN AREA count with actual region masks, all eight arena grids, all eight selected model IDs and four active-model patterns.',
         'sha256':hashlib.sha256(EXE.read_bytes()).hexdigest(),'cases':len(fixtures),'fixtures':fixtures,'native':native,'rebuild':rebuild,'mismatches':mismatches,'passed':not mismatches,

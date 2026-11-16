@@ -9,12 +9,33 @@
     "preview": "python3 utils/serve.py --dist",
     "test": "python3 utils/run_tests.py",
     "test:reference": "python3 utils/run_tests.py --reference",
-    "build": "python3 utils/package_browser_converter.py && python3 utils/build_static.py",
+    "build": "npm run typecheck && python3 utils/package_browser_converter.py && python3 utils/build_static.py",
     "check:dist": "python3 utils/check_dist.py",
     "start:reference": "python3 utils/serve.py --private --host 127.0.0.1",
-    "test:portable": "python3 utils/run_tests.py --portable"
+    "test:portable": "python3 utils/run_tests.py --portable",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxfmt --check && oxlint --max-warnings 0",
+    "format": "oxfmt && oxlint --fix",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run check:dist",
+    "build:code": "node utils/compile.ts"
   },
   "imports": {
     "#three": "./public/vendor/three.module.js"
+  },
+  "devDependencies": {
+    "@megahertz/oxconfig": "1.0.2",
+    "@types/node": "26.6.6",
+    "@types/three": "0.170.0",
+    "oxfmt": "0.78.0",
+    "oxlint": "1.93.0",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.8"
+    }
   }
 }

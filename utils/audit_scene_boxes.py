@@ -40,8 +40,8 @@ for index,box in enumerate(boxes):
         hit=not bool(n.call(0x445adc,[bits(output)],eax=node,edx=segment,ebx=bounds,ecx=1)&255)
         fixtures.append({'box':index,'from':dict(zip('xyz',a)),'to':dict(zip('xyz',b))})
         native.append({'normal':list(n.read(output,'3f')),'point':list(n.read(output+12,'3f'))} if hit else None)
-script="""import {boxCorners,prepareBox,intersectBox} from './src/scene-boxes.js';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s);const boxes=q.boxes.map(b=>prepareBox(b.vertices));console.log(JSON.stringify({corners:q.cornerCases.map(c=>boxCorners(c.min,c.max).map(p=>[0,1,2].map(i=>Math.fround(c.matrix[i]*p[0]+c.matrix[i+3]*p[1]+c.matrix[i+6]*p[2]+c.matrix[i+9])))),hits:q.fixtures.map(f=>{const h=intersectBox(boxes[f.box],f.from,f.to);return h?{normal:Object.values(h.normal),point:Object.values(h.point)}:null})}));"""
-rebuild=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',script],cwd=ROOT,input=json.dumps({'boxes':boxes,'cornerCases':corner_cases,'fixtures':fixtures}),text=True,capture_output=True,check=True).stdout)
+script="""import {boxCorners,prepareBox,intersectBox} from './src/scene-boxes.ts';let s='';for await(const c of process.stdin)s+=c;const q=JSON.parse(s);const boxes=q.boxes.map(b=>prepareBox(b.vertices));console.log(JSON.stringify({corners:q.cornerCases.map(c=>boxCorners(c.min,c.max).map(p=>[0,1,2].map(i=>Math.fround(c.matrix[i]*p[0]+c.matrix[i+3]*p[1]+c.matrix[i+6]*p[2]+c.matrix[i+9])))),hits:q.fixtures.map(f=>{const h=intersectBox(boxes[f.box],f.from,f.to);return h?{normal:Object.values(h.normal),point:Object.values(h.point)}:null})}));"""
+rebuild=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',script],cwd=ROOT,input=json.dumps({'boxes':boxes,'cornerCases':corner_cases,'fixtures':fixtures}),text=True,capture_output=True,check=True).stdout)
 mismatches=[];maximum=0
 for i,(a,b) in enumerate(zip(native,rebuild['hits'])):
     error=max(abs(x-y) for k in ['normal','point'] for x,y in zip(a[k],b[k])) if a and b else 0;maximum=max(maximum,error)

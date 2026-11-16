@@ -9,3 +9,6 @@ __pycache__/
 # Local assistant and IDE state.
 /.claude/
 /.idea/
+
+# Compiled development modules.
+/.build/

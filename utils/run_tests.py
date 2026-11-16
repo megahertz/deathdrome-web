@@ -7,11 +7,11 @@ reference=all((ROOT/p).is_file() for p in ['private/original/game/RUN/ddrome.exe
 if args.reference and not reference:raise SystemExit('Reference tests require the local private/ installation and audit fixtures. No original media is bundled.')
 subprocess.run([sys.executable,'utils/test_browser_media.py'],cwd=ROOT,check=True)
 subprocess.run([sys.executable,'utils/test_publication.py'],cwd=ROOT,check=True)
-files=sorted((ROOT/'utils/tests').glob('*.test.js'))
+files=sorted((ROOT/'utils/tests').glob('*.test.ts'))
 env=dict(os.environ)
 if args.portable or not reference:
     env['DD_PORTABLE_TESTS']='1'
     files=[p for p in files if not any(term in p.read_text() for term in ['private/','readFile','readFileSync'])]
     print(f'Portable suite: {len(files)} test files; original-media reference tests are not run.',flush=True)
 else:print(f'Full local suite: {len(files)} test files, including private reference fixtures.',flush=True)
-subprocess.run(['node','--import','./utils/tests/setup.js','--test','--test-isolation=none',*[str(p.relative_to(ROOT)) for p in files]],cwd=ROOT,env=env,check=True)
+subprocess.run(['node','--import','./utils/tests/setup.ts','--test','--test-isolation=none',*[str(p.relative_to(ROOT)) for p in files]],cwd=ROOT,env=env,check=True)

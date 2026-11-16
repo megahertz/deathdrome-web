@@ -1,4 +1,48 @@
-<!doctype html><html lang="en"><head><script type="importmap">{"imports":{"#three":"./vendor/three.module.js"}}</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>DeathDrome</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="touch-controls.css"><link rel="stylesheet" href="resource-setup.css"><script>if(new URLSearchParams(location.search).has("native"))document.documentElement.classList.add("native-raster");</script></head><body>
-<header><a href="./" class="wordmark">DEATHDROME</a><nav><button id="fullscreen">Fullscreen</button><button id="sound" aria-pressed="true">Sound on</button><button id="music" aria-pressed="true">Music on</button></nav></header>
-<main><div id="stage"><canvas id="world" width="320" height="200" tabindex="0" aria-label="DeathDrome game"></canvas><canvas id="overlay" width="640" height="400"></canvas><div id="menu"></div><div id="notice" role="status"></div></div><footer id="help">ARROWS / WASD · DRIVE & TURN &nbsp; ALT · FIRE &nbsp; SPACE · JUMP &nbsp; SHIFT · SELECT WEAPON &nbsp; CTRL · BARRIER &nbsp; Q · REAR VIEW &nbsp; M · MUSIC &nbsp; ESC · PAUSE</footer></main>
-<script type="module" src="bootstrap.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <script type="importmap">
+      { "imports": { "#three": "./vendor/three.module.js" } }
+    </script>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+    />
+    <title>DeathDrome</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="touch-controls.css" />
+    <link rel="stylesheet" href="resource-setup.css" />
+    <script type="module" src="native-mode.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="./" class="wordmark">DEATHDROME</a>
+      <nav>
+        <button id="fullscreen">Fullscreen</button
+        ><button id="sound" aria-pressed="true">Sound on</button
+        ><button id="music" aria-pressed="true">Music on</button>
+      </nav>
+    </header>
+    <main>
+      <div id="stage">
+        <canvas
+          id="world"
+          width="320"
+          height="200"
+          tabindex="0"
+          aria-label="DeathDrome game"
+        ></canvas
+        ><canvas id="overlay" width="640" height="400"></canvas>
+        <div id="menu"></div>
+        <div id="notice" role="status"></div>
+      </div>
+      <footer id="help">
+        ARROWS / WASD · DRIVE & TURN &nbsp; ALT · FIRE &nbsp; SPACE · JUMP
+        &nbsp; SHIFT · SELECT WEAPON &nbsp; CTRL · BARRIER &nbsp; Q · REAR VIEW
+        &nbsp; M · MUSIC &nbsp; ESC · PAUSE
+      </footer>
+    </main>
+    <script type="module" src="bootstrap.js"></script>
+  </body>
+</html>

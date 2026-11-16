@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-15",
+  "change": "Touch input no longer narrows the bottom HUD in landscape or raises it in portrait. The dashboard spans the safe viewport width at the bottom, with action buttons above it.",
+  "validation": {
+    "browserViewportSequence": [
+      [844, 390],
+      [390, 844],
+      [390, 760],
+      [772, 360]
+    ],
+    "bottomHudWidths": [844, 390, 390, 772],
+    "buttonsClearHud": true,
+    "buttonGapPixels": 10,
+    "browserErrors": 0,
+    "safeAreasCoveredByUnitTests": true,
+    "imageAndTextProportionsPreserved": true
+  },
+  "evidence": "private/verification/mobile-hud-rotation/",
+  "limits": [
+    "Browser fixture uses the production HUD and touch controls with an explicit touch checkbox; physical phone input was not exercised."
+  ],
+  "followUp": "utils/mobile-hud-cutout-checks.json"
+}

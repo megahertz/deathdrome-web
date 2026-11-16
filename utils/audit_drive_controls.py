@@ -13,9 +13,9 @@ for f in fixtures:
   trace.append(dict(turn=n.read(RUNNER+0xe4,'f')[0],turnAcceleration=n.read(RUNNER+0xe0,'f')[0],acceleration=-n.read(RUNNER+0x180,'f')[0],brake=n.read(RUNNER+0x16c,'f')[0]))
  native.append(trace)
 js="""
-import {applyDriveControls} from './src/drive.js';import {DYNAMICS} from './src/simulation.js';let input='';for await(let s of process.stdin)input+=s;console.log(JSON.stringify(JSON.parse(input).map(f=>{let r={id:0,actionMode:f.mode,nitro:f.nitro,speed:f.speed,turn:f.state*30*Math.PI/180,turnAcceleration:f.state*500*Math.PI/180,acceleration:f.state*80,supportBrake:Math.fround(.2)},trace=[];for(let i=0;i<3;i++){applyDriveControls(r,{steer:f.steer,throttle:f.throttle},DYNAMICS);trace.push({turn:r.turn*180/Math.PI,turnAcceleration:r.turnAcceleration*180/Math.PI,acceleration:r.acceleration,brake:r.supportBrake})}return trace})));
+import {applyDriveControls} from './src/drive.ts';import {DYNAMICS} from './src/simulation.ts';let input='';for await(let s of process.stdin)input+=s;console.log(JSON.stringify(JSON.parse(input).map(f=>{let r={id:0,actionMode:f.mode,nitro:f.nitro,speed:f.speed,turn:f.state*30*Math.PI/180,turnAcceleration:f.state*500*Math.PI/180,acceleration:f.state*80,supportBrake:Math.fround(.2)},trace=[];for(let i=0;i<3;i++){applyDriveControls(r,{steer:f.steer,throttle:f.throttle},DYNAMICS);trace.push({turn:r.turn*180/Math.PI,turnAcceleration:r.turnAcceleration*180/Math.PI,acceleration:r.acceleration,brake:r.supportBrake})}return trace})));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  for frame,(x,y) in enumerate(zip(a,b)):
   for k in x:

@@ -1,1 +1,52 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><title>DeathDrome opaque raster comparison</title><style>body{margin:24px;background:#0c1117;color:#d6e3ed;font:15px/1.5 system-ui}h1{margin-bottom:4px}p{color:#9bb0c2}canvas{display:block;width:min(100%,960px);height:auto;image-rendering:pixelated;margin:20px 0;border:1px solid #34414a}a{color:#a5dfed}pre{white-space:pre-wrap}</style><h1>Opaque raster: original / reconstruction</h1><p>Original x86 draws on the left; JavaScript on the right. Each pair shares supplied polygons and textures. Solid and textured polygons use one depth/priority span buffer.</p><canvas id="comparison" width="640" height="800" aria-label="Original and rebuilt opaque polygon comparisons"></canvas><p><a id="export" download="opaque-overlap-comparison.png">Export comparison PNG</a></p><pre id="status" role="status">Checking native reference pixels…</pre><script type="module" src="overlap-check.js"></script></html>
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>DeathDrome opaque raster comparison</title>
+  <style>
+    body {
+      margin: 24px;
+      background: #0c1117;
+      color: #d6e3ed;
+      font: 15px/1.5 system-ui;
+    }
+    h1 {
+      margin-bottom: 4px;
+    }
+    p {
+      color: #9bb0c2;
+    }
+    canvas {
+      display: block;
+      width: min(100%, 960px);
+      height: auto;
+      image-rendering: pixelated;
+      margin: 20px 0;
+      border: 1px solid #34414a;
+    }
+    a {
+      color: #a5dfed;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+  </style>
+  <h1>Opaque raster: original / reconstruction</h1>
+  <p>
+    Original x86 draws on the left; JavaScript on the right. Each pair shares
+    supplied polygons and textures. Solid and textured polygons use one
+    depth/priority span buffer.
+  </p>
+  <canvas
+    id="comparison"
+    width="640"
+    height="800"
+    aria-label="Original and rebuilt opaque polygon comparisons"
+  ></canvas>
+  <p>
+    <a id="export" download="opaque-overlap-comparison.png"
+      >Export comparison PNG</a
+    >
+  </p>
+  <pre id="status" role="status">Checking native reference pixels…</pre>
+  <script type="module" src="overlap-check.js"></script>
+</html>

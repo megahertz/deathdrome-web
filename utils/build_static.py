@@ -1,7 +1,31 @@
 """Build engine code and public files."""
 from pathlib import Path
-import shutil,json,hashlib,argparse,re
+import shutil,json,hashlib,argparse,re,subprocess,threading
 ROOT=Path(__file__).resolve().parents[1]
+
+_compile_lock=threading.Lock()
+
+def compile_sources():
+    """Compile owned TS modules; generated files never share a source directory."""
+    with _compile_lock:
+        sources=sorted([*(ROOT/'src').rglob('*.ts'),*(ROOT/'utils/browser').rglob('*.ts'),ROOT/'utils/compile.ts',ROOT/'package-lock.json'])
+        fingerprint=hashlib.sha256('\n'.join(f'{p.relative_to(ROOT)}:{p.stat().st_mtime_ns}:{p.stat().st_size}' for p in sources).encode()).hexdigest()
+        stamp=ROOT/'.build/source-fingerprint'
+        if stamp.exists() and stamp.read_text()==fingerprint:return ROOT/'.build'
+        subprocess.run(['node','utils/compile.ts'],cwd=ROOT,check=True)
+        stamp.write_text(fingerprint)
+        return ROOT/'.build'
+
+def engine_files():
+    """Publication names include compiled modules, HTML and CSS, never TS types."""
+    result={}
+    for p in (ROOT/'src').iterdir():
+        if p.is_symlink() or not p.is_file():raise ValueError(f'Unexpected engine source: {p.name}')
+        if p.name.endswith('.d.ts'):continue
+        if p.suffix=='.ts':result[p.with_suffix('.js').name]=ROOT/'.build/src'/p.with_suffix('.js').name
+        elif p.suffix in {'.html','.css'}:result[p.name]=p
+        else:raise ValueError(f'Unexpected engine source: {p.name}')
+    return result
 
 def public_files():
     return sorted(str(p.relative_to(ROOT/'public')) for p in (ROOT/'public').rglob('*') if p.is_file())
@@ -10,14 +34,13 @@ def build(output):
     out=Path(output).resolve()
     # Build cannot erase sources, private media, or tooling, even with --out.
     if out==ROOT or ROOT.is_relative_to(out) or any(out.is_relative_to(ROOT/p) for p in ['src','public','private','utils']):raise ValueError('Choose a separate output directory')
+    compile_sources()
     public=public_files()
     if out.exists():
         if not (out/'build-manifest.json').is_file():raise ValueError('Output exists and is not a generated distribution')
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    for p in sorted((ROOT/'src').iterdir()):
-        if p.is_symlink() or not p.is_file() or p.suffix not in {'.js','.html','.css'}:raise ValueError(f'Unexpected engine source: {p.name}')
-        shutil.copyfile(p,out/p.name)
+    for name,p in engine_files().items():shutil.copyfile(p,out/name)
     for name in public:
         target=out/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/'public'/name,target)
     (out/'assets').mkdir()

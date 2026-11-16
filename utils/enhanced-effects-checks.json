@@ -3,10 +3,7 @@
   "control": {
     "label": "GRAPHIC MODE",
     "type": "cycling button",
-    "options": [
-      "ORIGINAL",
-      "ENHANCED"
-    ],
+    "options": ["ORIGINAL", "ENHANCED"],
     "default": "ORIGINAL",
     "optionsPosition": 2,
     "mouseSwitching": true,
@@ -37,32 +34,17 @@
       "shotFlashEventsObserved": 1,
       "fogEnabled": true,
       "hudSampling": "pixelated",
-      "nativeCanvasRestored": [
-        320,
-        200
-      ],
-      "enhancedCanvas": [
-        1920,
-        1200
-      ],
+      "nativeCanvasRestored": [320, 200],
+      "enhancedCanvas": [1920, 1200],
       "webGLErrors": 0
     },
     "authoredBrowserFixture": {
       "bloomAndColoredFlashObserved": true,
       "explosionParticlesObserved": 42,
       "jumpShadowObserved": true,
-      "controlled30FPSResolution": [
-        800,
-        500
-      ],
-      "recovered60FPSResolution": [
-        1920,
-        1200
-      ],
-      "mobileViewportChecked": [
-        844,
-        390
-      ],
+      "controlled30FPSResolution": [800, 500],
+      "recovered60FPSResolution": [1920, 1200],
+      "mobileViewportChecked": [844, 390],
       "nativeToggleClearedEffects": true
     }
   },

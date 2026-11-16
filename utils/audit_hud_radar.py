@@ -10,8 +10,8 @@ for yaw in [0,30,45,90,135,180,225,270,359]:
    pointer=lambda p:struct.unpack('<f',struct.pack('<I',p))[0]
    n.call(0x417408,[pointer(RUNNER+0x100),pointer(RUNNER+0x308)],eax=RUNNER+0x300,edx=RUNNER+0x304,ebx=RUNNER,ecx=RUNNER+0x200)
    x,y,edge=n.read(RUNNER+0x300,'iii');native.append({'x':x,'y':y,'edge':edge})
-js="""import {projectRadar} from './src/hud-radar.js';let s='';for await(const c of process.stdin)s+=c;console.log(JSON.stringify(JSON.parse(s).map(f=>projectRadar(f.origin,f.target,f.forward))));"""
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures).encode()));mismatches=[{'fixture':i,'native':a,'rebuild':b} for i,(a,b) in enumerate(zip(native,rebuilt)) if a!=b]
+js="""import {projectRadar} from './src/hud-radar.ts';let s='';for await(const c of process.stdin)s+=c;console.log(JSON.stringify(JSON.parse(s).map(f=>projectRadar(f.origin,f.target,f.forward))));"""
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],cwd=ROOT,input=json.dumps(fixtures).encode()));mismatches=[{'fixture':i,'native':a,'rebuild':b} for i,(a,b) in enumerate(zip(native,rebuilt)) if a!=b]
 report={'scope':'Actual original radar projection 417408, with supplied float poses and planar forward vectors. No scene visibility or native zone-generation comparison.','sha256':hashlib.sha256(EXE.read_bytes()).hexdigest(),'fixtures':fixtures,'native':native,'rebuild':rebuilt,'mismatches':mismatches,'passed':not mismatches}
 (ROOT/'private/verification/hud-radar-native.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({'cases':len(fixtures),'mismatches':len(mismatches),'examples':mismatches[:3]}))
 if mismatches:raise SystemExit(1)

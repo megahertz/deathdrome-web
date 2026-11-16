@@ -24,8 +24,8 @@ for small in [False,True]:
  n.cpu.hook_add(UC_HOOK_CODE,capture,begin=0x414348,end=0x414348)
  for x,y,z in itertools.product([-500,-10,0,10,500],[-100,-1,0,1,100],[-100,0,20,100]):
   point=dict(zip('xyz',map(f32,[x,y,z])));n.write(RUNNER,'fff',*point.values());n.call(0x417664,eax=RUNNER);fixtures.append({'point':point,'options':{'small':small}});native.append(records[-1])
-script="""import {projectReticle} from './src/hud-reticle.js';let s='';for await(const c of process.stdin)s+=c;console.log(JSON.stringify(JSON.parse(s).map(f=>projectReticle(f.point,f.options))));"""
-rebuild=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(fixtures),capture_output=True,text=True,check=True).stdout)
+script="""import {projectReticle} from './src/hud-reticle.ts';let s='';for await(const c of process.stdin)s+=c;console.log(JSON.stringify(JSON.parse(s).map(f=>projectReticle(f.point,f.options))));"""
+rebuild=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(fixtures),capture_output=True,text=True,check=True).stdout)
 mismatches=[{'fixture':i,'native':a,'rebuild':b} for i,(a,b) in enumerate(zip(native,rebuild)) if a!=b]
 report={'scope':'Unmodified native 417664 reticle placement and 458b78 projection with supplied camera-local points and native gameplay viewport/FOV. Original 414c58 clip setup is executed.','sha256':hashlib.sha256(EXE.read_bytes()).hexdigest(),'fixtures':fixtures,'native':native,'rebuild':rebuild,'cases':len(fixtures),'mismatches':mismatches,'passed':not mismatches,'limitations':['World-to-camera transformation and image lookup are supplied. This is not a comparison of full native camera/lock scheduling.','Only production high-resolution HUD is connected; low-resolution action is compared as an isolated component.']}
 (ROOT/'private/verification/hud-reticle-native.json').write_text(json.dumps(report,indent=2)+'\n')

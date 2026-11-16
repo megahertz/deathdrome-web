@@ -1,17 +1,65 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><title>Loader drag feedback check</title>
-<style>body{margin:0;background:#10150d;color:#d4dfcb;font:14px monospace}header{height:56px;display:flex;align-items:center;gap:16px;padding:0 16px}button{font:inherit;padding:8px;cursor:pointer}iframe{display:block;width:100%;height:calc(100vh - 56px);border:0}</style>
-<header><button id="enter">Preview file drag</button><button id="leave">Cancel drag</button><span id="status">Synthetic file-drag preview; no image is loaded.</span></header>
-<iframe title="DeathDrome loader" src="/?image=none"></iframe>
-<script>
-const frame=document.querySelector('iframe'),status=document.querySelector('#status');
-function preview(type){
- const panel=frame.contentDocument.querySelector('#resource-setup');
- if(panel?.dataset.state!=='choose'){status.textContent='Wait for the file picker.';return}
- const transfer=new DataTransfer();transfer.items.add(new File([],'preview.iso',{type:'application/octet-stream'}));
- panel.dispatchEvent(new DragEvent(type,{bubbles:true,cancelable:true,dataTransfer:transfer}));
- status.textContent=panel.dataset.dragging==='true'?'File acceptance feedback visible.':'File acceptance feedback cleared.';
-}
-document.querySelector('#enter').onclick=()=>preview('dragenter');
-document.querySelector('#leave').onclick=()=>preview('dragend');
-</script></html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>Loader drag feedback check</title>
+  <style>
+    body {
+      margin: 0;
+      background: #10150d;
+      color: #d4dfcb;
+      font: 14px monospace;
+    }
+    header {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 16px;
+    }
+    button {
+      font: inherit;
+      padding: 8px;
+      cursor: pointer;
+    }
+    iframe {
+      display: block;
+      width: 100%;
+      height: calc(100vh - 56px);
+      border: 0;
+    }
+  </style>
+  <header>
+    <button id="enter">Preview file drag</button
+    ><button id="leave">Cancel drag</button
+    ><span id="status">Synthetic file-drag preview; no image is loaded.</span>
+  </header>
+  <iframe title="DeathDrome loader" src="/?image=none"></iframe>
+  <script>
+    const frame = document.querySelector('iframe'),
+      status = document.querySelector('#status');
+    function preview(type) {
+      const panel = frame.contentDocument.querySelector('#resource-setup');
+      if (panel?.dataset.state !== 'choose') {
+        status.textContent = 'Wait for the file picker.';
+        return;
+      }
+      const transfer = new DataTransfer();
+      transfer.items.add(
+        new File([], 'preview.iso', { type: 'application/octet-stream' }),
+      );
+      panel.dispatchEvent(
+        new DragEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          dataTransfer: transfer,
+        }),
+      );
+      status.textContent =
+        panel.dataset.dragging === 'true'
+          ? 'File acceptance feedback visible.'
+          : 'File acceptance feedback cleared.';
+    }
+    document.querySelector('#enter').onclick = () => preview('dragenter');
+    document.querySelector('#leave').onclick = () => preview('dragend');
+  </script>
+</html>

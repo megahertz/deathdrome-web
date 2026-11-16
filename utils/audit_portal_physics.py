@@ -10,7 +10,7 @@ from unicorn.x86_const import UC_X86_REG_ESP
 from native_ai_audit import ROOT,EXE,RUNNER,f32
 from native_ground_audit import GroundNative
 
-process=subprocess.Popen(['node','--import','./utils/tests/setup.js','utils/portal_physics_scene.mjs'],cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True,bufsize=1)
+process=subprocess.Popen(['node','--import','./utils/tests/setup.ts','utils/portal_physics_scene.ts'],cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True,bufsize=1)
 def scene(**request):
  process.stdin.write(json.dumps(request)+'\n');process.stdin.flush();line=process.stdout.readline()
  if not line:raise RuntimeError('Geometry adapter stopped')

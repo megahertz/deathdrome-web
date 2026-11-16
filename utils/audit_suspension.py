@@ -38,12 +38,12 @@ for f in fixtures:
  n.call(0x430280,eax=RUNNER)
  native.append(dict(position=list(n.read(RUNNER+0x2c,'fff')),pitch=n.read(RUNNER+0x108,'f')[0],roll=n.read(RUNNER+0x10c,'f')[0],frontVelocity=n.read(RUNNER+0x144,'f')[0],sideVelocity=n.read(RUNNER+0x148,'f')[0],worldVelocity=list(n.read(RUNNER+0x184,'fff')),localVelocity=list(n.read(RUNNER+0x190,'fff')),grounded=bool(n.read(RUNNER+0x14c,'B')[0]),supportContact=bool(n.read(RUNNER+0x15d,'B')[0]),mode=n.read(RUNNER+8,'B')[0],slopeImpulse=n.read(RUNNER+0x174,'f')[0],brake=n.read(RUNNER+0x16c,'f')[0],queries=list(queries),sounds=list(sounds)))
 js="""
-import {stepSuspension} from './src/suspension.js';let input='';for await(let s of process.stdin)input+=s;
+import {stepSuspension} from './src/suspension.ts';let input='';for await(let s of process.stdin)input+=s;
 function terrainHits(t,x,z){if(t.kind==='layers')return t.layers.flatMap(layer=>terrainHits({kind:'plane',...layer},x,z));let height=Math.fround(t.base+(t.kind==='plane'?t.sx*x+t.sz*z:x>=t.edge?t.height:0)),sx=t.sx??0,sz=t.sz??0,length=Math.sqrt(1+sx*sx+sz*sz);return [{height,normal:{x:Math.fround(-sx/length),y:Math.fround(1/length),z:Math.fround(-sz/length)}}]}
 console.log(JSON.stringify(JSON.parse(input).map(f=>{let r={...f.r},queries=[],t=f.terrain;let query=(x,z)=>{let hits=terrainHits(t,x,z);queries.push({x,z,hits:hits.map(h=>({height:h.height,normal:Object.values(h.normal)}))});return hits};let result=stepSuspension(r,f.dt,query,{x:r.lateralSpeed,y:r.vy,z:-r.localSpeed});return {position:[r.x,r.y,r.z],pitch:r.chassisPitchDegrees,roll:r.chassisRollDegrees,frontVelocity:r.frontVelocity,sideVelocity:r.sideVelocity,worldVelocity:Object.values(result.world),localVelocity:Object.values(result.local),grounded:r.grounded,supportContact:r.supportContact,mode:r.actionMode,slopeImpulse:r.slopeImpulse,brake:r.supportBrake,queries,sounds:r.human?Array(result.landingCalls).fill(1):[]}})));
 
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  for key in a:
   if key in ['grounded','supportContact','mode','sounds']:
@@ -62,9 +62,9 @@ for i,f in enumerate(fixtures):
  n.write(RUNNER+8,'BB',r['actionMode'],r['previousActionMode']);n.write(RUNNER+0x104,'fff',r['yaw']*180/math.pi,r['chassisPitchDegrees'],r['chassisRollDegrees']);n.write(RUNNER+0x15d,'B',int(contact));n.write(RUNNER+0x144,'ff',r['frontVelocity'],r['sideVelocity']);n.write(RUNNER+0x184,'fff',r['lateralSpeed'],r['vy'],-r['localSpeed']);n.write(RUNNER+0x190,'fff',r['lateralSpeed'],r['vy'],-r['localSpeed']);n.call(0x430f18,eax=RUNNER)
  jump_native.append(dict(mode=n.read(RUNNER+8,'B')[0],previous=n.read(RUNNER+9,'B')[0],front=n.read(RUNNER+0x144,'f')[0],side=n.read(RUNNER+0x148,'f')[0],world=list(n.read(RUNNER+0x184,'fff')),local=list(n.read(RUNNER+0x190,'fff'))))
 jump_js="""
-import {beginJump} from './src/suspension.js';let input='';for await(let s of process.stdin)input+=s;console.log(JSON.stringify(JSON.parse(input).map(f=>{let r={...f.r,supportContact:f.supportContact,speed:f.r.localSpeed,lateralSpeed:f.r.lateralSpeed,localVerticalSpeed:f.r.vy,worldVelocity:{x:f.r.lateralSpeed,y:f.r.vy,z:-f.r.localSpeed}};beginJump(r);return {mode:r.actionMode,previous:r.previousActionMode,front:r.frontVelocity,side:r.sideVelocity,world:Object.values(r.worldVelocity),local:[r.lateralSpeed,r.localVerticalSpeed,-r.speed]}})));
+import {beginJump} from './src/suspension.ts';let input='';for await(let s of process.stdin)input+=s;console.log(JSON.stringify(JSON.parse(input).map(f=>{let r={...f.r,supportContact:f.supportContact,speed:f.r.localSpeed,lateralSpeed:f.r.lateralSpeed,localVerticalSpeed:f.r.vy,worldVelocity:{x:f.r.lateralSpeed,y:f.r.vy,z:-f.r.localSpeed}};beginJump(r);return {mode:r.actionMode,previous:r.previousActionMode,front:r.frontVelocity,side:r.sideVelocity,world:Object.values(r.worldVelocity),local:[r.lateralSpeed,r.localVerticalSpeed,-r.speed]}})));
 """
-jump_rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',jump_js],input=json.dumps(jump_fixtures).encode(),cwd=ROOT))
+jump_rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',jump_js],input=json.dumps(jump_fixtures).encode(),cwd=ROOT))
 for i,(a,b) in enumerate(zip(jump_native,jump_rebuilt)):
  for k in a:
   av=a[k] if isinstance(a[k],list) else [a[k]];bv=b[k] if isinstance(b[k],list) else [b[k]];err=max(abs(x-y) for x,y in zip(av,bv));maxerr=max(maxerr,err)

@@ -17,9 +17,9 @@ for case in fixtures:
  for offset,v in [(0x8c,list(r['forwardVector'].values())),(0xbc,list(r['previousCollisionProbe'].values())),(0x5c,list(r['previousCollisionCenter'].values())),(0x184,list(r['worldVelocity'].values()))]:n.write(RUNNER+offset,'fff',*v)
  n.write(RUNNER+0x144,'f',r['frontVelocity']);n.write(RUNNER+0x1b5,'B',int(case['human']));n.write(RUNNER+0x1800,'fff',*case['candidate'].values());rejected=n.call(0x433048,eax=RUNNER,edx=RUNNER+0x1800)&255;native.append(dict(rejected=bool(rejected),queries=[{'from':q['from_'],'to':q['to']} for q in queries]))
 js="""
-import {rejectCollisionPosition} from './src/collision-sweep.js';let s='';for await(let b of process.stdin)s+=b;console.log(JSON.stringify(JSON.parse(s).map(f=>{let count=0,result=rejectCollisionPosition(f.r,f.candidate,f.dt,(a,b)=>++count===f.hitAt?[{node:{name:f.category==='runner'?'runner_1':'wall'},normal:{x:0,y:f.category==='floor'?1:0,z:1},point:{x:35,y:5,z:37}}]:[],{human:f.human});return {rejected:result.rejected,queries:result.queries.map(q=>({from:Object.values(q.from),to:Object.values(q.to)}))}})))
+import {rejectCollisionPosition} from './src/collision-sweep.ts';let s='';for await(let b of process.stdin)s+=b;console.log(JSON.stringify(JSON.parse(s).map(f=>{let count=0,result=rejectCollisionPosition(f.r,f.candidate,f.dt,(a,b)=>++count===f.hitAt?[{node:{name:f.category==='runner'?'runner_1':'wall'},normal:{x:0,y:f.category==='floor'?1:0,z:1},point:{x:35,y:5,z:37}}]:[],{human:f.human});return {rejected:result.rejected,queries:result.queries.map(q=>({from:Object.values(q.from),to:Object.values(q.to)}))}})))
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  if a['rejected']!=b['rejected'] or len(a['queries'])!=len(b['queries']):mismatches.append(dict(fixture=i,native=a,rebuild=b));continue
  for j,(x,y) in enumerate(zip(a['queries'],b['queries'])):

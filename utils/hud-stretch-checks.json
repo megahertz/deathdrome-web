@@ -24,14 +24,8 @@
     "buildId": "e7e08193b525ccee",
     "liveBrowser": {
       "source": "local demo ZIP",
-      "viewport": [
-        1846,
-        918
-      ],
-      "stage": [
-        1846,
-        918
-      ],
+      "viewport": [1846, 918],
+      "stage": [1846, 918],
       "hudLayout": "responsive",
       "hudStretch": "segmented",
       "instrumentScale": 3.5,

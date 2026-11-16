@@ -19,11 +19,11 @@ for fixture in fixtures:
   n.write(target+0x2c,'fff',t['x'],t['y'],t['z']);n.call(0x436634,eax=RUNNER,edx=0);samples.append(dict(position=list(n.read(RUNNER+0x58c,'fff')),velocity=list(n.read(RUNNER+0x61c,'fff')),angles=list(n.read(node_data+0xc,'fff')),age=n.read(RUNNER+0x4cc,'f')[0],active=bool(n.read(RUNNER+0x4bc,'B')[0])))
  native.append(samples)
 js="""
-import {launchProjectiles,steerMissile,stepProjectileMotion} from './src/projectiles.js';let s='';for await(let x of process.stdin)s+=x;console.log(JSON.stringify(JSON.parse(s).map(({r,dt,targets})=>{
+import {launchProjectiles,steerMissile,stepProjectileMotion} from './src/projectiles.ts';let s='';for await(let x of process.stdin)s+=x;console.log(JSON.stringify(JSON.parse(s).map(({r,dt,targets})=>{
  let sim={player:0,runners:[r],projectiles:[],emit(){}};launchProjectiles(sim,r,true);let p=sim.projectiles[0];return targets.map(t=>{if(p.age>0)steerMissile(p,t,dt);stepProjectileMotion(p,dt);return {position:[p.x,p.y,p.z],velocity:[p.vx,p.vy,p.vz],angles:[p.angles.pitch,p.angles.yaw,p.angles.roll],age:p.age,active:p.life>0}});
 })));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));maxerr=0;mismatches=[];fields=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));maxerr=0;mismatches=[];fields=0
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  for j,(x,y) in enumerate(zip(a,b)):
   errors=[abs(v-w) for k in ['position','velocity','angles'] for v,w in zip(x[k],y[k])]+[abs(x['age']-y['age'])];err=max(errors);fields+=len(errors);maxerr=max(maxerr,err)

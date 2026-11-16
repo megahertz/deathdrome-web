@@ -8,6 +8,7 @@ from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote,urlsplit
 import argparse,socket,json,io
+from build_static import compile_sources
 ROOT=Path(__file__).resolve().parents[1]
 DEV_MEDIA_SOURCES={'cd':'/private/disc/Death-Drome_Win_EN.zip','demo':'/private/disc/DDROME.zip','nomusic':'/private/disc/Deathdrome.iso'}
 
@@ -21,14 +22,16 @@ class Handler(SimpleHTTPRequestHandler):
         relative='/'.join(parts) or 'index.html'
         if any(p.startswith('.') for p in parts):return str(ROOT/'__not_served__')
         if self.dist:return self.contained(ROOT/'dist',relative)
-        for directory in [ROOT/'src',ROOT/'public']:
+        if relative.endswith('.js') or relative=='index.html':compile_sources()
+        for directory in [ROOT/'.build/src',ROOT/'src',ROOT/'public']:
             candidate=directory/relative
             if candidate.is_file():return self.contained(directory,relative)
         if self.private:
             routes={'private':ROOT/'private','assets':ROOT/'private/assets','reference':ROOT/'private/reference','evidence':ROOT/'private/verification'}
             if parts[0] in routes:return self.contained(routes[parts[0]],'/'.join(parts[1:]) or 'index.html')
-            candidate=ROOT/'utils/browser'/relative
-            if candidate.is_file():return self.contained(ROOT/'utils/browser',relative)
+            browser_dir=ROOT/'.build/utils/browser' if relative.endswith('.js') else ROOT/'utils/browser'
+            candidate=browser_dir/relative
+            if candidate.is_file():return self.contained(browser_dir,relative)
             candidate=ROOT/'private'/relative
             if len(parts)==1 and relative.endswith('-fixtures.json') and candidate.is_file():return str(candidate)
         return str(ROOT/'__not_served__')
@@ -58,6 +61,7 @@ if __name__=='__main__':
     args=parser.parse_args()
     args.host=args.host or '0.0.0.0'
     private=not args.clean and not args.dist
+    if not args.dist:compile_sources()
     server=ThreadingHTTPServer((args.host,args.port),partial(Handler,private=private,dist=args.dist))
     print(f'DeathDrome: http://localhost:{args.port}/',flush=True)
     print('Serving '+('dist only' if args.dist else 'src + public'+(' + /private (local development)' if private else '')),flush=True)

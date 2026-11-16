@@ -29,11 +29,11 @@ for f in fixtures:
   samples.append(dict(door=pos[RUNNER][1],sign=pos[RUNNER+0x1000][1],moving=moving[0]))
  native.append(samples)
 js="""
-import {stepExitHangar} from './src/exit-hangar.js';
+import {stepExitHangar} from './src/exit-hangar.ts';
 let fixtures=JSON.parse(await new Promise(resolve=>{let s='';process.stdin.on('data',x=>s+=x);process.stdin.on('end',()=>resolve(s))}));
 console.log(JSON.stringify(fixtures.map(f=>{let s={exitHangar:{door:f.door,sign:f.sign,moving:true},runners:Array.from({length:f.active},()=>({opponentExit:{}}))},out=[];for(let i=0;i<f.frames;i++){stepExitHangar(s,f.dt);out.push({...s.exitHangar})}return out})));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT))
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT))
 mismatches=[];maxerr=0
 for i,(ns,rs) in enumerate(zip(native,rebuilt)):
  for j,(a,b) in enumerate(zip(ns,rs)):

@@ -13,11 +13,11 @@ for heading in [0,45,112.5,247.5,359.99]:
   if target:n.write(RUNNER+0x6f8,'I',RUNNER+0x2000);n.write(RUNNER+0x202c,'fff',target['x'],target['y'],target['z'])
   n.call(0x4365a0,eax=RUNNER);nitro.append(dict(r=r,target=target,dt=dt));native_nitro.append(n.read(RUNNER+0x104,'f')[0])
 js="""
-import {Simulation} from './src/simulation.js';import {steerNitro} from './src/runner-contact.js';let s='';for await(let x of process.stdin)s+=x;let data=JSON.parse(s),sim={selectWeapon:Simulation.prototype.selectWeapon,emit(){}};
+import {Simulation} from './src/simulation.ts';import {steerNitro} from './src/runner-contact.ts';let s='';for await(let x of process.stdin)s+=x;let data=JSON.parse(s),sim={selectWeapon:Simulation.prototype.selectWeapon,emit(){}};
 let cycles=data.cycles.map(({selected,weapons})=>{let r={selectedWeapon:selected,weapons,missileLockTarget:1};Simulation.prototype.cycleWeapon.call(sim,r);return {selected:r.selectedWeapon,target:r.missileLockTarget}});
 let nitro=data.nitro.map(({r,target,dt})=>{steerNitro(r,target,dt);return Math.fround(r.yaw*180/Math.PI)});console.log(JSON.stringify({cycles,nitro}));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(dict(cycles=cycles,nitro=nitro)).encode(),cwd=ROOT));mismatches=[]
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(dict(cycles=cycles,nitro=nitro)).encode(),cwd=ROOT));mismatches=[]
 for i,(a,b) in enumerate(zip(native_cycles,rebuilt['cycles'])):
  if a!=b:mismatches.append(dict(cycle=i,native=a,rebuild=b))
 for i,(a,b) in enumerate(zip(native_nitro,rebuilt['nitro'])):

@@ -84,8 +84,8 @@ for fixture in controllers:
         maximumSpeed=controller_native.read(RUNNER+0x444,'f')[0], mode='recover' if controller_native.read(RUNNER+0x1ea,'B')[0]==3 else 'path'))
 
 js = r"""
-import {Simulation} from './src/simulation.js';
-import {routeSegment,pushRouteNode,clearRouteNodes,navigationState,routePoolState,stepNavigation} from './src/ai-navigation.js';
+import {Simulation} from './src/simulation.ts';
+import {routeSegment,pushRouteNode,clearRouteNodes,navigationState,routePoolState,stepNavigation} from './src/ai-navigation.ts';
 let data=JSON.parse(await new Promise(resolve=>{let s='';process.stdin.on('data',x=>s+=x);process.stdin.on('end',()=>resolve(s))}));
 const point=p=>({x:p[0],y:p[1],z:p[2]});
 function segment(s){return {direction:[s.direction.x,s.direction.z],advanceDistance:s.advanceDistance,normal:[s.normal.x,s.normal.z],positive:[s.positive.x,s.positive.z],negative:[s.negative.x,s.negative.z]}}
@@ -107,7 +107,7 @@ let controllers=data.controllers.map(a=>{
 });
 console.log(JSON.stringify({corridors,actions,controllers}));
 """
-rebuilt = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js', '--input-type=module', '-e', js], input=json.dumps(dict(graph=graph, corridors=corridors, actions=actions, controllers=controllers)).encode(), cwd=ROOT))
+rebuilt = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts', '--input-type=module', '-e', js], input=json.dumps(dict(graph=graph, corridors=corridors, actions=actions, controllers=controllers)).encode(), cwd=ROOT))
 errors, discrete = [], []
 def compare(a, b, path):
     if isinstance(a, dict):

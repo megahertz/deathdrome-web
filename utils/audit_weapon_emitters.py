@@ -29,16 +29,16 @@ for fixture in fixtures:
     launch_fixtures.append(dict(r={**r,'speed':speed,'muzzleSide':side,'forwardVector':dict(zip(['x','y','z'],direction))},human=fixture['human'],missile=missile))
     launch_native.append(dict(origin=list(n.read(RUNNER+0x58c,'fff')),velocity=list(n.read(RUNNER+0x61c,'fff')),side=n.read(RUNNER+0x6dc,'I')[0]))
 js="""
-import {emitterMatrix,emitterOrigins} from './src/weapon-emitters.js';
+import {emitterMatrix,emitterOrigins} from './src/weapon-emitters.ts';
 let s='';for await(let x of process.stdin)s+=x;
 console.log(JSON.stringify(JSON.parse(s).map(({r,human})=>({matrix:emitterMatrix(r,human),origins:emitterOrigins(r,human)}))));
 """
-rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
+rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',js],input=json.dumps(fixtures).encode(),cwd=ROOT));mismatches=[];maxerr=0
 for i,(a,b) in enumerate(zip(native,rebuilt)):
  errors=[abs(x-y) for x,y in zip(a['matrix'],b['matrix'])]+[abs(x[k]-y[k]) for x,y in zip(a['origins'],b['origins']) for k in ['x','y','z']];err=max(errors);maxerr=max(maxerr,err)
  if err>0.00003:mismatches.append(dict(fixture=i,native=a,rebuild=b,error=err))
 launch_js="""
-import {launchProjectiles} from './src/projectiles.js';
+import {launchProjectiles} from './src/projectiles.ts';
 let s='';for await(let x of process.stdin)s+=x;
 console.log(JSON.stringify(JSON.parse(s).map(({r,human,missile})=>{
  let sim={player:human?0:1,runners:[r],projectiles:Array.from({length:11},()=>({owner:r.id,kind:'Laser',life:1})),emit(){}};
@@ -47,7 +47,7 @@ console.log(JSON.stringify(JSON.parse(s).map(({r,human,missile})=>{
 })));
 """
 # Eleven occupied slots restrict a laser press to the one initializer under test.
-launch_rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js','--input-type=module','-e',launch_js],input=json.dumps(launch_fixtures).encode(),cwd=ROOT))
+launch_rebuilt=json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',launch_js],input=json.dumps(launch_fixtures).encode(),cwd=ROOT))
 for i,(a,b) in enumerate(zip(launch_native,launch_rebuilt)):
  err=max(abs(x-y) for k in ['origin','velocity'] for x,y in zip(a[k],b[k]));maxerr=max(maxerr,err)
  if err>0.00003 or a['side']!=b['side']:mismatches.append(dict(launchFixture=i,native=a,rebuild=b,error=err))

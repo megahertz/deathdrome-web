@@ -13,10 +13,7 @@
       "Previous tinted background shows black polygon boundaries.",
       "Original black background merges with the existing texture falloff."
     ],
-    "graphicsModes": [
-      "ORIGINAL",
-      "ENHANCED"
-    ],
+    "graphicsModes": ["ORIGINAL", "ENHANCED"],
     "browserErrors": 0,
     "rejectedRedesignFilesInDistribution": 0
   },

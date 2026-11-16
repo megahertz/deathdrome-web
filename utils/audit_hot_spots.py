@@ -80,8 +80,8 @@ def main():
             'queries': len(rows[-1]['fixtures']), 'triggers': len(rows[-1]['actions'])}), flush=True)
     js = """
 import fs from 'node:fs';
-import {HotSpots} from './src/hot-spots.js';
-import {queryScene} from './utils/scene_query_batch.mjs';
+import {HotSpots} from './src/hot-spots.ts';
+import {queryScene} from './utils/scene_query_batch.ts';
 let input='';for await(const b of process.stdin)input+=b;const results=[];
 for(const row of JSON.parse(input)){
  const data=JSON.parse(fs.readFileSync(`private/assets/models/arena${row.arena}.json`)),h=new HotSpots(data.markers);
@@ -91,7 +91,7 @@ for(const row of JSON.parse(input)){
  results.push({initial,queries,actions});
 }console.log(JSON.stringify(results));
 """
-    rebuilt = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.js', '--input-type=module', '-e', js],
+    rebuilt = json.loads(subprocess.check_output(['node','--import','./utils/tests/setup.ts', '--input-type=module', '-e', js],
         input=json.dumps(rows).encode(), cwd=ROOT))
     mismatches = []
     def compare(a, b, path):

@@ -16,10 +16,10 @@ palette=set(texture.get_flattened_data());images=[];candidates=[]
 for angle in [0,90]:
     image=Image.open(ROOT/f'private/verification/video/{args.prefix}-{angle}.png').convert('RGB');assert image.size==(320,200);images.append(image)
     candidates.append([(x,y) for y in range(55,113) for x in range(66,253) if image.getpixel((x,y)) in palette])
-script="""import fs from 'node:fs';import {THREE} from './src/renderer.js';import {makeRunnerPreview,stepRunnerPreview} from './src/runner-preview.js';
+script="""import fs from 'node:fs';import {THREE} from './src/renderer.ts';import {makeRunnerPreview,stepRunnerPreview} from './src/runner-preview.ts';
 let input='';for await(const c of process.stdin)input+=c;const q=JSON.parse(input),data=JSON.parse(fs.readFileSync('private/assets/models/pnkrunr.json'));data.meshes=data.meshes.map(f=>({...f,texture:null,cycle:undefined}));const result=[];
 for(let frame=0;frame<2;frame++){const root=makeRunnerPreview(data);stepRunnerPreview(root,frame*Math.PI);root.updateMatrixWorld(true);const camera=new THREE.PerspectiveCamera(18,Math.tan(31*Math.PI/180)/Math.tan(9*Math.PI/180),.75,1024);camera.position.set(0,2.3,10);camera.rotation.set(-10*Math.PI/180,0,0);camera.updateMatrixWorld(true);const ray=new THREE.Raycaster();const vertices=[];root.traverse(o=>{if(o.userData.runnerLight){const a=o.geometry.attributes.position;for(let i=0;i<a.count;i++)vertices.push(new THREE.Vector3().fromBufferAttribute(a,i).applyMatrix4(o.matrixWorld).toArray())}});result.push({vertices,hits:q[frame].map(([x,y])=>{ray.setFromCamera(new THREE.Vector2(2*((x+.5-66)/187)-1,1-2*((y+.5-55)/58)),camera);const hit=ray.intersectObject(root,true)[0];return hit?hit.object.userData.contactNames[hit.faceIndex]:null})});}console.log(JSON.stringify(result));"""
-visibility=json.loads(subprocess.run(['node','--import','./utils/tests/setup.js','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(candidates),text=True,capture_output=True,check=True).stdout)
+visibility=json.loads(subprocess.run(['node','--import','./utils/tests/setup.ts','--input-type=module','-e',script],cwd=ROOT,input=json.dumps(candidates),text=True,capture_output=True,check=True).stdout)
 def sample(px,py,origin):
     ndcx=2*((px+.5-66)/187)-1;ndcy=1-2*((py+.5-55)/58)
     rx=ndcx*math.tan(math.radians(31));ry=ndcy*math.tan(math.radians(9));pitch=math.radians(10)
